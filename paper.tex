@@ -23,16 +23,107 @@
 \section*{Introduction}
 Intro
 
-\section{First section}
-Some text
+\section{Background on union types}
 
-\section{Second section}
-Some text
+\subsection{Nickel design space}
 
-\section{Third section}
-Some text
+Make clear the design of Nickel aims at being simple, interoperable with JSON,
+and to not type every possible untyped idioms, but rather the common typed one...
 
-\section*{Conclusion}
-Conclusion
+\subsection{Tagged versus untagged}
+
+Unions are fundamental and ubiquitous pieces of programming. While products
+represent conjunctions, which are several pieces of data put together, unions
+represent disjunctions, that are different alternatives values for the same
+data. Put together, they allow to model a large class of data types. 
+
+\\
+EXAMPLES of union in configuration specification
+\\
+
+In statically typed languages, more specifically in functional programming
+languages, they are usually represented as algebraic data types [references],
+also called *tagged unions*. Tagged means that there is an additional field, or
+constructor, that allows to discriminate between each alternatives, usually at
+compile-time. Well-known programming languages with first-class tagged unions
+include Haskell, OCaml, Rust, Scala, PureScript, Elm, Swift and a even greater
+number of related and derived languages.
+
+\\
+EXAMPLES
+\\
+
+All of the aforementioned languages are statically typed. In this setting, the
+actual representation of a tagged union is an implementation detail: from the
+point of view of the programmer, a tagged union is a proper value 
+associated with a clearly defined semantics. However, in a gradually typed language like Nickel,
+the question of how tagged union are represented as untyped values arises. One
+problem with tagged union is that it is a fundamentally typed representation,
+which has no totally natural counterpart as an untyped data.
+
+One usual representation is as a structure with a tag and a value which actual
+shape depends on the tag:
+
+\\
+FIGURE OR C CODE EXAMPLE ILLUSTRATING THE USUAL REPRESENTATION
+\\
+
+But this is neither totally natural, nor the only possible solution: 
+. More importantly, this is not a natural representation for schemas, which
+favors simple, untagged union. Indeed, if one can determine the type at
+run-time, and there is no typy stuffy, the tag sounds rather useless.
+
+In an untyped language, it is thus natural to directly stores different data in a
+variable: actually, the runtime system is the one in charge of tags, which it
+makes accessible via functions such as JavaScript's
+\begin{verbabtim}typeof\end{verbatim}. Using so-called untagged unions has already
+been an idiom in practice for a long time, and being able to type and represent
+these unions is an important aspect of a type system applying to these
+languages.
+
+This is the reason why other gradually typed languages, which were either
+originally untyped or aim at backward compatibility with an untyped base
+language, seem to favor supporting union types which are the typed counter-part
+of these untagged union [example of gradually typed language with untagged
+union].
+
+In the case of Nickel, there is no pre-existing untyped language that we have to
+support, so we are freer of our choice. But are we? As a configuration language,
+Nickel does not evolve in the abstract. It aims at maximum interoperability with
+JSON. It is designed to generate data for other software to consume, and strives
+to be able to encode as much schemas as possible inside the language itself. If
+these schemas use untagged union, then this is a strong incentive to support
+them at the type level, or at least, at the contract level.
+
+\subsection{Union types}
+
+\subsection{Tagged as untagged}
+
+Note that together with the other existing features of the type system, one can
+encode tagged union in the following way:
+
+\\
+Encoding as: use singleton contract for tags, and then union.
+\begin{lstlisting}
+type sum = A of Num | B of Str
+\end{lstlisting}
+
+\begin{lstlisting}
+let Singleton = fun val l x => if val == x then x else blame l in
+let A = Singleton `A in
+let B = Singleton `B in
+{ tag : #A, val : Num} | { tag : #B, val : Str} 
+\end{lstlisting}
+
+This is just the encoding mentioned in the previous section. But it suffers a
+fundamental problem: the static type system is not able to deduce when the value
+is known to be a `Num` or a `Str`.
+
+\\
+EXAMPLE if x.tag == `A then x.val + 1 else if val.tag == `B then strings.fromNum
+x.val
+\\
+
+TypeScript is capable of emulating such union (see ??).
 
 \end{document}
