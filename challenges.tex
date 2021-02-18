@@ -1,0 +1,61 @@
+Type systems featuring intersection types are hard in a fundamental way,
+from their discovery, they've been studied as a way to characterize
+lambda-calculus terms normalizability; which means that typechecking a
+term on a system with intersection types is undecidable, in a way
+similar to how the halting problem is undecidable.
+
+Usually, when thinking about programming languages, there's an intuition
+that static checks (like typechecking) are more difficult and less flexible
+than dynamic checks (like testing). For instance, is very easy to check if,
+in a given execution of a program, a variable holds an integer value; while it
+may become more challengin to check, if a variable will always hold an integer value,
+no matter the particular execution.
+
+As we intend to show on this paper, intersection (and union) types are not only
+statically hard to check, but also dinamycally; they are fundamentally hard.
+
+\subsection{Known challenges}
+
+There are two works proposing solutions to dynamically checking union and intersection
+types (through contracts). We briefly review the main challenges they introduce.
+
+\subsubsection*{Union contracts may need multiple evaluations}
+
+When working with contracts, it is assumed that an error may not be raised, even
+when there is one. For instance, imagine you have a function \texttt{f}, that
+you wrap with a contract asserting that it sends positive values to positive values.
+
+A first call \texttt{f 10} may return \texttt{3}, complying with the contract.
+While a second call, \texttt{f 5}, may return \texttt{-2}, raising an error since
+the contract has been violated. Even if only after evaluating both of this function calls
+the error was found, the first one is actually not needed, and \texttt{f 5} is enough to
+prove that \texttt{f} doesn't comply with the given contract.
+
+When unions get involved, the property of only needing one use of the contracted object
+to find an error is lost,
+for instance, imagine wrapping $f = \lambda~x.~if~x~then~2~else~"Hello"$
+with the contract $(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$, it's
+clear that $f$ doesn't comply with either of those function contracts, however, there
+is not a single application that would raise, we need the combination of two calls,
+$f~True$ and $f~False$ to find the violation.
+
+\textit{Union contracts are not local}
+
+\subsubsection*{Intersection contracts must not chare information}
+
+\textit{Intersection contracts must be local}\\
+
+\textit{The combination of union, intersection, and function contracts is not trivial}
+
+\subsubsection*{Flat contracts are not idempotent}
+
+\textit{The combination of intersection and flat contracts is not trivial}
+
+
+\subsection{Impracticallity of KT}
+
+\subsubsection{Non deterministic semantics}
+
+\subsubsection{Non local (context opening) operation}
+
+\subsection{Problems in WMW}
