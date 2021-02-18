@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{mathtools,amssymb,amsmath,amsfonts,amsxtra,amsthm,mathrsfs,mathpartir}
+\usepackage{listings}
 \usepackage{xcolor}
 \usepackage{array}
 \usepackage[toc,page]{appendix}
@@ -27,103 +28,167 @@ Intro
 
 \subsection{Nickel design space}
 
-Make clear the design of Nickel aims at being simple, interoperable with JSON,
-and to not type every possible untyped idioms, but rather the common typed one...
+\color{red}Goals of the section
+
+Introduce Nickel, explain the choice of gradual
+typing and main design orientations, such as practice-oriented, lightweight,
+etc.\vspace{0.5cm}\color{black}
+
+This paper is centered around the design of the Nickel language. Nickel is a
+configuration programming language, meaning that a program eventually evaluates
+to a value that can be directly serialized to JSON, YAML or alike. Nickel aims at
+being lightweight, easy to write and easy to embed in a larger application. The
+focus is first and foremost practical: it originated from the language of the Nix
+package manager, used to describe the biggest set of software packages ever
+built [ ], and targets build systems and cloud deployment tools (Kubernetes,
+Terraform or NixOps) as well. While there's no hesitation in incorporating recent
+research when it serves a purpose, this is not a research language, as the
+design decisions are guided by the industrial use cases. 
+
+Our aim is that writing simple Nickel should not be more complex than writing
+JSON or YAML.  Unlike JSON, though, Nickel anticipates large configurations by
+being both programmable and typed. There's a dilemma with respect to typing: if
+your program is only run once on fixed inputs, as are such programmable
+configurations, any type error will be reported at run-time anyway. Why bother
+with a static type system? On the other hand, more and more systems rely on
+complex configurations, like cloud infrastructure, leading the corresponding
+configurations to become increasingly complex, to the point where static types
+are beneficial. For reusable code — that is, library functions — static types
+brings all the usual, widely acknowledged benefits. This dilemma is naturally
+solved by an approach that can reunite static typing and dynamic typing: gradual
+typing [references]. Unlike language like TypeScript, we don't seek to provide a
+complex type system that tries hard to type most of the idioms arising naturally
+in dynamically typed code. Rather, we provide a reasonably solid base type
+system with good inference properties, that should make writing typed generic
+function operating on data easy. In fact, for more complex data validation,
+Nickel uses contracts rather static typing.
+
+\subsection{Unions types}
+\color{red}Goals of the section
+
+Introduce union in general, and most usual form in statically typed languages, tagged unions\vspace{0.5cm}\color{black}
+
+In programming, unions are fundamental and ubiquitous building blocks of data.
+While products represent conjunctions, which are several different pieces of
+data stored all together in one value, unions represent disjunctions, which are
+several exclusive alternatives stored in one value. When nested together, unions
+and intersections are able to describe a large class of data shapes [ref,
+examples?]. 
+
+\begin{verbatim}
+EXAMPLES of union in configuration specification
+\end{verbatim}
+
+In statically typed languages, and more specifically in functional programming
+languages, unions are usually embodied by algebraic data types [references],
+also called \textbf{tagged unions}. Tagged means that there is an additional
+field, or constructor, that allows to discriminate between each alternative,
+usually via pattern matching. Well-known programming languages with first-class
+tagged unions include Haskell, OCaml, Rust, Scala, PureScript, Elm, Swift and an
+even greater number of related and derived languages.
+
+\begin{verbatim}
+EXAMPLES
+\end{verbatim}
 
 \subsection{Tagged versus untagged}
+\color{red}Goals of the section
 
-Unions are fundamental and ubiquitous pieces of programming. While products
-represent conjunctions, which are several pieces of data put together, unions
-represent disjunctions, that are different alternatives values for the same
-data. Put together, they allow to model a large class of data types. 
+Interpreted languages already need to tag their values, hence bare union are more natural.
+It also corresponds better to prior usage in untyped code\vspace{0.5cm}\color{black}
 
-\\
-EXAMPLES of union in configuration specification
-\\
+In this statically typed setting, the actual representation of a tagged union is
+an implementation detail: from the point of view of the programmer, a tagged
+union is a fist-class data type associated with constructors, destructors and a
+well-defined semantics.  However, in a gradually typed language like Nickel, the
+question of the representation of tagged unions as untyped values arises.
 
-In statically typed languages, more specifically in functional programming
-languages, they are usually represented as algebraic data types [references],
-also called *tagged unions*. Tagged means that there is an additional field, or
-constructor, that allows to discriminate between each alternatives, usually at
-compile-time. Well-known programming languages with first-class tagged unions
-include Haskell, OCaml, Rust, Scala, PureScript, Elm, Swift and a even greater
-number of related and derived languages.
+Unfortunately, it seems that tagged unions do not have a canonical counterpart
+as serializable untyped data. An intuitive representation is as a record with a
+tag together with a value which shape depends on the tag:
 
-\\
-EXAMPLES
-\\
+\begin{lstlisting}
+{ tag: <A, B, C>, value: Dyn }
+\end{lstlisting}
 
-All of the aforementioned languages are statically typed. In this setting, the
-actual representation of a tagged union is an implementation detail: from the
-point of view of the programmer, a tagged union is a proper value 
-associated with a clearly defined semantics. However, in a gradually typed language like Nickel,
-the question of how tagged union are represented as untyped values arises. One
-problem with tagged union is that it is a fundamentally typed representation,
-which has no totally natural counterpart as an untyped data.
+Another way of seeing it is a dependent $\Sigma$-type which first component is a
+tag and second component is the data type corresponding to this tag:
+\[
+    \Sigma_{tag : <A, B, C>} \text{Alternative}(\text{tag})
+\]
 
-One usual representation is as a structure with a tag and a value which actual
-shape depends on the tag:
+Alas, choosing this representation as a default is not fully satisfying. As any
+representation, it does not correspond precisely to, say, a JSON type. In
+consequence, a lot of illegal combinations are structurally valid untyped (JSON)
+values. More importantly, this does not match with the configuration schemas one
+can find in the wild favors simple, untagged union [example of JSON
+schemas/protobuf/whatever with unions].
 
-\\
-FIGURE OR C CODE EXAMPLE ILLUSTRATING THE USUAL REPRESENTATION
-\\
+In dynamically typed languages, which are interpreted for the vast majority
+[ref/examples?], it is more natural to directly stores different kind of data in
+one variable without further ceremony. The runtime system needs to attach type
+tags to values anyway, which usually are accessible via functions like the
+JavaScript's \verb+typeof+. Using so-called untagged unions has already been an
+idiom in dynamically typed language for a long time [ref/examples], and being
+able to type and handle these unions an important aspect of the migration to a
+gradual type system.
 
-But this is neither totally natural, nor the only possible solution: 
-. More importantly, this is not a natural representation for schemas, which
-favors simple, untagged union. Indeed, if one can determine the type at
-run-time, and there is no typy stuffy, the tag sounds rather useless.
-
-In an untyped language, it is thus natural to directly stores different data in a
-variable: actually, the runtime system is the one in charge of tags, which it
-makes accessible via functions such as JavaScript's
-\begin{verbabtim}typeof\end{verbatim}. Using so-called untagged unions has already
-been an idiom in practice for a long time, and being able to type and represent
-these unions is an important aspect of a type system applying to these
-languages.
-
-This is the reason why other gradually typed languages, which were either
-originally untyped or aim at backward compatibility with an untyped base
-language, seem to favor supporting union types which are the typed counter-part
-of these untagged union [example of gradually typed language with untagged
-union].
+Most of gradually typed languages either existed originally as dynamically typed
+language or aim at backward compatibility with a dynamically typed base
+language. This is the reason they tend to favor supporting union types, the
+typed model of the practice of simply storing different kind of data in one
+variable [example of gradually typed language with untagged union].
 
 In the case of Nickel, there is no pre-existing untyped language that we have to
 support, so we are freer of our choice. But are we? As a configuration language,
-Nickel does not evolve in the abstract. It aims at maximum interoperability with
-JSON. It is designed to generate data for other software to consume, and strives
-to be able to encode as much schemas as possible inside the language itself. If
-these schemas use untagged union, then this is a strong incentive to support
-them at the type level, or at least, at the contract level.
+Nickel does not evolve in the abstract. It aims at best interoperability with
+JSON and alike. It is designed to generate data for other softwares to consume,
+and tries as much as possible to be able to encode data schemas at the language
+level. If these schemas use untagged union, then this is a strong incentive to
+support them at the type level, or at least, at the contract level.
 
 \subsection{Union types}
 
 \subsection{Tagged as untagged}
+\color{red}Goals of the section
 
-Note that together with the other existing features of the type system, one can
-encode tagged union in the following way:
+Untagged unions, modulo a slighty smarter typechecker, can encode usual type-safe
+tagged unions. They let the user free of the representation though, and encode
+more stuff, that's why they are appealing.\vspace{0.5cm}\color{black}
 
-\\
+Untagged union, together with the other existing features of the type system,
+are sufficient to implement the encoding mentioned in [cite previous section]:
+
 Encoding as: use singleton contract for tags, and then union.
 \begin{lstlisting}
 type sum = A of Num | B of Str
 \end{lstlisting}
 
 \begin{lstlisting}
-let Singleton = fun val l x => if val == x then x else blame l in
-let A = Singleton `A in
-let B = Singleton `B in
-{ tag : #A, val : Num} | { tag : #B, val : Str} 
+{ tag : <A>, val : Num} | { tag : <B>, val : Str}
 \end{lstlisting}
 
-This is just the encoding mentioned in the previous section. But it suffers a
-fundamental problem: the static type system is not able to deduce when the value
-is known to be a `Num` or a `Str`.
+As is, the static type system able to refine the type of the value though,
+making the following example rejected: 
 
-\\
-EXAMPLE if x.tag == `A then x.val + 1 else if val.tag == `B then strings.fromNum
-x.val
-\\
+\begin{lstlisting}
+switch x.tag {
+  A => x.val + 1,
+  B => then strings.fromNum x.val
+}
+\end{lstlisting}
 
-TypeScript is capable of emulating such union (see ??).
+But TypeScript is capable of typing this kind of things [ ], and one can imagine
+doing the same in Nickel. Equipped with tagged union and a typechecker smart
+enough, classic tagged unions can be simulated. But the representation is not
+imposed by the language. Untagged unions empower the programmer to represent and
+handle a wider variety of unions appearing in the wild. Thus, adding union types
+(and their natural and unavoidable [ref??] counterpart, intersections) to Nickel
+seems very appealing.
+
+\subsection{Union and intersections}
+\color{red}Goals of the section
+
+Explain why having unions probably unavoidably leads one to have intersection.\vspace{0.5cm}\color{black}
 
 \end{document}
