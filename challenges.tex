@@ -6,18 +6,20 @@ similar to how the halting problem is undecidable.
 
 Usually, when thinking about programming languages, there's an intuition
 that static checks (like typechecking) are more difficult and less flexible
-than dynamic checks (like testing). For instance, is very easy to check if,
+than dynamic checks (like testing). For instance, it is very easy to check if,
 in a given execution of a program, a variable holds an integer value; while it
 may become more challengin to check, if a variable will always hold an integer value,
 no matter the particular execution.
 
 As we intend to show on this paper, intersection (and union) types are not only
-statically hard to check, but also dinamycally; they are fundamentally hard.
+statically hard to check, but also dinamycally; \textit{they are fundamentally hard}.
 
 \subsection{Known challenges}
 
 There are two works proposing solutions to dynamically checking union and intersection
 types (through contracts). We briefly review the main challenges they introduce.
+
+TODO: add Castagna "Gradual types a new perspective"
 
 \subsubsection*{Union contracts may need multiple evaluations}
 
@@ -36,14 +38,39 @@ to find an error is lost,
 for instance, imagine wrapping $f = \lambda~x.~if~x~then~2~else~"Hello"$
 with the contract $(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$, it's
 clear that $f$ doesn't comply with either of those function contracts, however, there
-is not a single application that would raise, we need the combination of two calls,
-$f~True$ and $f~False$ to find the violation.
+is not a single call to $f$ that would raise, we need the combination of two calls,
+$f~True$ and $f~False$ to find the violation; and the information that these calls failed
+cannot be forgotten.
 
 \textit{Union contracts are not local}
 
-\subsubsection*{Intersection contracts must not chare information}
+\subsubsection*{Intersection contracts must not share information}
+
+On the oppositde side, intersection types seem to need the contrary property.
+Imagine having $let~f~=~...~in~(f~42,~f~"hello")$, where the $...$ are filled
+with some unimportant implementation. And then consider wrapping the function
+$f$ with a contract stating that it behaves both as a $Bool$ to $Bool$ function,
+and as a $Num$ to $Num$ function, that is $(Bool \rightarrow Bool) \cap (Num \rightarrow Num)$.
+Now, the first application ($f~42$) invalidates the first contract, but complies with the second
+one by applying a number; the second application ($f~"hello"$), behaves dually,
+it invalidates the second contract,
+while complying with the first one.
+
+Thus, even if the whole program invalidates both choices of $f$, it does
+so at two different points of the execution and it should not raise an exception.
+Therefore, the elimination of an intersection contract must be local to each elimination
+context, as pointed out by Keil and Thiemann [ref].
 
 \textit{Intersection contracts must be local}\\
+
+State that intersection and union, without HO, is easier. And that is being implemented on nickel.
+
+As one dives into the problems that may become present when dealing with union and intersection,
+a valid question is how these could be implemented in the simplest case. For instance, imagine having
+union and intersection only present for base types ($Bool$, $Num$, $String$, etc.), then checking
+if a particular value is a $Bool$ or a $Num$ is easy, just check both and fail only if both 
+checks fail. Checking if a value complies with an intersection of two contracts, $A$ and $B$ is even
+easier, just apply both contracts independently.
 
 \textit{The combination of union, intersection, and function contracts is not trivial}
 
@@ -56,6 +83,13 @@ $f~True$ and $f~False$ to find the violation.
 
 \subsubsection{Non deterministic semantics}
 
+Maybe mention call/cc
+
 \subsubsection{Non local (context opening) operation}
 
 \subsection{Problems in WMW}
+
+Mention the lack of flat contracts.
+
+Is the problem in the semantics worth mentioning? or is it attacking too much on the paper.
+
