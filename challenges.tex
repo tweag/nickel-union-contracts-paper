@@ -76,16 +76,57 @@ easier, just apply both contracts independently.
 
 \subsubsection*{Flat contracts are not idempotent}
 
+Following the simple case presented above, there's another kind of extension that could be
+applied to it besides higher order contracts, and that is contracts written by the
+programmer to check arbitrary properties; these are usually called flat contracts and
+involve a predicate over the contracted value that returns a boolean, indicating whether
+the contracts passed or it should raise an exception.
+
+For instance, one may build a contract that checks that the value in question is an
+even number, as something like $\lambda x.~x~mod~2~==~0$.
+
+TODO come up with an example not using HO contracts, we need to present Nickel's flat contracts,
+that are much more permissive
+
 \textit{The combination of intersection and flat contracts is not trivial}
 
 
 \subsection{Impracticallity of KT}
 
+The Keil and Thiemann paper presents a complete system that handles union and intersection
+contracts in the presence of higher order contracts, however, we consider it to be overly
+complicated for a reasonable implemented language.
+Following we state some of the reasons that we consider troublesome.
+
 \subsubsection{Non deterministic semantics}
 
-Maybe mention call/cc
+The semantics of the calculus are presented, primarly, on a non deterministic interpretation,
+which means that, even if their research work provides a deterministic semantics,
+the expected way to understand
+the behavior is not the same as the expected way to implement it, cluttering the development
+of a language that could provide this solution.
+
+Keil and Thiemann had also developed a contract system for JavaScript, called TreatJS, that
+implement their ideas, but it does so with a different technique that the one presented
+on the paper.
+
+On our opinion, having a formalization that lies far away from the implementation
+hearts any future expansion work on the system, and it is not a satisfactory solution
+for what we intended to pursuit.
+
+
+TODO Maybe mention call/cc
 
 \subsubsection{Non local (context opening) operation}
+
+\subsubsection*{Unions and intersections have to be opened up}
+
+GOAL: The relation between union and intersection have to be modified, transforming them
+in a union of intersections.
+
+In the words of WMW, "However, the monitoring semantics for contracts of intersection and union types given by Keil
+and Thiemann [2015a] are not uniform. (...) If uniformity helps composition, then
+special cases can hinder composition."
 
 \subsection{Problems in WMW}
 
