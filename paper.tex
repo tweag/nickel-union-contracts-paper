@@ -38,43 +38,41 @@ Introduce Nickel, explain the choice of gradual
 typing and main design orientations, such as practice-oriented, lightweight,
 etc.\vspace{0.5cm}\color{black}
 
-This paper is centered around the design of the Nickel
-language\cite{NickelRepo}. Nickel is a configuration programming language,
-meaning that a Nickel program eventually evaluates to a value that can be
+The explorative work presented in this paper is motived by the design of the
+Nickel language\cite{NickelRepo}. Nickel is a configuration programming
+language, meaning that a Nickel program evaluates to a value that can be
 directly serialized to JSON, YAML or alike.  Nickel aims at being lightweight,
 easy to write and easy to embed in a larger system, to serve either directly as
 a native language to specify configuration, or as a meta-language to generate
 configuration. The focus is first and foremost practical: Nickel originated as a
 rethink of the language of the Nix package manager, used to describe one of the
-biggest sets of software packages ever built\cite{repology}.
-Nickel targets build systems and cloud deployment tools (Kubernetes, Terraform or
-NixOps) as well.  While there's no hesitation in incorporating recent research
-when it serves a well-defined purpose, the design decisions are guided by the
-industrial use cases.
+biggest sets of software packages ever built\cite{repology}.  Nickel targets
+build systems and cloud deployment tools (Kubernetes, Terraform or NixOps) as
+well. While there's no hesitation in incorporating recent research when it
+serves a well-defined purpose, the design decisions are guided by the industrial
+use cases.
 
 Our aim is that writing simple Nickel should not be more complex than writing
 JSON or YAML. Unlike JSON, though, Nickel anticipates large configurations by
 being both programmable and typed. In the configuration setting, there is a
-singular dilemma with respect to typing: if your program is only run once on
-fixed inputs and terminate, as are such programmable configurations, any type
-error will be reported at run-time anyway. Why bother with the complexity of a
-static type system? On the other hand, more and more software systems offload
-complexity to configurations, such as cloud infrastructure, build system, or
-operating systems, leading the corresponding configurations to become
-increasingly complex, to the point where static types are beneficial. For
-reusable code — that is, library functions — static types brings all the usual,
-widely acknowledged benefits.
+singular dilemma with respect to typing: since your program is run on fixed
+inputs and is expected to terminate, any relevant type error will be reported
+anyway.  Why bother with the complexity of a static type system? On the other
+hand, more and more software systems offload complexity to configurations, such
+as cloud infrastructure, build system, or operating systems, leading the
+corresponding configurations to become increasingly complex, to the point where
+static types are beneficial. For reusable code — that is, library functions —
+static types brings all the usual, widely acknowledged benefits.
 
-This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}, an
-approach capable of reuniting static typing and dynamic typing. Unlike
-gradually-typed language like TypeScript, we do not seek to build a complex type
-system that tries hard to type most of the idioms naturally arising in
-dynamically typed code.  Rather, we choose to provide a reasonably expressive
-type system with good inference properties, that should make writing typed
-generic function that operate on data relatively easy, but may require resorting
-to untyped code for more exotic expressions.  However, this is not a surrender,
-as Nickel provides a complementary mechanism for more complex data validation,
-contracts.
+This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}
+that mixes both static typing and dynamic typing. Unlike gradually-typed
+language like TypeScript, we do not seek to build a complex type system that
+tries hard to make most of the idioms naturally arising in dynamically typed
+code typable. Rather, we choose to provide a reasonably expressive type system
+with good inference properties, that make usual generic function operating on
+data easily typable, but may require resorting to untyped code for more exotic
+expressions.  However, this is not a complete surrender, as Nickel provides a
+complementary mechanism for more advanced data validation: contracts.
 
 \subsection{Contracts}
 \color{red}Goals of the section
@@ -84,16 +82,19 @@ with unions.\vspace{0.5cm}
 
 Enforcing pre- and post-conditions at runtime is a widely established practice.
 In their foundational paper\cite{FindlerFelleisenHOContracts}, Findler and
-Fellleisen introduces a principled approach to run-time predicate checking that
-nicely supports higher-order functions. It turns out these contracts are closely
-related to the type casts introduced by gradual typing. In
-\cite{WellTypedBlamed}, the authors precisely propose a system mixing gradual
-typing and contracts \textit{à la Findler \& Felleisen}. Nickel adopts a similar
-type system, with both statically typed terms, dynamically typed terms, and
-first-class contracts. In this setting, each construct of the type system -
-arrow types, record types, polymorphic types - must have a contract counterpart,
-that is able to check at run-time the membership of a value to the corresponding
-type.
+Fellleisen introduces a principled approach to run-time assertion checking that
+nicely support higher-order functions and introduce the notion of blame, which
+is fundamental for good error reporting. It turns out these contracts are
+closely related to the type casts introduced by gradual typing, modulo blame:
+both \cite{FindlerMultiLang} and \cite{FelleisenInterLang} see the value of
+contracts as a safe interface between typed and untyped code. In
+\cite{WellTypedBlamed}, the authors precisely a system integrating gradual
+typing with contracts \textit{à la Findler \& Felleisen}. Nickel adopts a
+similar type system, with both statically typed terms, dynamically typed terms,
+and first-class contracts. In this setting, each type constructor of the static
+type system - arrows, records, foralls - must have a contract counterpart that
+is able to check at run-time that a value is indeed a member of the
+corresponding type.
 
 \color{black}
 
