@@ -1,7 +1,7 @@
 Type systems featuring intersection types are hard in a fundamental way,
 from their discovery, they've been studied as a way to characterize
 lambda-calculus terms normalizability; which means that typechecking a
-term on a system with intersection types is undecidable, in a way
+term on a system with intersection types is undecidable,
 similar to how the halting problem is undecidable.
 
 Usually, when thinking about programming languages, there's an intuition
@@ -14,6 +14,9 @@ no matter the particular execution.
 As we intend to show on this paper, intersection (and union) types are not only
 statically hard to check, but they are also dinamycally hard;
 \textit{they are fundamentally hard}.
+In this section, we present intuitively the main challenges that arise
+when attempting to develop a runtime check system for intersection and
+union types.
 
 \subsection{Known challenges}
 
@@ -43,18 +46,19 @@ is not a single call to $f$ that would raise, we need the combination of two cal
 $f~True$ and $f~False$ to find the violation; and the information that these calls failed
 cannot be forgotten.
 
-\textit{Union contracts are not local}
+\textsc{Union contracts are not local}
 
 % TODO expand on this, or remove it
 
-This seemingly simple consequence breaks referential transparency from a functional language, that is
-$let g = f@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) in (g True, g False)$
+This seemingly simple consequence breaks referential transparency on
+functional languages, that is~
+$let~g~=~f@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(g~True,~g~False)$
 won't behave the same as 
 $(f@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, f@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
 
 \subsubsection*{Intersection contracts must not share information}
 
-On the oppositde side, intersection types seem to need the contrary property.
+On the oppositde side, intersection types need the contrary property.
 Imagine having $let~f~=~...~in~(f~42,~f~"hello")$, where the $...$ are filled
 with some unimportant implementation. And then consider wrapping the function
 $f$ with a contract stating that it behaves both as a $Bool$ to $Bool$ function,
@@ -69,18 +73,19 @@ so at two different points of the execution and it should not raise an exception
 Therefore, the elimination of an intersection contract must be local to each elimination
 context, as pointed out by Keil and Thiemann [ref].
 
-\textit{Intersection contracts must be local}\\
+\textsc{Intersection contracts must be local}\\
 
 % GOAL: State that intersection and union, without HO, is easier. And that is being implemented on nickel.
 
 As one dives into the problems that may become present when dealing with union and intersection,
-a valid question is how these could be implemented in the simplest case. For instance, imagine having
+a valid question is how these could be implemented in the simplest of cases.
+For instance, imagine having
 union and intersection only present for base types ($Bool$, $Num$, $String$, etc.), then checking
 if a particular value is a $Bool$ or a $Num$ is easy, just check both and fail only if both 
 checks fail. Checking if a value complies with an intersection of two contracts, $A$ and $B$ is even
 easier, just apply both contracts independently.
 
-\textit{The combination of union, intersection, and function contracts is not trivial}
+\textsc{It is the combination of union, intersection, and function contracts that is not trivial}
 
 \subsubsection*{Flat contracts are not idempotent}
 
@@ -96,15 +101,38 @@ even number, as something like $\lambda x.~x~mod~2~==~0$.
 % TODO come up with an example not using HO contracts, we need to present Nickel's flat contracts,
 % that are much more permissive
 
-\textit{The combination of intersection and flat contracts is not trivial}
+\textsc{The addition of flat contracts involves evaluation context dependency.}
+
+\subsubsection*{Inflexibility of union and intersection contracts}
+
+Solutions for union and intersection checks with contracts do exist (KT, WMW) however,
+they do not provide the felxibility that one may be used to when using dynamic checks.
+Consider a Python programmer, she would not care to see something like this
+\texttt{assert(isinstance(3 if True else "hello", int)))}, while a Haskell programmer
+might perform a harakiri upon reading it.
+
+Without falling into the eternal discussion of <insert static vs dynamic>,
+regular users of dynamically checked languages expect this flexibility.
+Sadly, the current work on union and intersection does not provide it.
+
+For instance, consider the following code
+\texttt{(\\f.(\\xy.x) (f 1) (f true))((\\xy.x)@(N -> N -> N) /\\ (N -> B -> N) 1)}.
+If we use any of the KT or WMW frameworks, both our Haskell programmer and our
+Python programmer will change their career path towards photography, or something
+similar.
+Our Haskell programmer, will do so because this code would compile;
+while the Python programmer would do so because this code fails on execution.
+
+TODO: keep explaining and show the dual example
+
 
 
 \subsection{Impracticallity of KT}
 
 The Keil and Thiemann paper presents a complete system that handles union and intersection
 contracts in the presence of higher order contracts, however, we consider it to be overly
-complicated for a reasonable implemented language.
-Following we state two of the reasons that we consider troublesome.
+complicated for a reasonable to implement language.
+In what follows, we state some of the reasons that we consider troublesome.
 
 \subsubsection{Non deterministic semantics}
 
@@ -150,9 +178,21 @@ is the starting point from which WMW deliver their work, and we share their opin
 and Thiemann are not uniform. (...) If uniformity helps composition, then
 special cases can hinder composition.", [Ref]
 
-\subsection{Problems in WMW}
+\subsection{Shortcomings in WMW}
 
-Mention the lack of flat contracts.
+The second paper worth mentioning is the one by Williams, Morrison and Wadler [ref].
+This work, attempts to provide a simpler contract system with
+union and intersection types.
+However, we believe this work has some issues and shortcomings, which make it
+not that useful in practice; we briefly outline them below.
 
+\subsubsection*{Lack of flat contracts}
+
+In order to save themselves from dropping some contracts when checking a union
+or intersection branch, WMW decided to eliminate completely flat contracts from
+their system.
+We believe this hurts badly a dynamically checked framework, since it goes against
+the common practice, in dynamic languages, of checking for non trivial properties.
+
+\subsubsection*{Problem in semantics (monitoring)}
 Is the problem in the semantics worth mentioning? or is it attacking too much on the paper.
-
