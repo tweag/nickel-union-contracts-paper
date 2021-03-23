@@ -1,0 +1,112 @@
+@online{repology,
+    title     = "Repology package tracker",
+    url       = "https://repology.org/repositories/statistics/total"
+}
+
+@online{TypeScriptUnions,
+    title    = "Union Types in TypeScript, TypeScript handbook",
+    url      = "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+}
+
+@online{NickelRepo,
+    title    = "The Nickel repository on GitHub",
+    url      = "https://github.com/tweag/nickel"
+}
+@INPROCEEDINGS{Siek06gradualtyping,
+    author = {Jeremy G. Siek and Walid Taha},
+    title = {Gradual Typing for Functional Languages},
+    booktitle = {IN SCHEME AND FUNCTIONAL PROGRAMMING WORKSHOP},
+    year = {2006},
+    pages = {81--92},
+    publisher = {}
+}
+
+@article{FindlerFelleisenHOContracts,
+    author = {Findler, Robert Bruce and Felleisen, Matthias},
+    title = {Contracts for Higher-Order Functions},
+    year = {2002},
+    issue_date = {September 2002},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {37},
+    number = {9},
+    issn = {0362-1340},
+    url = {https://doi.org/10.1145/583852.581484},
+    doi = {10.1145/583852.581484},
+    abstract = {Assertions play an important role in the construction of robust software. Their use in programming languages dates back to the 1970s. Eiffel, an object-oriented programming language, wholeheartedly adopted assertions and developed the "Design by Contract" philosophy. Indeed, the entire object-oriented community recognizes the value of assertion-based contracts on methods.In contrast, languages with higher-order functions do not support assertion-based contracts. Because predicates on functions are, in general, undecidable, specifying such predicates appears to be meaningless. Instead, the functional languages community developed type systems that statically approximate interesting predicates.In this paper, we show how to support higher-order function contracts in a theoretically well-founded and practically viable manner. Specifically, we introduce λcon, a typed lambda calculus with assertions for higher-order functions. The calculus models the assertion monitoring system that we employ in DrScheme. We establish basic properties of the model (type soundness, etc.) and illustrate the usefulness of contract checking with examples from DrScheme's code base.We believe that the development of an assertion system for higher-order functions serves two purposes. On one hand, the system has strong practical potential because existing type systems simply cannot express many assertions that programmers would like to state. On the other hand, an inspection of a large base of invariants may provide inspiration for the direction of practical future type system research.},
+    journal = {SIGPLAN Not.},
+    month = sep,
+    pages = {48–59},
+    numpages = {12},
+    keywords = {contracts, solfware reliability, behavioral specifications, higher-order functions, predicate typing}
+}
+
+@InProceedings{WellTypedBlamed,
+    author="Wadler, Philip
+    and Findler, Robert Bruce",
+    editor="Castagna, Giuseppe",
+    title="Well-Typed Programs Can't Be Blamed",
+    booktitle="Programming Languages and Systems",
+    year="2009",
+    publisher="Springer Berlin Heidelberg",
+    address="Berlin, Heidelberg",
+    pages="1--16",
+    abstract="We introduce the blame calculus, which adds the notion of blame from Findler and Felleisen's contracts to a system similar to Siek and Taha's gradual types and Flanagan's hybrid types. We characterise where positive and negative blame can arise by decomposing the usual notion of subtype into positive and negative subtypes, and show that these recombine to yield naive subtypes. Naive subtypes previously appeared in type systems that are unsound, but we believe this is the first time naive subtypes play a role in establishing type soundness.",
+    isbn="978-3-642-00590-9"
+}
+
+@inproceedings{BlameForAll,
+    author = {Ahmed, Amal and Findler, Robert Bruce and Siek, Jeremy G. and Wadler, Philip},
+    title = {Blame for All},
+    year = {2011},
+    isbn = {9781450304900},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/1926385.1926409},
+    doi = {10.1145/1926385.1926409},
+    abstract = {Several programming languages are beginning to integrate static and dynamic typing, including Racket (formerly PLT Scheme), Perl 6, and C# 4.0 and the research languages Sage (Gronski, Knowles, Tomb, Freund, and Flanagan, 2006) and Thorn (Wrigstad, Eugster, Field, Nystrom, and Vitek, 2009). However, an important open question remains, which is how to add parametric polymorphism to languages that combine static and dynamic typing. We present a system that permits a value of dynamic type to be cast to a polymorphic type and vice versa, with relational parametricity enforced by a kind of dynamic sealing along the lines proposed by Matthews and Ahmed (2008) and Neis, Dreyer, and Rossberg (2009). Our system includes a notion of blame, which allows us to show that when casting between a more-precise type and a less-precise type, any cast failures are due to the less-precisely-typed portion of the program. We also show that a cast from a subtype to its supertype cannot fail.},
+    booktitle = {Proceedings of the 38th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+    pages = {201–214},
+    numpages = {14},
+    keywords = {blame tracking, casts, lambda-calculus, coercions},
+    location = {Austin, Texas, USA},
+    series = {POPL '11}
+}
+
+@inproceedings{KeilThiemannUnionIntersection,
+    author = {Keil, Matthias and Thiemann, Peter},
+    title = {Blame Assignment for Higher-Order Contracts with Intersection and Union},
+    year = {2015},
+    isbn = {9781450336697},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/2784731.2784737},
+    doi = {10.1145/2784731.2784737},
+    abstract = { We present an untyped calculus of blame assignment for a higher-order contract system with two new operators: intersection and union. The specification of these operators is based on the corresponding type theoretic constructions. This connection makes intersection and union contracts their inevitable dynamic counterparts with a range of desirable properties and makes them suitable for subsequent integration in a gradual type system. A denotational specification provides the semantics of a contract in terms of two sets: a set of terms satisfying the contract and a set of contexts respecting the contract. This kind of specification for contracts is novel and interesting in its own right. A nondeterministic operational semantics serves as the specification for contract monitoring and for proving its correctness. It is complemented by a deterministic semantics that is closer to an implementation and that is connected to the nondeterministic semantics by simulation. The calculus is the formal basis of TJS, a language embedded, higher-order contract system implemented for JavaScript. },
+    booktitle = {Proceedings of the 20th ACM SIGPLAN International Conference on Functional Programming},
+    pages = {375–386},
+    numpages = {12},
+    keywords = {Union, Intersection, Higher-Order Contracts, Blame},
+    location = {Vancouver, BC, Canada},
+    series = {ICFP 2015}
+}
+
+
+@article{RootCauseOfBlame,
+    author = {Williams, Jack and Morris, J. Garrett and Wadler, Philip},
+    title = {The Root Cause of Blame: Contracts for Intersection and Union Types},
+    year = {2018},
+    issue_date = {November 2018},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {2},
+    number = {OOPSLA},
+    url = {https://doi.org/10.1145/3276504},
+    doi = {10.1145/3276504},
+    abstract = {Gradual typing has emerged as the tonic for programmers with a thirst for a blend of static and dynamic typing. Contracts provide a lightweight form of gradual typing as they can be implemented as a library, rather than requiring a gradual type system.  Intersection and union types are well suited to static and dynamic languages: intersection encodes overloaded functions; union encodes uncertain data arising from branching code. We extend the untyped lambda calculus with contracts for monitoring higher-order intersection and union types, for the first time giving a uniform treatment to both. Each operator requires a single reduction rule that does not depend on the constituent types or the context of the operator.  We present a new method for defining contract satisfaction based on blame behaviour. A value positively satisfies a type if applying a contract of that type can never elicit positive blame. A continuation negatively satisfies a type if applying a contract of that type can never elicit negative blame. We supplement our definition of satisfaction with a series of monitoring properties that satisfying values and continuations should have.},
+    journal = {Proc. ACM Program. Lang.},
+    month = oct,
+    articleno = {134},
+    numpages = {29},
+    keywords = {intersection, gradual typing, contracts, blame, union}
+}

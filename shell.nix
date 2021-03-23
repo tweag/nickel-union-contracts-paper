@@ -19,6 +19,7 @@ stdenv.mkDerivation {
                        ucs
                        wasy cm-super unicode-math lm-math capt-of
                        mathpartir
+                       url
                        appendix;
                   })
                 ];
