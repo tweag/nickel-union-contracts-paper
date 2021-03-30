@@ -21,7 +21,9 @@ union types.
 \subsection{Known challenges}
 
 There are two works proposing solutions to dynamically checking union and intersection
-types (through contracts). We briefly review the main challenges they consider.
+types (through contracts). 
+We briefly review the main challenges they consider, and some extra ones.
+As well as outline the reasons that make these works non satisfactory.
 
 TODO: add Castagna "Gradual types a new perspective"
 
@@ -95,8 +97,20 @@ programmer to check arbitrary properties; these are usually called flat contract
 involve a predicate over the contracted value that returns a boolean, indicating whether
 the contracts passed or it should raise an exception.
 
-For instance, one may build a contract that checks that the value in question is an
-even number, as something like $\lambda x.~x~mod~2~==~0$.
+For instance, one may build a contract that checks that the value in question is a
+function and that, if applied to 1, it returns 0, as something like
+$\lambda f.~f~1~==~0$; let us call it $C$.
+Then, wrapping a given value to check that it complies with this contract, but that at
+the same time is a valid $String \rightarrow String$ function may look something like this
+$let~f~=~<C \cap (String \rightarrow String)> ... $, a valid implementation for this function
+may be $\lambda x.~x$.
+However, depending on how this intersection is resolved, we may face the problem of applying first
+the $String$ to $String$ contract, and then $C$, in which case we would try to use a function,
+wrapped with a $String \rightarrow String$ contract, with 1, raising negative blame.
+
+To solve this problem, each execution of a contract has to be aware of its execution context,
+or of its precedence.
+
 
 % TODO come up with an example not using HO contracts, we need to present Nickel's flat contracts,
 % that are much more permissive
@@ -111,7 +125,7 @@ Consider a Python programmer, she would not care to see something like this
 \texttt{assert(isinstance(3 if True else "hello", int)))}, while a Haskell programmer
 might perform a harakiri upon reading it.
 
-Without falling into the eternal discussion of <insert static vs dynamic>,
+Without falling into the eternal discussion of static vs dynamic type checking,
 regular users of dynamically checked languages expect this flexibility.
 Sadly, the current work on union and intersection does not provide it.
 
@@ -123,9 +137,15 @@ similar.
 Our Haskell programmer, will do so because this code would compile;
 while the Python programmer would do so because this code fails on execution.
 
-TODO: keep explaining and show the dual example
+The reason this happens, is that even if you would expect
+\texttt{(N -> N -> N) /\\ (N -> B -> N)}
+and \texttt{N -> (N -> N) /\\ (B -> N)} to behave equally, the point at which
+they're open matte...
 
 
+TODO: better phrasing and show the dual example
+
+\textsc{Are union and intersection contracts really what we want?}
 
 \subsection{Impracticallity of KT}
 
@@ -153,26 +173,28 @@ for what we intended to pursuit.
 
 TODO Maybe mention call/cc
 
-\subsubsection{Non local (context opening) operation}
+\subsubsection{Context opening}
 
-% TODO rewrite
 Keil and Thiemann noticed that flat contracts cannot be arbitrarily used, since
 violating a flat contract inside another contract would, unexpectedly, raise blame.
 Their solution, is to check the context at which each contract is opened, dropping
 it if the context indicates it is being opened inside the evaluation of another
 contract.
-This check, implies traversing the context of execution. We believe that
-having execution dependent on the context of evaluation breaks locality of
+
+This check, implies traversing the context of execution.
+We consider that having execution dependent on the context
+of evaluation breaks locality of
 the language execution in undesired ways.
 
-\subsubsection*{Unions and intersections have to be opened up}
+\subsubsection{Contract normalization}
 
 GOAL: The relation between union and intersection have to be modified, transforming them
 in a union of intersections.
 
-In the KT paper, before the validation of contracts can begin, the types have to bw
-transformed, into unions of intersections of (other) contracts. This problem,
-is the starting point from which WMW deliver their work, and we share their opinion:
+In the Keil and Thiemann paper, before the validation of contracts can begin, the
+contracts have to be normalized into unions of intersections of (other) contracts.
+This problem  is the starting point from which
+WMW deliver their work, and we share their opinion:
 
 "However, the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (...) If uniformity helps composition, then
