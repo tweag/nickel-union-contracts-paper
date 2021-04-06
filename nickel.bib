@@ -64,7 +64,22 @@
     address = {New York, NY, USA},
     url = {https://doi.org/10.1145/1926385.1926409},
     doi = {10.1145/1926385.1926409},
-    abstract = {Several programming languages are beginning to integrate static and dynamic typing, including Racket (formerly PLT Scheme), Perl 6, and C# 4.0 and the research languages Sage (Gronski, Knowles, Tomb, Freund, and Flanagan, 2006) and Thorn (Wrigstad, Eugster, Field, Nystrom, and Vitek, 2009). However, an important open question remains, which is how to add parametric polymorphism to languages that combine static and dynamic typing. We present a system that permits a value of dynamic type to be cast to a polymorphic type and vice versa, with relational parametricity enforced by a kind of dynamic sealing along the lines proposed by Matthews and Ahmed (2008) and Neis, Dreyer, and Rossberg (2009). Our system includes a notion of blame, which allows us to show that when casting between a more-precise type and a less-precise type, any cast failures are due to the less-precisely-typed portion of the program. We also show that a cast from a subtype to its supertype cannot fail.},
+    abstract = {Several programming languages are beginning to integrate static
+                and dynamic typing, including Racket (formerly PLT Scheme), Perl
+                6, and C\# 4.0 and the research languages Sage (Gronski,
+                Knowles, Tomb, Freund, and Flanagan, 2006) and Thorn (Wrigstad,
+                Eugster, Field, Nystrom, and Vitek, 2009). However, an important
+                open question remains, which is how to add parametric
+                polymorphism to languages that combine static and dynamic
+                typing. We present a system that permits a value of dynamic type
+                to be cast to a polymorphic type and vice versa, with relational
+                parametricity enforced by a kind of dynamic sealing along the
+                lines proposed by Matthews and Ahmed (2008) and Neis, Dreyer,
+                and Rossberg (2009). Our system includes a notion of blame,
+                which allows us to show that when casting between a more-precise
+                type and a less-precise type, any cast failures are due to the
+                less-precisely-typed portion of the program. We also show that a
+                cast from a subtype to its supertype cannot fail.},
     booktitle = {Proceedings of the 38th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
     pages = {201–214},
     numpages = {14},
@@ -120,7 +135,27 @@
     address = {New York, NY, USA},
     url = {https://doi.org/10.1145/1190216.1190220},
     doi = {10.1145/1190216.1190220},
-    abstract = {Inter-language interoperability is big business, as the success of Microsoft's .NET and COM and Sun's JVM show. Programming language designers are designing programming languages that reflect that fact --- SML#, Mondrian, and Scala, to name just a few examples, all treat interoperability with other languages as a central design feature. Still, current multi-language research tends not to focus on the semantics of interoperation features, but only on how to implement them efficiently. In this paper, we take first steps toward higher-level models of interoperating systems. Our technique abstracts away the low-level details of interoperability like garbage collection and representation coherence, and lets us focus on semantic properties like type-safety and observable equivalence.Beyond giving simple expressive models that are natural compositions of single-language models, our studies have uncovered several interesting facts about interoperability. For example, higher-order contracts naturally emerge as the glue to ensure that interoperating languages respect each other's type systems. While we present our results in an abstract setting, they shed light on real multi-language systems and tools such as the JNI, SWIG, and Haskell's stable pointers.},
+    abstract = {Inter-language interoperability is big business, as the success
+                of Microsoft's .NET and COM and Sun's JVM show. Programming
+                language designers are designing programming languages that
+                reflect that fact --- SML\#, Mondrian, and Scala, to name just a
+                few examples, all treat interoperability with other languages as
+                a central design feature. Still, current multi-language research
+                tends not to focus on the semantics of interoperation features,
+                but only on how to implement them efficiently. In this paper, we
+                take first steps toward higher-level models of interoperating
+                systems. Our technique abstracts away the low-level details of
+                interoperability like garbage collection and representation
+                coherence, and lets us focus on semantic properties like
+                type-safety and observable equivalence.Beyond giving simple
+                expressive models that are natural compositions of
+                single-language models, our studies have uncovered several
+                interesting facts about interoperability. For example,
+                higher-order contracts naturally emerge as the glue to ensure
+                that interoperating languages respect each other's type systems.
+                While we present our results in an abstract setting, they shed
+                light on real multi-language systems and tools such as the JNI,
+                SWIG, and Haskell's stable pointers.},
     booktitle = {Proceedings of the 34th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
     pages = {3–10},
     numpages = {8},
@@ -146,3 +181,110 @@ keywords = {module systems, contract, interlanguage migration, λ-calculus},
 location = {Portland, Oregon, USA},
 series = {OOPSLA '06}
 }     
+
+@inproceedings{FlowTypingRacket1,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {The Design and Implementation of Typed Scheme},
+year = {2008},
+isbn = {9781595936899},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1328438.1328486},
+doi = {10.1145/1328438.1328486},
+abstract = {When scripts in untyped languages grow into large programs, maintaining them becomes difficult. A lack of types in typical scripting languages means that programmers must (re)discover critical pieces of design information every time they wish to change a program. This analysis step both slows down the maintenance process and may even introduce mistakes due to the violation of undiscovered invariants.This paper presents Typed Scheme, an explicitly typed extension of an untyped scripting language. Its type system is based on the novel notion of occurrence typing, which we formalize and mechanically prove sound. The implementation of Typed Scheme additionally borrows elements from a range of approaches, including recursive types, true unions and subtyping, plus polymorphism combined with a modicum of local inference. Initial experiments with the implementation suggest that Typed Scheme naturally accommodates the programming style of the underlying scripting language, at least for the first few thousand lines of ported code.},
+booktitle = {Proceedings of the 35th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {395–406},
+numpages = {12},
+keywords = {type systems, scheme},
+location = {San Francisco, California, USA},
+series = {POPL '08}
+}
+
+  
+
+@article{10.1145/1328897.1328486,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {The Design and Implementation of Typed Scheme},
+year = {2008},
+issue_date = {January 2008},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {43},
+number = {1},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1328897.1328486},
+doi = {10.1145/1328897.1328486},
+abstract = {When scripts in untyped languages grow into large programs, maintaining them becomes difficult. A lack of types in typical scripting languages means that programmers must (re)discover critical pieces of design information every time they wish to change a program. This analysis step both slows down the maintenance process and may even introduce mistakes due to the violation of undiscovered invariants.This paper presents Typed Scheme, an explicitly typed extension of an untyped scripting language. Its type system is based on the novel notion of occurrence typing, which we formalize and mechanically prove sound. The implementation of Typed Scheme additionally borrows elements from a range of approaches, including recursive types, true unions and subtyping, plus polymorphism combined with a modicum of local inference. Initial experiments with the implementation suggest that Typed Scheme naturally accommodates the programming style of the underlying scripting language, at least for the first few thousand lines of ported code.},
+journal = {SIGPLAN Not.},
+month = jan,
+pages = {395–406},
+numpages = {12},
+keywords = {scheme, type systems}
+}
+
+@article{FlowTypingRacket2,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Logical Types for Untyped Languages},
+year = {2010},
+issue_date = {September 2010},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {45},
+number = {9},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1932681.1863561},
+doi = {10.1145/1932681.1863561},
+abstract = {Programmers reason about their programs using a wide variety of formal and informal methods. Programmers in untyped languages such as Scheme or Erlang are able to use any such method to reason about the type behavior of their programs. Our type system for Scheme accommodates common reasoning methods by assigning variable occurrences a subtype of their declared type based on the predicates prior to the occurrence, a discipline dubbed occurrence typing. It thus enables programmers to enrich existing Scheme code with types, while requiring few changes to the code itself.Three years of practical experience has revealed serious shortcomings of our type system. In particular, it relied on a system of ad-hoc rules to relate combinations of predicates, it could not reason about subcomponents of data structures, and it could not follow sophisticated reasoning about the relationship among predicate tests, all of which are used in existing code.In this paper, we reformulate occurrence typing to eliminate these shortcomings. The new formulation derives propositional logic formulas that hold when an expression evaluates to true or false, respectively. A simple proof system is then used to determine types of variable occurrences from these propositions. Our implementation of this revised occurrence type system thus copes with many more untyped programming idioms than the original system.},
+journal = {SIGPLAN Not.},
+month = sep,
+pages = {117–128},
+numpages = {12},
+keywords = {logic, untyped languages, type systems}
+}
+
+@TECHREPORT{FlowTypingWhiley,
+  AUTHOR =        {Pearce, David J. and Noble, James},
+  TITLE =         {Whiley: a Language Combining Flow-Typing withUpdateable Value Semantics},
+  NUMBER =        {ECSTR12-09},
+  INSTITUTION =   {Victoria University of Wellington, New Zealand},
+  ABSTRACT =      {Whiley is a statically typed language with the look-and-feel
+                   of a dynamically typed language. Forexample, as with many
+                   dynamically typed languages, assignments to variables, fields
+                   and list elementsalways succeed. Key to this is a careful
+                   combination offlow typingandupdateable value semantics.This
+                   enables a programming model that lies between the imperative
+                   (where mutable data is passed byreference and updated in
+                   place) and the functional (where immutable data is passed by
+                   value or by name).In Whiley, mutable data that may be updated
+                   in place is passed and returned by value, with the
+                   compilerfree to eliminate unnecessary copies. Combined with
+                   flow typing (where variables may have differenttypes at
+                   different program points), this yields an unusually flexible
+                   type system.In this paper, we explore the advantages of a
+                   programming model built around flow typing and update-able
+                   value semantics. Building on our previous work, we develop an
+                   extended flow typing calculus cap-turing the salient features
+                   of Whiley. Soundness and termination is proved. Finally, to
+                   address concernsthat Whiley’s programming model cannot be
+                   made efficient, we report on experiments demonstrating
+                   thatsimple optimisations eliminate many unnecessary copies,
+                   and that the vast majority of update operationscan be
+                   performed in place},
+  MONTH =         {April},
+  YEAR  =         {2012},
+  AUTHOR1_EMAIL = {djp@ecs.vuw.ac.nz},
+  AUTHOR2_EMAIL = {kjx@ecs.vuw.ac.nz},
+  PAGES =         {31},
+  URL   =         {https://homepages.ecs.vuw.ac.nz/~djp/files/ECSTR12-09.pdf},
+  CONTACT =       {djp@cse.msu.edu}
+}
+
+@online{FlowTypingGroovy,
+    title     = "What's new in Groovy 2.0",
+    url       = "https://www.infoq.com/articles/new-groovy-20/"
+}
+
+@online{FlowTypingTypeScript,
+    title     = "TypeScript Handbook",
+    url       = "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+}
