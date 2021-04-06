@@ -38,42 +38,42 @@ Introduce Nickel, explain the choice of gradual
 typing and main design orientations, such as practice-oriented, lightweight,
 etc.\vspace{0.5cm}\color{black}
 
-The explorative work presented in this paper is motived by the design of the
-Nickel language\cite{NickelRepo}. Nickel is a configuration programming
+The explorative work presented in this paper is motived by the development of
+the Nickel language\cite{NickelRepo}. Nickel is a configuration programming
 language, meaning that a Nickel program evaluates to a value that must be
-straightforwardly serializable to JSON, YAML or alike.  Nickel aims at being
+straightforwardly serializable to JSON, YAML or alike. Nickel aims at being
 lightweight, easy to write and easy to embed in a larger system, to serve either
 directly as a native language to specify configuration, or as a meta-language to
-generate configuration. The focus is first and foremost practical: Nickel
-originated as a rethink of the language of the Nix package manager, used to
-describe one of the biggest sets of software packages ever built\cite{repology}.
-Nickel targets build systems and cloud deployment tools (Kubernetes, Terraform
-or NixOps) as well. While there's no hesitation in incorporating recent research
-when it serves a well-defined purpose, the design decisions are guided by the
-industrial use cases.
+generate them. The focus is first and foremost practical: Nickel originated as a
+rethink of the language of the Nix package manager, used to describe one of the
+biggest sets of software packages\cite{repology}.  Nickel targets build systems
+and cloud deployment tools (Kubernetes, Terraform or NixOps) as well. While
+there's no hesitation in incorporating recent research when justified, the
+design decisions are guided by the industrial use cases.
 
 \subsection{Typing}
 
-Our aim is that writing simple Nickel should not be more complex than writing
-JSON or YAML. Unlike JSON, though, Nickel anticipates large configurations by
-being both programmable and typed. In the configuration setting, there is a
-singular dilemma with respect to typing: since a program is run on fixed inputs
-and is expected to terminate, any relevant type error should show up anyway.
-Why bother with the complexity of a static type system? On the other hand, more
-and more software systems offload complexity to configurations, such as the
-infrastructure as code paradigm used in cloud deployment. When complexity grows,
-static types becomes attractive again. For reusable code — that is, library
-functions — static types brings all the usual widely acknowledged benefits.
+Our aim is that writing simple Nickel feels as easy as writing JSON or YAML.
+Unlike JSON, though, Nickel anticipates large configurations by being both
+programmable and typed. In the configuration setting, there is a singular
+dilemma with respect to typing: since a program is run on fixed inputs and is
+expected to terminate, any relevant type error will show up at evaluation.  Why
+bother with the complexity of a static type system? On the other hand, more and
+more software systems offload complexity to configurations, such as the
+infrastructure as code paradigm prevailing today in cloud deployment. When the
+complexity of a codebase grows, static types becomes attractive again.  For
+library code — that is, library functions —, static types are specifically
+adapated and bring all the usual benefits.
 
 This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}
-that mixes both static typing and dynamic typing. Unlike gradually-typed
-languages like TypeScript, we do not seek to build a complex type system that
-tries hard to accept most of the idioms naturally arising in dynamically typed
-code. Rather, we choose to provide a reasonably expressive type system with good
-inference properties, that make typing generic function operating on data easy ,
-but may require to resort to untyped code for more exotic expressions.  In any
-case, this is not a surrender, as Nickel provides a complementary mechanism for
-more advanced data validation: contracts.
+which mixes both static and dynamic typing. Unlike gradually-typed languages
+like TypeScript, we do not seek to build a complex type system that tries hard
+to accept most of the idioms naturally arising in dynamically typed code.
+Rather, we choose to provide a reasonably expressive type system with good
+inference properties, that make typing generic functions operating on data easy,
+but may require using untyped code for more exotic expressions.  In any case,
+this is not a surrender, as Nickel provides a complementary mechanism for more
+advanced data validation: contracts.
 
 \subsection{Contracts}
 \color{red}Goals of the section
@@ -92,7 +92,7 @@ is crucial to good error reporting. It turns out these contracts are closely
 related to the type casts introduced by gradual typing, modulo blame: both
 \cite{FindlerMultiLang} and \cite{FelleisenInterLang} see the value of contracts
 as a safe interface between typed and untyped code. In \cite{WellTypedBlamed},
-the authors precisely a system integrating gradual typing with contracts
+the authors precisely introduce a system integrating gradual typing with contracts
 \textit{à la Findler \& Felleisen}. Nickel adopts a similar type system, with
 both statically typed terms, dynamically typed terms, and first-class contracts.
 In this setting, each type constructor of the static type system - arrows,
@@ -104,40 +104,23 @@ run-time that a value is indeed a member of the corresponding type.
 
 Introduce union in general, and most usual form in statically typed languages, tagged unions\vspace{0.5cm}\color{black}
 
-Unions are fundamental and ubiquitous building blocks of program data. Products
-represent conjunctions, that is several pieces of data whith potentially
-different shapes that are packed together in one value. Unions represent
-disjunctions, which are several exclusive alternatives stored in one value. When
-nested together, unions and intersections are able to represent aribrary
-tree-like structures, allowing to model a large class of data.
+Products and unions are fundamental and ubiquitous building blocks of program
+data. A product is a compound value that hold several pieces of potentially
+different types packed together in one value. Dually, a union only holds one
+data that may alternatives stored in one value. When nested together, unions and
+intersections are able to represent arbitrary tree-like structures, allowing to
+model a large class of data.
 
-Unions are also found in configuration, to represent nullable value in JSON,
-plain enumerations, or more general union types when several representations are
-supported.
+Unions are also useful for configurations, to represent nullable values in JSON,
+plain enumerations, or to support several representations for a field (a file
+path could be accepted either as one string of "/"-separated strings, or as a
+list of strings).
 
 In statically typed languages, and more specifically in functional programming
 languages, unions are usually embodied by algebraic data types [references],
-also called \textbf{tagged unions}. Tagged means that there is an additional
-field, or constructor, that allows to discriminate between each alternative.
-When an union is constructed, the programmer specifies which alternative is
-chosen by using the corresponding tag. When a union is consumed, usually via
-pattern matching, code branches are tagged as well, and each branch is ensured
-to handle data of the right shape. Well-known programming languages with
+also called \textbf{tagged unions}. Well-known programming languages with
 first-class tagged unions include Haskell, OCaml, Rust, Scala, PureScript, Elm,
 Swift and surely many more.
-
-\begin{lstlisting}[caption={Example of a binary tree as a tagged union in OCaml}, captionpos=b]
-type binary_tree =
-  | Node of 'a binary_tree * 'a binary_tree
-  | Leaf of int
-
-let sum =
-  let rec aux total = function
-  | Leaf val -> val
-  | Node(left,right) =>
-    let left = aux total left in
-    aux total right
-\end{lstlisting}
 
 \subsection{Tagged versus untagged}
 \color{red}Goals of the section
@@ -147,35 +130,44 @@ It also corresponds better to prior usage in untyped code\vspace{0.5cm}\color{bl
 
 In the statically typed setting, the actual representation of a tagged union is
 an implementation detail: from the point of view of the programmer, a tagged
-union is a fist-class data type associated with constructors and destructors all
-with well-defined semantics. In contrast, in a gradually typed language like
-Nickel, the question of the representation of tagged unions as untyped values
-arises.
+union is a fist-class data type associated with constructors and destructors,
+together with well-defined semantics. In contrast, in a gradually typed language
+like Nickel, the question of the representation of tagged unions as untyped
+values arises.
 
-Unfortunately, it seems that tagged unions do not have a canonical counterpart
-as serializable untyped data. A natural representation is a record with a tag
-and a value which shape depends on the tag:
+Unfortunately, tagged unions do not have a serializable canonical counterpart as
+untyped data. One usual representation is a record with a tag and a value which
+shape depends on the tag (see Figure \ref{fig:union-encoding}).
 
-\begin{lstlisting}
-{ tag: <A, B, C>, value: Dyn }
-\end{lstlisting}
-
-\lstinline+<A, B, C>+ is the type of a C-like enumeration that can take value
-$A$, $B$ or $C$, while \lstinline+Dyn+ is the unknown dynamic type.
+\begin{figure}
+  \begin{center}
+    \begin{lstlisting}
+        { tag: <Integer, String>, value: Dyn }
+    \end{lstlisting}
+  \end{center}
+\caption{Encoding of the union type: integer or a string}
+\label{fig:union-encoding}
+\medskip
+\small
+In Nickel, \lstinline+<A, B, C>+ is the type of a C-like enumeration that can
+take value \lstinline+A+, \lstinline+B+ or \lstinline+C+, while \lstinline+Dyn+
+is the dynamic unitype.
+\end{figure}
 
 A better way to describe it would be as a dependent pair which first component
-is a tag and second component is the data type corresponding to this tag, but
-the language does not feature dependent types:
+is a tag and second component is the data type corresponding to this tag:
+
 \[
     \Sigma_{tag : <A, B, C>} \text{Alternative}(\text{tag})
 \]
 
-Alas, choosing the first representation as a default is not fully satisfying.
-First, it does not map precisely to a JSON type: in consequence, a lot of
-illegal combinations are structurally valid as untyped JSON values. But this is
-to be expected of any representation. More importantly, this does not
-necessarily match with the configuration schemas one can find in the wild, that
-favor simple, untagged union.
+Alas, Nickel does not feature dependent types, which would open a whole
+different level of complexity. Choosing the first representation as a default is
+not fully satisfying.  First, it does not map precisely to a JSON value: in
+consequence, a lot of illegal combinations are structurally valid as untyped
+JSON values. But this is to be expected of any representation. More importantly,
+this does not necessarily match with the configuration schemas one can find in
+the wild, that favor simple, untagged union.
 
 In dynamically typed languages, it is customary to directly store different kind
 of data in one variable without further ceremony. The runtime system needs to
