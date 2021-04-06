@@ -180,7 +180,7 @@ numpages = {11},
 keywords = {module systems, contract, interlanguage migration, λ-calculus},
 location = {Portland, Oregon, USA},
 series = {OOPSLA '06}
-}     
+}
 
 @inproceedings{FlowTypingRacket1,
 author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
@@ -200,7 +200,7 @@ location = {San Francisco, California, USA},
 series = {POPL '08}
 }
 
-  
+
 
 @article{10.1145/1328897.1328486,
 author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
@@ -287,4 +287,54 @@ keywords = {logic, untyped languages, type systems}
 @online{FlowTypingTypeScript,
     title     = "TypeScript Handbook",
     url       = "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+}
+
+@conference{DependentContracts,
+title = "λdB: Blame tracking at higher fidelity",
+abstract = "This paper introduces λdB, a blame calculus with dependent types. It supports dependent functions, predicate refinement at all types, the dynamic type, and full blame tracking. It is inspired by and extends previous work on hybrid types and Sage, by Flanagan and others; manifest contracts, by Greenberg, Pierce, and Weirich; and blame calculus by Wadler and Findler. While previous work only allows refinement over base types, λdB supports refinement over any type. We introduce novel techniques in order to prove blame safety for this language, including a careful analysis that reduces open judgments on terms to closed ones on values, and the idea of {\textquoteleft}subtyping with a witness{\textquoteright}, which fix flaws in the previous work of Wadler and Findler. These technical contributions mean that we can achieve a completely operational account of the metatheory of our language, and thereby avoid the need to intertwine operational and semantic models which bedevils the work on hybrid types and manifest contracts.",
+author = "Jakub Zalewski and James McKinna and Morris, {J. Garrett} and Philip Wadler",
+year = "2020",
+language = "English",
+note = "First ACM SIGPLAN Workshop on Gradual Typing 2020, WGT 2020 ; Conference date: 19-01-2020 Through 25-01-2020",
+
+}
+
+@inproceedings{GradualTypingClasses,
+author = {Takikawa, Asumu and Strickland, T. Stephen and Dimoulas, Christos and Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Gradual Typing for First-Class Classes},
+year = {2012},
+isbn = {9781450315616},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2384616.2384674},
+doi = {10.1145/2384616.2384674},
+abstract = {Dynamic type-checking and object-oriented programming often go hand-in-hand; scripting languages such as Python, Ruby, and JavaScript all embrace object-oriented (OO) programming. When scripts written in such languages grow and evolve into large programs, the lack of a static type discipline reduces maintainability. A programmer may thus wish to migrate parts of such scripts to a sister language with a static type system. Unfortunately, existing type systems neither support the flexible OO composition mechanisms found in scripting languages nor accommodate sound interoperation with untyped code. In this paper, we present the design of a gradual typing system that supports sound interaction between statically- and dynamically-typed units of class-based code. The type system uses row polymorphism for classes and thus supports mixin-based OO composition. To protect migration of mixins from typed to untyped components, the system employs a novel form of contracts that partially seal classes. The design comes with a theorem that guarantees the soundness of the type system even in the presence of untyped components.},
+booktitle = {Proceedings of the ACM International Conference on Object Oriented Programming Systems Languages and Applications},
+pages = {793–810},
+numpages = {18},
+keywords = {row polymorphism, gradual typing, design by contract, blame theorem (proof technique), sealing, first-class classes, contracts},
+location = {Tucson, Arizona, USA},
+series = {OOPSLA '12}
+}
+
+
+
+@article{10.1145/2398857.2384674,
+author = {Takikawa, Asumu and Strickland, T. Stephen and Dimoulas, Christos and Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Gradual Typing for First-Class Classes},
+year = {2012},
+issue_date = {October 2012},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {47},
+number = {10},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/2398857.2384674},
+doi = {10.1145/2398857.2384674},
+abstract = {Dynamic type-checking and object-oriented programming often go hand-in-hand; scripting languages such as Python, Ruby, and JavaScript all embrace object-oriented (OO) programming. When scripts written in such languages grow and evolve into large programs, the lack of a static type discipline reduces maintainability. A programmer may thus wish to migrate parts of such scripts to a sister language with a static type system. Unfortunately, existing type systems neither support the flexible OO composition mechanisms found in scripting languages nor accommodate sound interoperation with untyped code. In this paper, we present the design of a gradual typing system that supports sound interaction between statically- and dynamically-typed units of class-based code. The type system uses row polymorphism for classes and thus supports mixin-based OO composition. To protect migration of mixins from typed to untyped components, the system employs a novel form of contracts that partially seal classes. The design comes with a theorem that guarantees the soundness of the type system even in the presence of untyped components.},
+journal = {SIGPLAN Not.},
+month = oct,
+pages = {793–810},
+numpages = {18},
+keywords = {blame theorem (proof technique), first-class classes, contracts, gradual typing, sealing, design by contract, row polymorphism}
 }
