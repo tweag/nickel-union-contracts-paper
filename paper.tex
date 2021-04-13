@@ -57,11 +57,11 @@ engineering, including security, availability, and maintainability.
 However, static text-based configuration alone is falling short of expressivity,
 and is seldom sufficient. Data cannot be transformed, combined nor shared,
 resulting at best in boilerplate and duplication of information, or at worst, in
-data being invalid or inconsistent. Data validation isn’t supported either, and must be handed over to yet another tool down the configuration pipeline, if ever
+data being invalid or inconsistent. Data validation is not supported either, and must be handed over to yet another tool down the configuration pipeline, if ever
 done. Correctly configuring a modern system is hard and failures may have
 substantial negative consequences.
 
-This is why the authors have been developping the Nickel
+This is why the authors have been developing the Nickel
 language\cite{NickelRepo}. Nickel is a configuration programming language,
 meaning that a Nickel program evaluates to a value that must be
 straightforwardly serializable to JSON, YAML or alike. Nickel aims at being
@@ -86,7 +86,7 @@ more software systems offload complexity to configurations, in particular with
 the infrastructure as code paradigm prevailing today in cloud deployment. When
 the complexity of a codebase grows, static types becomes attractive again.  For
 reusable code — that is, library functions —, static types are specifically
-adapated, and bring all the usual benefits of early error detection, code
+adapted, and bring all the usual benefits of early error detection, code
 robustness, better code structure, documentation, and so on.
 
 This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}
@@ -121,7 +121,7 @@ a similar type system, with both statically typed terms, dynamically typed
 terms, and first-class contracts.  In this setting, each type constructor of the
 static type system - arrows, records, foralls - must have a contract counterpart
 that check at run-time that a value is indeed a member of the corresponding
-type. Contracts for various extensions of the simply typed $\lambda$-caluclus
+type. Contracts for various extensions of the simply typed $\lambda$-calculus
 have been investigated \cite{BlameForAll, KeilThiemannUnionIntersection,
 RootCauseOfBlame, DependentContracts, GradualTypingClasses}, with solutions of
 varying complexity.  Amongst all the common extensions to the polymorphic lambda
@@ -213,8 +213,8 @@ this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
 In the case of Nickel, there is no pre-existing untyped language that we have to
 support, so we are freer of our choice. However, Nickel is a configuration
 language, whose contracts and types system is intended to be expressive enough
-to encode data schemas encoutered in practice. Since these schemas do use
-untagged unions, there is a strong incentive to support untagged uniohns at the
+to encode data schemas encountered in practice. Since these schemas do use
+untagged unions, there is a strong incentive to support untagged unions at the
 type level, or at least, at the contract level.
 
 \subsection{Tagged as untagged}
@@ -262,6 +262,10 @@ sounds appealing.
 
 Explain why having unions probably unavoidably leads one to have intersection.\vspace{0.5cm}\color{black}
 
+$(A -> B) /\ (C -> D) ~ (A \/ C) -> (B \/ D)$
+$(A \/ B) -> C ~ (A -> C) /\ (B -> C)$
+
+% TODO: lazyness + parallelisation
 
 \printbibliography
 
