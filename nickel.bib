@@ -33,7 +33,21 @@
     issn = {0362-1340},
     url = {https://doi.org/10.1145/583852.581484},
     doi = {10.1145/583852.581484},
-    abstract = {Assertions play an important role in the construction of robust software. Their use in programming languages dates back to the 1970s. Eiffel, an object-oriented programming language, wholeheartedly adopted assertions and developed the "Design by Contract" philosophy. Indeed, the entire object-oriented community recognizes the value of assertion-based contracts on methods.In contrast, languages with higher-order functions do not support assertion-based contracts. Because predicates on functions are, in general, undecidable, specifying such predicates appears to be meaningless. Instead, the functional languages community developed type systems that statically approximate interesting predicates.In this paper, we show how to support higher-order function contracts in a theoretically well-founded and practically viable manner. Specifically, we introduce λcon, a typed lambda calculus with assertions for higher-order functions. The calculus models the assertion monitoring system that we employ in DrScheme. We establish basic properties of the model (type soundness, etc.) and illustrate the usefulness of contract checking with examples from DrScheme's code base.We believe that the development of an assertion system for higher-order functions serves two purposes. On one hand, the system has strong practical potential because existing type systems simply cannot express many assertions that programmers would like to state. On the other hand, an inspection of a large base of invariants may provide inspiration for the direction of practical future type system research.},
+    abstract = {Assertions play an important role in the construction of robust
+                software. Their use in programming languages dates back to the
+                1970s. Eiffel, an object-oriented programming language,
+                wholeheartedly adopted assertions and developed the "Design by
+                Contract" philosophy. Indeed, the entire object-oriented
+                community recognizes the value of assertion-based contracts on
+                methods.In contrast, languages with higher-order functions do
+                not support assertion-based contracts. Because predicates on
+                functions are, in general, undecidable, specifying such
+                predicates appears to be meaningless. Instead, the functional
+                languages community developed type systems that statically
+                approximate interesting predicates.In this paper, we show how to
+                support higher-order function contracts in a theoretically
+                well-founded and practically viable manner. Specifically, we
+                introduce $\lambda$-con, a typed lambda calculus with assertions for higher-order functions. The calculus models the assertion monitoring system that we employ in DrScheme. We establish basic properties of the model (type soundness, etc.) and illustrate the usefulness of contract checking with examples from DrScheme's code base.We believe that the development of an assertion system for higher-order functions serves two purposes. On one hand, the system has strong practical potential because existing type systems simply cannot express many assertions that programmers would like to state. On the other hand, an inspection of a large base of invariants may provide inspiration for the direction of practical future type system research.},
     journal = {SIGPLAN Not.},
     month = sep,
     pages = {48–59},
@@ -177,7 +191,7 @@ abstract = {As scripts grow into full-fledged applications, programmers should w
 booktitle = {Companion to the 21st ACM SIGPLAN Symposium on Object-Oriented Programming Systems, Languages, and Applications},
 pages = {964–974},
 numpages = {11},
-keywords = {module systems, contract, interlanguage migration, λ-calculus},
+keywords = {module systems, contract, interlanguage migration, $\lambda$-calculus},
 location = {Portland, Oregon, USA},
 series = {OOPSLA '06}
 }
@@ -290,8 +304,13 @@ keywords = {logic, untyped languages, type systems}
 }
 
 @conference{DependentContracts,
-title = "λdB: Blame tracking at higher fidelity",
-abstract = "This paper introduces λdB, a blame calculus with dependent types. It supports dependent functions, predicate refinement at all types, the dynamic type, and full blame tracking. It is inspired by and extends previous work on hybrid types and Sage, by Flanagan and others; manifest contracts, by Greenberg, Pierce, and Weirich; and blame calculus by Wadler and Findler. While previous work only allows refinement over base types, λdB supports refinement over any type. We introduce novel techniques in order to prove blame safety for this language, including a careful analysis that reduces open judgments on terms to closed ones on values, and the idea of {\textquoteleft}subtyping with a witness{\textquoteright}, which fix flaws in the previous work of Wadler and Findler. These technical contributions mean that we can achieve a completely operational account of the metatheory of our language, and thereby avoid the need to intertwine operational and semantic models which bedevils the work on hybrid types and manifest contracts.",
+title = "$\lambda$dB: Blame tracking at higher fidelity",
+abstract = "This paper introduces $\lambda$dB, a blame calculus with dependent
+types. It supports dependent functions, predicate refinement at all types, the
+dynamic type, and full blame tracking. It is inspired by and extends previous
+work on hybrid types and Sage, by Flanagan and others; manifest contracts, by
+Greenberg, Pierce, and Weirich; and blame calculus by Wadler and Findler. While
+previous work only allows refinement over base types, $\lambda$dB supports refinement over any type. We introduce novel techniques in order to prove blame safety for this language, including a careful analysis that reduces open judgments on terms to closed ones on values, and the idea of {\textquoteleft}subtyping with a witness{\textquoteright}, which fix flaws in the previous work of Wadler and Findler. These technical contributions mean that we can achieve a completely operational account of the metatheory of our language, and thereby avoid the need to intertwine operational and semantic models which bedevils the work on hybrid types and manifest contracts.",
 author = "Jakub Zalewski and James McKinna and Morris, {J. Garrett} and Philip Wadler",
 year = "2020",
 language = "English",
