@@ -1,0 +1,266 @@
+\newcommand{\TODO}[1]{\colorbox{red}{TODO:} \textit{#1}}
+\newcommand{\moral}[1]{\noindent $\hookrightarrow$ \textsc{#1}}
+
+Type systems featuring intersection types are hard in a fundamental way,
+from their discovery, they've been studied as a way to characterize
+lambda-calculus terms normalizability; which means that typechecking a
+term on a system with intersection types is undecidable,
+similar to how the halting problem is undecidable.
+
+Usually, when thinking about programming languages, there's an intuition
+that static checks (like typechecking) are more difficult and less flexible
+than dynamic checks (like testing). For instance, it is very easy to check if,
+in a given execution of a program, a variable holds an integer value; while it
+may become more challenging to check if a variable will always hold an integer value,
+no matter the particular execution.
+
+As we intend to show on this paper, union and intersection types are not only
+statically hard to check, but they are also dinamycally hard;
+\textit{they are fundamentally hard}.
+In this section, we present intuitively the main challenges that arise
+when attempting to develop a runtime check system for union and intersection types.
+
+\subsection{Known challenges}
+
+There are two works proposing solutions to dynamically checking union and intersection
+types (through contracts). 
+We briefly review the main challenges they consider, and some extra ones.
+At the same time, we outline the reasons that make these works,
+in our opinion, non satisfactory.
+
+\TODO{add Castagna "Gradual types a new perspective"}
+
+\subsubsection*{Union contracts may need multiple evaluations}
+
+When working with contracts, it is assumed that an error may not be raised, even
+when one may exist; contracts allow false negatives.
+
+% Maybe a better example is not using function contracts, since these are "special"
+% For instance, it could be to have $(if (randomBool()) then 42 else "hello")@String$
+% There is an error in that expression, but you may not find it
+
+For instance, imagine you have a function $g$, that
+you wrap with a contract asserting that it sends positive values to positive values,
+($let~f~=~g@Pos \rightarrow Pos$).
+A first call $f~10$ may return $3$, complying with the contract.
+While a second call, $f~5$, may return $-2$, raising an error since
+the contract has been violated.
+Even if only after evaluating both of this function calls
+the error was found, the first one is not really needed, and $f~5$ is enough to
+prove that $f$ doesn't comply with the given contract.
+
+When unions get involved, this desired property is lost,
+for instance, imagine having the function $let~g~=~\lambda~x.~if~x~then~2~else~"Hello"$,
+and wrapping it with the contract $(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$
+(i.e. $let~f~=~g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$),
+it's clear that $g$ doesn't comply with either of those function contracts, however, there
+is not a single call to $f$ that would raise, we need the combination of two calls,
+$f~True$ and $f~False$ to find the violation; and the partial
+information that these calls failed cannot be forgotten.
+
+\moral{Union contracts are global}
+
+This seemingly simple consequence breaks referential transparency on
+functional languages, that is
+$let~h~=~g@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(h~True,~h~False)$
+won't behave the same as 
+$(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
+
+\TODO{Expand on the last paragraph}
+
+\subsubsection*{Intersection contracts must not share information}
+
+On the oppositde side, intersection types need the contrary property.
+Imagine having a function, with some unimportant implementation,
+and wrapping it
+with a contract stating that it behaves both as a $Bool$ to $Bool$ function,
+and as a $Num$ to $Num$ function; that is, 
+$let~f~=~...@(Bool \rightarrow Bool) \cap (Num \rightarrow Num)~in~(f~42,~f~"hello")$.
+Now, the first application ($f~42$) invalidates the first contract, but complies with the second
+one by applying a number; the second application ($f~"hello"$), behaves dually,
+it invalidates the second contract,
+while complying with the first one.
+
+This example shouldn't fail, even if the whole program invalidates both choices of $f$, it does
+so at two different points of the execution and it should not raise an exception.
+Therefore, the elimination of an intersection contract must be local to each elimination
+context, as pointed out by Keil and Thiemann [ref].
+
+\moral{Intersection contracts must be local}\\
+
+% GOAL: State that intersection and union, without HO, is easier. And that is being implemented on nickel.
+
+As one dives into the problems that may become present when dealing with union and intersection,
+a valid question is how these could be implemented in the simplest of cases.
+For instance, imagine having
+union and intersection only present for lower ordered types 
+($Bool$, $Num$, $String$, $(Num, Bool)$, etc.), then checking
+if a particular value is a $String$ or a pair of $Num$ and $Bool$ is easy,
+just check both and fail only if both checks fail.
+Checking if a value complies with an intersection of two contracts, $A$ and $B$ is even
+easier, just apply both contracts independently.
+
+Typed Racket implements this idea, but calls intersection and union contracts
+\texttt{and} and \texttt{or}, respectively [ref].
+
+\moral{It is the combination of union, intersection, and function contracts that is not trivial}
+
+\subsubsection*{Flat contracts are not idempotent}
+
+Following the simple case presented above, there's another kind of extension that could be
+applied to a contract system, and that is contracts written by the
+programmer to check arbitrary properties; these are usually called flat contracts and
+involve a predicate over the contracted value that returns a boolean, indicating whether
+the contracts passed or it should raise an exception.
+
+For instance, one may build a contract that checks that the value in question is a
+function that, when applied to $1$, returns $1$, as something like
+$\lambda f.~f~1~==~1$; let us call it $C$.
+Then, wrapping a given value to check that it complies with this contract, but that at
+the same time is a valid $String \rightarrow String$ function may look something like this
+$let~f~=~...@C \cap (String \rightarrow String)$, a valid implementation for this function
+may be $\lambda x.~x$.
+However, depending on how this intersection is resolved, we may face the problem of applying first
+the $String$ to $String$ contract, and then $C$, in which case we would try to use a function,
+wrapped with a $String \rightarrow String$ contract, with 1, raising blame on the context
+of the contract execution.
+
+To solve this problem, each execution of a contract has to be aware of its execution context,
+or of its precedence.
+
+
+% TODO come up with an example not using HO contracts, we need to present Nickel's flat contracts,
+% that are much more permissive
+
+\moral{The addition of flat contracts involves evaluation context dependency.}
+
+Of course, one could ask himself whether applying these two contracts separately,
+could make any sense, but this bring either some kind of exponential explosion
+on the execution, or a need for a non deterministic execution
+strategy.
+The authors of this papers spent some time trying to solve this by using
+\texttt{call/cc}, an attempt that became too unpractical too rapidly.
+
+Keil and Thiemann propose a non deterministic strategy for their contract checking
+calculus; this gives a very simple and elegant solution, but, sadly, still
+unfeasible to implement.
+
+They also propose a different approach, by checking the context at which
+each contract is opened, dropping
+it if the context indicates it is being applied inside the evaluation of another
+(related by an intersection) contract.
+This check implies traversing the context of execution.
+We consider that having execution dependent on the context
+of evaluation breaks locality of
+the language execution in undesired ways.
+
+WMW decided to disallow flat contracts completely,
+we believe this hurts badly a dynamically checked framework, since it goes against
+the common practice, in dynamic languages, of checking for properties
+that go beyond the expressivity given by a type system.
+
+
+\subsubsection*{Inflexibility of union and intersection contracts}
+
+Solutions for union and intersection contracts do exist (KT, WMW) however,
+they do not provide the flexibility that one may be used to when using dynamic checks.
+Consider a Python programmer, she would not care to see something like this
+\texttt{assert(isinstance(3 if True else "hello", int)))}, while a Haskell programmer
+might perform a harakiri upon reading it.
+
+Without falling into the eternal discussion of static vs dynamic type checking,
+regular users of dynamically checked languages expect this flexibility.
+Sadly, the current work on union and intersection does not provide it.
+
+For instance, consider the following code
+% \texttt{(\\f.(\\xy.x) (f 1) (f true))((\\xy.x)@(N -> N -> N) /\\ (N -> B -> N) 1)}.
+$let~f~=~((\lambda~x~y.x)@(N -> N -> N) \cap (N -> B -> N))~1~in~(f~1,~f~True)$.
+If we use any of the KT or WMW frameworks, both our Haskell programmer and our
+Python programmer will change their career path towards photography, or something
+similar.
+Our Haskell programmer, will do so because this code compiles;
+while the Python programmer would do so because this, code fails on execution.
+
+The reason this happens, is that even if you would expect
+$(N -> N -> N) \cap (N -> B -> N)$
+and $N -> (N -> N) \cap (B -> N)$ to behave equally, the point at which
+the decission of which path of the intersection to use is taken
+matters.
+When working with dynamic checks, it is expected that this kind of
+flexibility works.
+
+\TODO{better phrasing and try to use the dual example}
+
+\moral{Are union and intersection contracts really what we want? Is there an alternative (simpler) option?}
+
+\subsection{Complexity of existing solutions}
+
+The Keil and Thiemann paper presents a complete system that handles union and intersection
+contracts in the presence of higher order contracts, however, we consider it to be overly
+complicated for a reasonable to implement language.
+In what follows, we state some of the reasons that we consider troublesome.
+
+% \subsubsection{Non deterministic semantics}
+
+% The semantics of the calculus are presented, primarly, on a non deterministic interpretation,
+% which means that, even if their work provides a deterministic semantics,
+% the expected way to understand
+% the behavior is not the same as the expected way to implement it, cluttering the development
+% of a language that could provide this solution.
+
+% Keil and Thiemann had also developed a contract system for JavaScript, called TreatJS, that
+% implements their ideas, but it does so with a different technique that the one presented
+% on the paper.
+
+% On our opinion, having a formalization that lies far away from the implementation
+% hearts any future expansion work on the system, and it is not a satisfactory solution
+% for what we intended to pursuit.
+
+
+% \TODO{Maybe mention call/cc}
+
+% \subsubsection{Context opening}
+
+% Keil and Thiemann noticed that flat contracts cannot be arbitrarily used, since
+% violating a flat contract inside another contract would, unexpectedly, raise blame.
+% Their solution, is to check the context at which each contract is opened, dropping
+% it if the context indicates it is being opened inside the evaluation of another
+% contract.
+
+% This check, implies traversing the context of execution.
+% We consider that having execution dependent on the context
+% of evaluation breaks locality of
+% the language execution in undesired ways.
+
+\subsubsection{Contract normalization}
+
+GOAL: The relation between union and intersection have to be modified, transforming them
+in a union of intersections.
+
+In the Keil and Thiemann paper, before the validation of contracts can begin, the
+contracts have to be normalized into unions of intersections of (other) contracts.
+This problem  is the starting point from which
+WMW deliver their work, and we share their opinion:
+
+"However, the monitoring semantics for contracts of intersection and union types given by Keil
+and Thiemann are not uniform. (...) If uniformity helps composition, then
+special cases can hinder composition.", [Ref]
+
+\subsection{Shortcomings in WMW}
+
+The second paper worth mentioning is the one by Williams, Morrison and Wadler [ref].
+This work, attempts to provide a simpler contract system with
+union and intersection types.
+However, we believe this work has some issues and shortcomings, which make it
+not that useful in practice; we briefly outline them below.
+
+% \subsubsection*{Lack of flat contracts}
+
+% In order to save themselves from dropping some contracts when checking a union
+% or intersection branch, WMW decided to eliminate completely flat contracts from
+% their system.
+% We believe this hurts badly a dynamically checked framework, since it goes against
+% the common practice, in dynamic languages, of checking for non trivial properties.
+
+\subsubsection*{Problem in semantics (monitoring)}
+Is the problem in the semantics worth mentioning? or is it attacking too much on the paper.
