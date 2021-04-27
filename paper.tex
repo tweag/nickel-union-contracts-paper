@@ -137,7 +137,8 @@ robustness, better code structure, documentation, and so on.
 
 This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}
 which mixes both static and dynamic typing. Unlike gradually-typed languages
-like TypeScript, we do not seek to build a complex type system that tries hard
+like TypeScript\unsure{Todo: explain that typescript uses unions as
+  static typing whereas we are speaking of dynamic contracts}, we do not seek to build a complex type system that tries hard
 to accept most of the idioms naturally arising in dynamically typed code.
 Rather, we choose to provide a reasonably expressive type system with good
 inference properties, which makes typing functions operating on generic data easy,
