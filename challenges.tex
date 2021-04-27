@@ -1,4 +1,4 @@
-\newcommand{\TODO}[1]{\colorbox{red}{TODO:} \textit{#1}}
+\newcommand{\TODO}[1]{\colorbox{red}{TODO:} \emph{#1}}
 \newcommand{\moral}[1]{\noindent $\hookrightarrow$ \textsc{#1}}
 
 Type systems featuring intersection types are hard in a fundamental way,
@@ -16,7 +16,7 @@ no matter the particular execution.
 
 As we intend to show on this paper, union and intersection types are not only
 statically hard to check, but they are also dinamycally hard;
-\textit{they are fundamentally hard}.
+\emph{they are fundamentally hard}.
 In this section, we present intuitively the main challenges that arise
 when attempting to develop a runtime check system for union and intersection types.
 
@@ -58,10 +58,10 @@ is not a single call to $f$ that would raise, we need the combination of two cal
 $f~True$ and $f~False$ to find the violation; and the partial
 information that these calls failed cannot be forgotten.
 
-\moral{Union contracts are global}
+\moral{Union contracts behave globally}
 
 This seemingly simple consequence breaks referential transparency on
-functional languages, that is
+contract wrapping in functional languages, that is
 $let~h~=~g@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(h~True,~h~False)$
 won't behave the same as 
 $(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
@@ -70,7 +70,7 @@ $(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarro
 
 \subsubsection*{Intersection contracts must not share information}
 
-On the oppositde side, intersection types need the contrary property.
+Dually, intersection types need the contrary property.
 Imagine having a function, with some unimportant implementation,
 and wrapping it
 with a contract stating that it behaves both as a $Bool$ to $Bool$ function,
@@ -84,9 +84,9 @@ while complying with the first one.
 This example shouldn't fail, even if the whole program invalidates both choices of $f$, it does
 so at two different points of the execution and it should not raise an exception.
 Therefore, the elimination of an intersection contract must be local to each elimination
-context, as pointed out by Keil and Thiemann [ref].
+context, as pointed out by Keil and Thiemann \cite{KeilThiemannUnionIntersection}.
 
-\moral{Intersection contracts must be local}\\
+\moral{Intersection contracts behave locally}\\
 
 % GOAL: State that intersection and union, without HO, is easier. And that is being implemented on nickel.
 
@@ -101,7 +101,7 @@ Checking if a value complies with an intersection of two contracts, $A$ and $B$ 
 easier, just apply both contracts independently.
 
 Typed Racket implements this idea, but calls intersection and union contracts
-\texttt{and} and \texttt{or}, respectively [ref].
+\texttt{and} and \texttt{or}, respectively.
 
 \moral{It is the combination of union, intersection, and function contracts that is not trivial}
 
@@ -111,7 +111,7 @@ Following the simple case presented above, there's another kind of extension tha
 applied to a contract system, and that is contracts written by the
 programmer to check arbitrary properties; these are usually called flat contracts and
 involve a predicate over the contracted value that returns a boolean, indicating whether
-the contracts passed or it should raise an exception.
+the contract passed or it should raise an exception.
 
 For instance, one may build a contract that checks that the value in question is a
 function that, when applied to $1$, returns $1$, as something like
@@ -121,8 +121,8 @@ the same time is a valid $String \rightarrow String$ function may look something
 $let~f~=~...@C \cap (String \rightarrow String)$, a valid implementation for this function
 may be $\lambda x.~x$.
 However, depending on how this intersection is resolved, we may face the problem of applying first
-the $String$ to $String$ contract, and then $C$, in which case we would try to use a function,
-wrapped with a $String \rightarrow String$ contract, with 1, raising blame on the context
+the $String$ to $String$ contract, and then $C$, in which case we would try to apply a function,
+wrapped with a $String \rightarrow String$ contract, to 1, raising blame on the context
 of the contract execution.
 
 To solve this problem, each execution of a contract has to be aware of its execution context,
@@ -179,7 +179,7 @@ If we use any of the KT or WMW frameworks, both our Haskell programmer and our
 Python programmer will change their career path towards photography, or something
 similar.
 Our Haskell programmer, will do so because this code compiles;
-while the Python programmer would do so because this, code fails on execution.
+while the Python programmer would do so because this code fails on execution.
 
 The reason this happens, is that even if you would expect
 $(N -> N -> N) \cap (N -> B -> N)$
