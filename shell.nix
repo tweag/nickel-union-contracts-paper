@@ -20,7 +20,9 @@ stdenv.mkDerivation {
                        wasy cm-super unicode-math lm-math capt-of
                        mathpartir
                        url
-                       appendix;
+                       appendix
+                       xargs todonotes
+                       ;
                   })
                 ];
 }
