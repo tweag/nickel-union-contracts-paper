@@ -83,11 +83,11 @@ Intro\unsure{todo}
 
 \subsection{Nickel design space}
 
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
 Introduce Nickel, explain the choice of gradual
 typing and main design orientations, such as practice-oriented, lightweight,
-etc.\vspace{0.5cm}\color{black}
+etc.\vspace{0.5cm}}
 
 Build systems, package managers, operating systems, cloud infrastructures, and
 web services are examples of modern complex software systems that require an
@@ -144,12 +144,10 @@ this is not a surrender, as Nickel provides a complementary mechanism for more
 advanced data validation: contracts.
 
 \subsection{Contracts}
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
 A primer on contracts, which in the end are the problematic bit when confronted
-with unions.\vspace{0.5cm}
-
-\color{black}
+with unions.\vspace{0.5cm}}
 
 Enforcing pre- and post-conditions at runtime is a widely established practice.
 In their foundational paper\cite{FindlerFelleisenHOContracts}, Findler and
@@ -162,32 +160,41 @@ value of contracts as a safe interface between typed and untyped code. In
 \cite{WellTypedBlamed}, the authors precisely introduce a system integrating
 gradual typing with contracts \textit{à la Findler \& Felleisen}. Nickel adopts
 a similar type system, with both statically typed terms, dynamically typed
-terms, and first-class contracts.  In this setting, each type constructor of the
-static type system - arrows, records, foralls - must have a contract counterpart
-that check at run-time that a value is indeed a member of the corresponding
-type. Contracts for various extensions of the simply typed $\lambda$-calculus
-have been investigated \cite{BlameForAll, KeilThiemannUnionIntersection,
-RootCauseOfBlame, DependentContracts, GradualTypingClasses}, with solutions of
-varying complexity.  Amongst all the common extensions to the polymorphic lambda
-calculus, one of the most simple and ubiquitous turns out to be one of the most
-involved: \emph{union types}.
+terms, and first-class contracts. In "first-class contracts", we include the
+ability to write user-defined contracts. Because built-in types are too
+simplistic for the purpose of data validation, the ability of writing a small
+validation function for, say, an URL, and having it immediately available as a
+contract that can be composed with other type constructors, is in our
+opinion one of the main appeal of Nickel contracts system. In this hybrid
+system, each type constructor of the static type system - arrows, records,
+foralls - must have a contract counterpart that checks at run-time that a value
+is indeed a member of the corresponding type. Contracts for various extensions
+of the simply typed $\lambda$-calculus have been investigated \cite{BlameForAll,
+    KeilThiemannUnionIntersection, RootCauseOfBlame, DependentContracts,
+GradualTypingClasses}, with solutions of varying complexity.  Amongst all the
+common extensions to the polymorphic lambda calculus, one of the most useful and
+widespread turns out to be one of the most challenging: \emph{union types}.
 
 \subsection{Union types}
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
-Introduce union in general, and most usual form in statically typed languages, tagged unions\vspace{0.5cm}\color{black}
+Introduce union in general, and most usual form in statically typed languages, tagged unions\vspace{0.5cm}}
 
-Products and unions are fundamental and ubiquitous building blocks of program
-data. A product is a compound data that hold several values of potentially
-different shape packed together. Dually, a union only holds one value whose
-shape is only known to be in a fixed set of alternatives. When nested together,
-unions and intersections are able to represent arbitrary tree-like structures,
-allowing to model a large class of data.
+Unions are fundamental and ubiquitous building blocks of program data. A union
+only holds one value whose shape is only known to be in a fixed set of
+alternatives: for eample, either a boolean or a string. Wuen used in combination
+with products, they can represent arbitrary tree-like structures, allowing to
+model a large class of data.
 
-Unions are also useful for configurations, to represent nullable values in JSON,
-plain enumerations, or to support several representations for a field (for
-example, a file path could be accepted either as one string of
-\lstinline+"/"+-separated strings, or as a list of strings).
+Unions are also useful for configurations:
+\begin{itemize}
+    \item To represent nullable values in JSON
+    \item For plain enumerations. For, the enabled protocols of a data server
+        would be either \lstinline+HTTP+, \lstinline+FTP+ or \lstinline+SFTP+.
+    \item To support different representations for a field. A file path could be
+        accepted either as one string of \lstinline+"/"+-separated strings, or
+        as a list of strings.
+\end{itemize}
 
 In statically typed languages, and more specifically in functional programming
 languages, unions are usually implemented as algebraic data types [references],
@@ -196,10 +203,10 @@ first-class tagged unions include Haskell, OCaml, Rust, Scala, PureScript, Elm,
 Swift and surely many more.
 
 \subsection{Tagged versus untagged}
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
 Interpreted languages already need to tag their values, hence bare union are more natural.
-It also corresponds better to prior usage in untyped code\vspace{0.5cm}\color{black}
+It also corresponds better to prior usage in untyped code\vspace{0.5cm}}
 
 In the statically typed setting, the actual representation of a tagged union is
 an implementation detail: from the point of view of the programmer, a tagged
@@ -262,11 +269,11 @@ untagged unions, there is a strong incentive to support untagged unions at the
 type level, or at least, at the contract level.
 
 \subsection{Tagged as untagged}
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
 Untagged unions, modulo a slightly smarter typechecker, can encode usual type-safe
 tagged unions. They let the user free of the representation though, and encode
-more stuff, that's why they are appealing.\vspace{0.5cm}\color{black}
+more stuff, that's why they are appealing.\vspace{0.5cm}}
 
 Untagged union, together with the other existing features of the type system,
 are sufficient to implement the encoding illustrated in Figure
@@ -302,9 +309,9 @@ of union idioms appearing in the wild.  Thus, adding union types to Nickel
 sounds appealing.
 
 \subsection{Union and intersections}
-\color{red}Goals of the section
+{\color{red}Goals of the section
 
-Explain why having unions probably unavoidably leads one to have intersection.\vspace{0.5cm}\color{black}
+Explain why having unions probably unavoidably leads one to have intersection.\vspace{0.5cm}}
 
 $$(A -> B) \cap (C -> D) \sim (A \cup C) -> (B \cup D)$$
 $$(A \cup B) -> C \sim (A -> C) \cap (B -> C)$$
