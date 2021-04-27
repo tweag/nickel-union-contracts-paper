@@ -188,10 +188,10 @@ model a large class of data.
 
 Unions are also useful for configurations:
 \begin{itemize}
-    \item To represent nullable values in JSON
-    \item For plain enumerations. For, the enabled protocols of a data server
+    \item To represent nullable values in JSON.
+    \item For plain enumerations. For example, the enabled protocols of a data server
         would be either \lstinline+HTTP+, \lstinline+FTP+ or \lstinline+SFTP+.
-    \item To support different representations for a field. A file path could be
+    \item To support different representations of the same data. A file path could be
         accepted either as one string of \lstinline+"/"+-separated strings, or
         as a list of strings.
 \end{itemize}
@@ -264,7 +264,7 @@ this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
 In the case of Nickel, there is no pre-existing untyped language that we have to
 support, so we are freer of our choice. However, Nickel is a configuration
 language, whose contracts and types system is intended to be expressive enough
-to encode data schemas encountered in practice. Since these schemas do use
+to encode data schemas encountered in the wild. Since these schemas do use
 untagged unions, there is a strong incentive to support untagged unions at the
 type level, or at least, at the contract level.
 
@@ -278,7 +278,7 @@ more stuff, that's why they are appealing.\vspace{0.5cm}}
 Untagged union, together with the other existing features of the type system,
 are sufficient to implement the encoding illustrated in Figure
 \ref{fig:union-encoding}. For example, let us represent an algebraic data type
-(written in ML syntax) to an imaginary Nickel union type:
+(written in ML syntax) as an imaginary Nickel union type:
 
 \begin{lstlisting}
 type either = Left of int | Right of string
@@ -310,13 +310,20 @@ sounds appealing.
 
 \subsection{Union and intersections}
 {\color{red}Goals of the section
-
 Explain why having unions probably unavoidably leads one to have intersection.\vspace{0.5cm}}
 
-$$(A -> B) \cap (C -> D) \sim (A \cup C) -> (B \cup D)$$
-$$(A \cup B) -> C \sim (A -> C) \cap (B -> C)$$
+While our original motivation is in supporting unions, the rest of the paper
+explore complete systems featuring union and intersection types. One could
+wonder if the difficulties could then be sidestepped by removing intesection out
+of the equation. But
 
-% TODO: lazyness + parallelisation
+\begin{enumerate}
+    \item Most of the encountered issues already appear with bare unions.
+    \item Intersection being dual to unions, they are showing up in some way
+        when unions are put in negative positions. For example, a contract for
+        $(A \cup B) \to C$ in a system without intersections must be equivalent
+        to the contract $(A \to C) \cap (B \to C)$
+\end{enumerate}
 
 \section{Challenges}
 \input{challenges}
