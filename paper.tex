@@ -325,6 +325,18 @@ of the equation. But
         to the contract $(A \to C) \cap (B \to C)$
 \end{enumerate}
 
+\subsection{Performance considerations}
+\info{This a draft}
+\todo{transition, location}
+
+At first sight, performance should not be a critical issue given the use cases
+of Nickel. But generating large configurations can already hit some limits in
+current related languages [reference?]. A natural is parallelization:
+Nickel being an almost pure functional programming language, evaluating separate
+files or expressions in parallel is straightforward and effective. This
+parallelization potential is thus a design requirement, and must be when the
+addition of union types.
+
 \section{Challenges}
 \input{challenges}
 
