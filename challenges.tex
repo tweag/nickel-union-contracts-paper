@@ -1,4 +1,3 @@
-\newcommand{\TODO}[1]{\colorbox{red}{TODO:} \emph{#1}}
 \newcommand{\moral}[1]{\noindent $\hookrightarrow$ \textsc{#1}}
 
 Type systems featuring intersection types are hard in a fundamental way,
@@ -28,7 +27,7 @@ We briefly review the main challenges they consider, and some extra ones.
 At the same time, we outline the reasons that make these works,
 in our opinion, non satisfactory.
 
-\TODO{add Castagna "Gradual types a new perspective"}
+\todo{add Castagna "Gradual types a new perspective"}
 
 \subsubsection*{Union contracts may need multiple evaluations}
 
@@ -66,7 +65,7 @@ $let~h~=~g@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(h~True,~h~Fal
 won't behave the same as 
 $(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
 
-\TODO{Expand on the last paragraph}
+\todo{Expand on the last paragraph}
 
 \subsubsection*{Intersection contracts must not share information}
 
@@ -189,7 +188,7 @@ matters.
 When working with dynamic checks, it is expected that this kind of
 flexibility works.
 
-\TODO{better phrasing and try to use the dual example}
+\todo{better phrasing and try to use the dual example}
 
 \moral{Are union and intersection contracts really what we want? Is there an alternative (simpler) option?}
 
@@ -217,7 +216,7 @@ In what follows, we state some of the reasons that we consider troublesome.
 % for what we intended to pursuit.
 
 
-% \TODO{Maybe mention call/cc}
+% \todo{Maybe mention call/cc}
 
 % \subsubsection{Context opening}
 

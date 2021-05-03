@@ -340,6 +340,62 @@ addition of union types.
 \section{Challenges}
 \input{challenges}
 
+\section{Current (Real life) implementations}
+
+\info{The goal of this section is to outline existing languages that implement
+union and intersection, in some form, and shortly compare these
+with the semantics tried to obtain on research (WMW, KT)}
+
+Unions and intersection are starting to become more and more common
+on non-academic programming languages, as stated on the introduction,
+unions are a natural abstraction for dynamic languages, where the type
+of an expression could have many different shapes, without necessarily
+having a mark to distinguish between them.
+With this in mind, a valid question is how do these languages solve the
+union/intersection conundrum? Or, even better, what is it that they
+solve?
+
+In the rest of this section we revisit some different approaches.
+
+\subsection{Racket}
+
+Racket is language based on Scheme mainly thought as a language to experiment
+with different language desings and ideas. It provides a very complete contract
+system.
+
+Among those contracts, they provide \texttt{and/c} and \texttt{or/c} contracts.
+These contracts are lightweight versions of unions and intersections, they simply
+check that every contract holds, in the case of and/c, and that at least one contract
+holds, in the case of or/c.
+
+So, for instance, the usual usecase of intersection to encode overloading
+does not work on Racket. Take a look at the next example, the function
+\texttt{overload} shoudl accept a call like \texttt{(overload 3)}, but it fails
+since it 3 is not a valid \texttt{string?}.
+
+\texttt{(define/contract overload
+(and/c (-> number? number?)
+       (-> string? string?))
+(λ (x) x))}
+
+Even worst, the or/c contract doesn't allow to have multiple higher order
+contracts that could (potentially) apply to a function, these have to be
+differentiated by first order markers (for instance, the number of arguments).
+
+
+
+\subsubsection*{case->}
+
+Racket does provide an alternative for overloading methods, called the
+\texttt{case->} contract, however, this overloading of methods only
+works over contracts of functions with different amount of parameters.
+
+\todo{Coming back to the problems of composing U/I with other typing
+features, Racket has made a clear choice and decided that higher order
+is more important (a wise decision)}
+
+\subsection{Python - MyPy}
+
 \printbibliography
 
 \end{document}
