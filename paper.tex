@@ -23,7 +23,7 @@
   \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
   % ^^ Need for pgfsyspdfmark apparently?
   \ifx\noeditingmarks\undefined
-      \setlength{\marginparwidth}{1.2cm} % A size that matches the new PACMPL format
+      % \setlength{\marginparwidth}{1.2cm} % A size that matches the new PACMPL format
       \newcommand{\Red}[1]{{\color{red}{#1}}}
       \newcommand{\newaudit}[1]{{\color{blue}{#1}}}
       \newcommand{\note}[1]{{\color{blue}{\begin{itemize} \item {#1} \end{itemize}}}}
@@ -78,7 +78,9 @@ to represent and type unions.
 
 \section*{Introduction}
 Intro\unsure{todo}
-
+\info{Goals of the paper: position paper: unions/intersections nice in
+theory problematic in practice. In particular non-orthogonal with the
+rest of the features of your language.}
 \section{Background on union types}
 
 \subsection{Nickel design space}
@@ -135,7 +137,8 @@ robustness, better code structure, documentation, and so on.
 
 This dilemma is naturally solved by gradual typing\cite{Siek06gradualtyping}
 which mixes both static and dynamic typing. Unlike gradually-typed languages
-like TypeScript, we do not seek to build a complex type system that tries hard
+like TypeScript\unsure{Todo: explain that typescript uses unions as
+  static typing whereas we are speaking of dynamic contracts}, we do not seek to build a complex type system that tries hard
 to accept most of the idioms naturally arising in dynamically typed code.
 Rather, we choose to provide a reasonably expressive type system with good
 inference properties, which makes typing functions operating on generic data easy,
