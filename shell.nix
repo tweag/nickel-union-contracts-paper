@@ -22,6 +22,8 @@ stdenv.mkDerivation {
                        url
                        appendix
                        xargs todonotes
+                       # Packages required for the ACM Sigplan article format
+                       acmart totpages environ xstring ncctools trimspaces preprint
                        ;
                   })
                 ];

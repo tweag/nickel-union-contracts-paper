@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[sigplan,10pt]{acmart}
 \usepackage{mathtools,amssymb,amsmath,amsfonts,amsxtra,amsthm,mathrsfs,mathpartir}
 \usepackage{listings}
 \usepackage{xcolor}
@@ -54,16 +54,7 @@
 
 %%%%%%%%%%%%%%%%% /Editing marks %%%%%%%%%%%%%%%%%
 
-
-\usepackage{biblatex}
-\addbibresource{nickel.bib}
-
-\title{Contracts for unions and intersections are hard for Nickel}
-\author{Teodoro Freund, Yann Hamdaoui, Arnaud Spiwack}
-
-\begin{document}
-
-\maketitle
+\bibliographystyle{ACM-Reference-Format}
 
 \begin{abstract}
 This paper reports an attempt to incorporate union and intersection types in
@@ -75,6 +66,14 @@ implementation of contracts for unions and intersections, and why we think the
 cost ends up too high for the benefit. We conclude by suggesting different leads
 to represent and type unions.
 \end{abstract}
+
+
+\title{Contracts for unions and intersections are hard for Nickel}
+\author{Teodoro Freund, Yann Hamdaoui, Arnaud Spiwack}
+
+\begin{document}
+
+\maketitle
 
 \section*{Introduction}
 Intro\unsure{todo}
@@ -385,8 +384,6 @@ Even worst, the or/c contract doesn't allow to have multiple higher order
 contracts that could (potentially) apply to a function, these have to be
 differentiated by first order markers (for instance, the number of arguments).
 
-
-
 \subsubsection*{case->}
 
 Racket does provide an alternative for overloading methods, called the
@@ -399,6 +396,6 @@ is more important (a wise decision)}
 
 \subsection{Python - MyPy}
 
-\printbibliography
+\bibliography{nickel}
 
 \end{document}
