@@ -4,7 +4,7 @@ Type systems featuring intersection types are hard in a fundamental way,
 from their discovery, they've been studied as a way to characterize
 lambda-calculus terms normalizability; which means that typechecking a
 term on a system with intersection types is undecidable,
-similar to how the halting problem is undecidable.
+similar to how the halting problem is undecidable\todo{reference}.
 
 Usually, when thinking about programming languages, there's an intuition
 that static checks (like typechecking) are more difficult and less flexible
@@ -14,7 +14,7 @@ may become more challenging to check if a variable will always hold an integer v
 no matter the particular execution.
 
 As we intend to show on this paper, union and intersection types are not only
-statically hard to check, but they are also dinamycally hard;
+statically hard to check, but they are also dynamically hard;
 \emph{they are fundamentally hard}.
 In this section, we present intuitively the main challenges that arise
 when attempting to develop a runtime check system for union and intersection types.
@@ -22,7 +22,7 @@ when attempting to develop a runtime check system for union and intersection typ
 \subsection{Known challenges}
 
 There are two works proposing solutions to dynamically checking union and intersection
-types (through contracts). 
+types (through contracts)\todo{reference}. 
 We briefly review the main challenges they consider, and some extra ones.
 At the same time, we outline the reasons that make these works,
 in our opinion, non satisfactory.
@@ -32,7 +32,7 @@ in our opinion, non satisfactory.
 \subsubsection*{Union contracts may need multiple evaluations}
 
 When working with contracts, it is assumed that an error may not be raised, even
-when one may exist; contracts allow false negatives.
+when one may exist; contracts allow false negatives.\change{Unclear}
 
 % Maybe a better example is not using function contracts, since these are "special"
 % For instance, it could be to have $(if (randomBool()) then 42 else "hello")@String$
@@ -49,6 +49,7 @@ the error was found, the first one is not really needed, and $f~5$ is enough to
 prove that $f$ doesn't comply with the given contract.
 
 When unions get involved, this desired property is lost,
+\change{What property?}
 for instance, imagine having the function $let~g~=~\lambda~x.~if~x~then~2~else~"Hello"$,
 and wrapping it with the contract $(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$
 (i.e. $let~f~=~g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$),
@@ -56,6 +57,7 @@ it's clear that $g$ doesn't comply with either of those function contracts, howe
 is not a single call to $f$ that would raise, we need the combination of two calls,
 $f~True$ and $f~False$ to find the violation; and the partial
 information that these calls failed cannot be forgotten.
+\info{IMPORTANT PROPERTY: minsize(witness) > 1}
 
 \moral{Union contracts behave globally}
 
@@ -69,7 +71,8 @@ $(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarro
 
 \subsubsection*{Intersection contracts must not share information}
 
-Dually, intersection types need the contrary property.
+Dually, intersection types need the contrary property\change{Same: what
+property?}.
 Imagine having a function, with some unimportant implementation,
 and wrapping it
 with a contract stating that it behaves both as a $Bool$ to $Bool$ function,
@@ -87,6 +90,8 @@ context, as pointed out by Keil and Thiemann \cite{KeilThiemannUnionIntersection
 
 \moral{Intersection contracts behave locally}\\
 
+\info{Maybe another way of saying it is each instance must be executed in a
+separate environment}
 % GOAL: State that intersection and union, without HO, is easier. And that is being implemented on nickel.
 
 As one dives into the problems that may become present when dealing with union and intersection,
@@ -103,6 +108,9 @@ Typed Racket implements this idea, but calls intersection and union contracts
 \texttt{and} and \texttt{or}, respectively.
 
 \moral{It is the combination of union, intersection, and function contracts that is not trivial}
+\change{The moral is true, but maybe restate the problem are functions. Do we
+    want to say that since Nickel is lazy, almost every value is morally a
+function (thunk)?}
 
 \subsubsection*{Flat contracts are not idempotent}
 
@@ -151,13 +159,17 @@ it if the context indicates it is being applied inside the evaluation of another
 This check implies traversing the context of execution.
 We consider that having execution dependent on the context
 of evaluation breaks locality of
-the language execution in undesired ways.
+the language execution in undesired ways.\todo{Unclear. Is it a bad thing
+    "philosophically" (in general, because it breaks local reasoning?) If there
+are concrete unwiding examples, we should add some}.
 
 WMW decided to disallow flat contracts completely,
 we believe this hurts badly a dynamically checked framework, since it goes against
 the common practice, in dynamic languages, of checking for properties
 that go beyond the expressivity given by a type system.
-
+\todo{Maybe mention explicitly the word "validation": contracts allow for
+    principled, higher-order compatible, composable validation. For validation,
+you want to check things much more complex than just belonging to a type.}
 
 \subsubsection*{Inflexibility of union and intersection contracts}
 
