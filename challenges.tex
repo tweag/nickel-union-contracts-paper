@@ -46,7 +46,9 @@ While a second call, $f~5$, may return $-2$, raising an error since
 the contract has been violated.
 Even if only after evaluating both of this function calls
 the error was found, the first one is not really needed, and $f~5$ is enough to
-prove that $f$ doesn't comply with the given contract.
+prove that $f$ doesn't comply with the given contract.\unsure{Instead
+  of speaking about it in the abstract, give me concrete programs
+  which are difficult}
 
 When unions get involved, this desired property is lost,
 \change{What property?}
@@ -130,7 +132,9 @@ may be $\lambda x.~x$.
 However, depending on how this intersection is resolved, we may face the problem of applying first
 the $String$ to $String$ contract, and then $C$, in which case we would try to apply a function,
 wrapped with a $String \rightarrow String$ contract, to 1, raising blame on the context
-of the contract execution.
+of the contract execution.\unsure{I think that the point here is that
+  $f@C \cap (String \rightarrow String)$ isn't the same as $f@(String
+  \rightarrow String) @C$}
 
 To solve this problem, each execution of a contract has to be aware of its execution context,
 or of its precedence.
@@ -150,7 +154,8 @@ The authors of this papers spent some time trying to solve this by using
 
 Keil and Thiemann propose a non deterministic strategy for their contract checking
 calculus; this gives a very simple and elegant solution, but, sadly, still
-unfeasible to implement.
+unfeasible to implement\unsure{Strong statement, can we back this up?
+  I think we want to explain what Keil and Thiemann looks like}.
 
 They also propose a different approach, by checking the context at which
 each contract is opened, dropping
@@ -166,7 +171,7 @@ are concrete unwiding examples, we should add some}.
 WMW decided to disallow flat contracts completely,
 we believe this hurts badly a dynamically checked framework, since it goes against
 the common practice, in dynamic languages, of checking for properties
-that go beyond the expressivity given by a type system.
+that go beyond the expressiveness given by a type system.
 \todo{Maybe mention explicitly the word "validation": contracts allow for
     principled, higher-order compatible, composable validation. For validation,
 you want to check things much more complex than just belonging to a type.}
@@ -274,4 +279,6 @@ not that useful in practice; we briefly outline them below.
 % the common practice, in dynamic languages, of checking for non trivial properties.
 
 \subsubsection*{Problem in semantics (monitoring)}
-Is the problem in the semantics worth mentioning? or is it attacking too much on the paper.
+Is the problem in the semantics worth mentioning? or is it attacking
+too much on the paper.\unsure{I don't know, show it to me first and we
+can decide!}

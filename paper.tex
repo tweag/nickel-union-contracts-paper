@@ -24,7 +24,7 @@
   \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
   % ^^ Need for pgfsyspdfmark apparently?
   \ifx\noeditingmarks\undefined
-      % \setlength{\marginparwidth}{1.2cm} % A size that matches the new PACMPL format
+      \setlength{\marginparwidth}{1.2cm} % A size that matches the new PACMPL format
       \newcommand{\Red}[1]{{\color{red}{#1}}}
       \newcommand{\newaudit}[1]{{\color{blue}{#1}}}
       \newcommand{\note}[1]{{\color{blue}{\begin{itemize} \item {#1} \end{itemize}}}}
@@ -92,7 +92,7 @@ typing and main design orientations, such as practice-oriented, lightweight,
 etc.\vspace{0.5cm}}
 
 Build systems, package managers, operating systems, cloud infrastructures, and
-web services are examples of modern complex software systems that require an
+web services\unsure{Also continuous integration} are examples of modern complex software systems that require an
 extensive and non-trivial configuration in order to make them adapted to each
 different use-case. To manage the growing complexity that is then offloaded to
 configurations, the declarative approach has become more and more popular,
@@ -100,7 +100,7 @@ illustrated for example by the infrastructure-as-code paradigm. This leads
 configuration to play an important role in critical aspects of software
 engineering, including security, availability, and maintainability.
 
-However, static text-based configuration alone is falling short of expressivity,
+However, static text-based configuration alone is falling short of expressiveness,
 and is seldom sufficient. Data cannot be transformed, combined nor shared,
 resulting at best in boilerplate and duplication of information, or at worst, in
 data being invalid or inconsistent. Data validation is not supported either, and must be handed over to yet another tool down the configuration pipeline, if ever
@@ -154,21 +154,24 @@ with unions.\vspace{0.5cm}}
 
 Enforcing pre- and post-conditions at runtime is a widely established practice.
 In their foundational paper\cite{FindlerFelleisenHOContracts}, Findler and
-Fellleisen introduces a principled approach to run-time assertion checking that
-nicely support higher-order functions and introduce the notion of blame, which
+Felleisen introduce a principled approach to run-time assertion checking that
+nicely supports higher-order functions and introduces the notion of blame, which
 is crucial to good error reporting. It became apparent later that their
 contracts are closely related to the type casts introduced by gradual typing,
 modulo blame: both \cite{FindlerMultiLang} and \cite{FelleisenInterLang} see the
 value of contracts as a safe interface between typed and untyped code. In
 \cite{WellTypedBlamed}, the authors precisely introduce a system integrating
-gradual typing with contracts \textit{à la Findler \& Felleisen}. Nickel adopts
+gradual typing with contracts \textit{à la Findler \&
+  Felleisen}.\unsure{The historical bit should probably be moved to
+  related works eventually} Nickel adopts
 a similar type system, with both statically typed terms, dynamically typed
 terms, and first-class contracts. In "first-class contracts", we include the
 ability to write user-defined contracts. Because built-in types are too
 simplistic for the purpose of data validation, the ability of writing a small
-validation function for, say, an URL, and having it immediately available as a
-contract that can be composed with other type constructors, is in our
-opinion one of the main appeal of Nickel contracts system. In this hybrid
+validation function for, say, a URL, and having it immediately available as a
+contract that can be composed with other type
+constructors\unsure{Needs code to illustrate.}, is in our
+opinion one of the main appeal of Nickel's contracts system. In this hybrid
 system, each type constructor of the static type system - arrows, records,
 foralls - must have a contract counterpart that checks at run-time that a value
 is indeed a member of the corresponding type. Contracts for various extensions
@@ -200,7 +203,10 @@ Unions are also useful for configurations:
 \end{itemize}
 
 In statically typed languages, and more specifically in functional programming
-languages, unions are usually implemented as algebraic data types [references],
+languages, unions are usually implemented as algebraic data
+types\unsure{This is a very misleading statement at best. Sums are
+  "tagged union" sure, but that refers to an encoding a sums with
+  unions, certainly not an encoding of unions with sums!} [references],
 also called \emph{tagged unions}. Well-known programming languages with
 first-class tagged unions include Haskell, OCaml, Rust, Scala, PureScript, Elm,
 Swift and surely many more.
@@ -213,7 +219,7 @@ It also corresponds better to prior usage in untyped code\vspace{0.5cm}}
 
 In the statically typed setting, the actual representation of a tagged union is
 an implementation detail: from the point of view of the programmer, a tagged
-union is a fist-class data type associated with constructors and destructors
+union is a first-class data type associated with constructors and destructors
 with well-defined semantics. In contrast, in a gradually typed language like
 Nickel, the question of the representation of tagged unions as untyped values
 arises.
@@ -250,12 +256,14 @@ fully satisfying.  First, it does not map precisely to a JSON value: in
 consequence, a lot of illegal combinations are structurally valid as untyped
 JSON values. But this is to be expected of any representation. More importantly,
 this does not necessarily match with the configuration schemas one can find in
-the wild, that favor simple, untagged union.
+the wild, which favor simple, untagged union.
 
-In dynamically typed languages, it is customary to directly store different kind
+In dynamically typed languages, it is customary to directly store different kinds
 of data in one variable without further ceremony. The runtime system needs to
 attach type tags to values anyway, which can usually be observed using functions
-like JavaScript's \verb+typeof+. Using so-called \emph{untagged unions} has
+like JavaScript's \verb+typeof+. Using so-called \emph{untagged
+  unions}\unsure{If you can observe with typeof, then it's
+  pretty much a tagged union, though the tag is implicit} has
 already been an idiom in dynamically typed language for a long time
 [ref/examples], and being able to type and handle these unions is an important
 aspect of the migration to a gradual type system. Indeed, a lot of gradually
@@ -324,9 +332,21 @@ of the equation. But
     \item Most of the encountered issues already appear with bare unions.
     \item Intersection being dual to unions, they are showing up in some way
         when unions are put in negative positions. For example, a contract for
-        $(A \cup B) \to C$ in a system without intersections must be equivalent
+        $(A \cup B) \to C$ in a system without intersections must be
+        equivalent\unsure{``Must be'' is a rather strong statement, we
+        will find a way to tone it down}
         to the contract $(A \to C) \cap (B \to C)$
 \end{enumerate}
+
+\unsure{Some bits missing so far: we are interested in higher-order
+  contracts, Nickel is a higher-order \& pure language, contracts as
+  functions. We've said that user-defined contracts are a thing, it
+  probably matters so we may have to hammer it down.}
+
+\unsure{Something that we must mention somewhere: if we want to check
+  that something is a list of As lazily (to avoid making functions
+  like hd be O(n), for instance), then we have a lot of the problems of
+  higher-order contracts anyway.}
 
 \subsection{Performance considerations}
 \info{This a draft}
@@ -369,11 +389,12 @@ system.
 Among those contracts, they provide \texttt{and/c} and \texttt{or/c} contracts.
 These contracts are lightweight versions of unions and intersections, they simply
 check that every contract holds, in the case of and/c, and that at least one contract
-holds, in the case of or/c.
+holds, in the case of or/c.\unsure{It doesn't really make sense for a
+  contract to “hold”, in general}
 
 So, for instance, the usual usecase of intersection to encode overloading
 does not work on Racket. Take a look at the next example, the function
-\texttt{overload} shoudl accept a call like \texttt{(overload 3)}, but it fails
+\texttt{overload} should accept a call like \texttt{(overload 3)}, but it fails
 since it 3 is not a valid \texttt{string?}.
 
 \texttt{(define/contract overload
@@ -383,7 +404,10 @@ since it 3 is not a valid \texttt{string?}.
 
 Even worst, the or/c contract doesn't allow to have multiple higher order
 contracts that could (potentially) apply to a function, these have to be
-differentiated by first order markers (for instance, the number of arguments).
+differentiated by first order markers (for instance, the number of
+arguments).\unsure{This section is overall a bit hard to follow. I
+  think I've figured out what it means, but it needs more love. Also
+  give an example which doesn't work and one that does for or/c.}
 
 \subsubsection*{case->}
 
@@ -397,6 +421,10 @@ is more important (a wise decision)}
 
 \subsection{Python - MyPy}
 
+\unsure{We ought to group all the static typing in one subsection}
+
 \bibliography{nickel}
 
 \end{document}
+
+% LocalWords:  Felleisen
