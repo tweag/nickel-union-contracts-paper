@@ -10,7 +10,7 @@ stdenv.mkDerivation {
                        inherit (texlive)
                        biblatex
                        collection-fontsrecommended
-                       comment
+                       # comment
                        fontaxes
                        latexmk
                        listings
@@ -23,7 +23,11 @@ stdenv.mkDerivation {
                        appendix
                        xargs todonotes
                        # Packages required for the ACM Sigplan article format
-                       acmart totpages environ xstring ncctools trimspaces preprint
+                       totpages trimspaces
+                       libertine environ hyperxmp
+                       ifmtarg comment ncctools
+                       inconsolata newtx txfonts
+                       xstring atenddvi zref preprint
                        ;
                   })
                 ];
