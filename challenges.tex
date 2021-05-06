@@ -68,11 +68,17 @@ contract wrapping in functional languages, that is
 $let~h~=~g@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(h~True,~h~False)$
 won't behave the same as 
 $(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
-
+\info{Concretely, common-subexpression elimination is not valid}
+\unsure{How do our two major related work behave here?}
 \todo{Expand on the last paragraph}
 
 \subsubsection*{Intersection contracts must not share information}
 
+\info{We know it's hard if you have solved the issue with union, then
+  it's easy to have this example not type.}
+\info{Is there a synthetic example that illustrates the difficulty
+  more obviously. Maybe $f = \lambda x. if x == 0 then true else 4 @
+  Any \& ((N -> N) | (N -> B)) in (f 0, f 1)$ or $f = \lambda x. if x == 0 then true else 4 @(N -> (N | B)) \& ((N -> N) | (N -> B)) in (f 0, f 1)$}
 Dually, intersection types need the contrary property\change{Same: what
 property?}.
 Imagine having a function, with some unimportant implementation,
