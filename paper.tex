@@ -105,6 +105,54 @@ rest of the features of your language.}
 \section{Issues in concrete restrictions from the literature}
 \info{The various papers and the tradeoffs they make}
 
+The papers that previously researched union and intersection
+as dynamic checks have, in our eyes, different shortcomings
+that makes them suboptimal solutions.
+
+Starting with the Keil and Thiemann work \cite{KeilThiemannUnionIntersection},
+they noticed that, since union contracts should share information between
+different application contexts, while intersection contracts should behave
+independently between each application context, the system becomes much
+simpler if every contract gets transformed into a union of intersections
+of other contracts, by using the usual De Morgan laws,
+and then eagerly opening up unions, but postponing intersection
+contracts as much as possible.
+\todo{This assumes the difficulty has been previously explained}
+
+This straightforward solutions makes composing the Keil and Thiemann
+system with other existing systems more difficult; in the words
+of Williams, Morrison, and Wadler:
+"(...) the monitoring semantics for contracts of intersection and union types given by Keil
+and Thiemann are not uniform. (...) If uniformity helps composition, then
+special cases can hinder composition."\cite{RootCauseOfBlame}
+
+Another difficult issue Keil and Thiemann were able to solve, is the
+fact that flat contracts and intersection do not usually play nice
+together.
+They provide two different set of rules for their calculus,
+the first one is non deterministic, which purpose is to provide
+semantics that are simple to understand.
+The second one is a deterministic set of rules, that are intended
+to be simply to implement. These semantics need to perform operations
+on the evaluation context, to decide whether or not to evaluate
+a given contract.
+
+We see two problems here, a minor one is the fact that two different
+semantics need to be defined, which translates either to a difficult
+to implement or a difficult to understand system. A second, major one,
+is the dependency added over the evaluation context, since, again,
+it makes composing this, with other features desired on programming languages,
+difficult, or even impossible (as the case with common subexpression elimination).
+
+Williams, Morrison, and Wadler, take a different approach on flat contracts,
+they are completely forbidden in their system, explicitly to not encounter
+the previously mentioned issue.
+This restriction goes against what is usually expected from dynamic checks:
+validation of data, and not just inclusion on types, is an expected
+feature of these systems. 
+
+\todo{Monitoring sound problem}
+
 \newpage
 
 \section{Related work}
