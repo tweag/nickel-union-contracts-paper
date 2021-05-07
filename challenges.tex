@@ -31,46 +31,53 @@ in our opinion, non satisfactory.
 
 \subsubsection*{Union contracts may need multiple evaluations}
 
-When working with contracts, it is assumed that an error may not be raised, even
-when one may exist; contracts allow false negatives.\change{Unclear}
+When using contracts, programmers assume that lack of blame does not mean
+lack of errors.
+For instance, imagine you have a function
+wrapped with a contract asserting that it sends positive values to positive values,
+($let~f~=~(\lambda x.~x~-~7)@Pos \rightarrow Pos$), clearly, this contract
+does not hold.
+Still, applying $f~10$ returns $3$, complying with the contract.
+Contracts perform a dynamic check, similar to how testing works.
 
-% Maybe a better example is not using function contracts, since these are "special"
-% For instance, it could be to have $(if (randomBool()) then 42 else "hello")@String$
-% There is an error in that expression, but you may not find it
-
-For instance, imagine you have a function $g$, that
-you wrap with a contract asserting that it sends positive values to positive values,
-($let~f~=~g@Pos \rightarrow Pos$).
-A first call $f~10$ may return $3$, complying with the contract.
-While a second call, $f~5$, may return $-2$, raising an error since
+However, a call like $f~5$, would return $-2$, raising an error since
 the contract has been violated.
 Even if only after evaluating both of this function calls
 the error was found, the first one is not really needed, and $f~5$ is enough to
-prove that $f$ doesn't comply with the given contract.\unsure{Instead
+prove that $f$ doesn't comply with the given contract.
+\unsure{Arnaud: Instead
   of speaking about it in the abstract, give me concrete programs
-  which are difficult}
+  which are difficult.
+  Teo: Not sure I understand what do you mean by difficult programs,
+  my intention here is just to show that classic contracts need at most 1 witness}
 
-When unions get involved, this desired property is lost,
-\change{What property?}
-for instance, imagine having the function $let~g~=~\lambda~x.~if~x~then~2~else~"Hello"$,
-and wrapping it with the contract $(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$
-(i.e. $let~f~=~g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num)$),
-it's clear that $g$ doesn't comply with either of those function contracts, however, there
-is not a single call to $f$ that would raise, we need the combination of two calls,
-$f~True$ and $f~False$ to find the violation; and the partial
-information that these calls failed cannot be forgotten.
-\info{IMPORTANT PROPERTY: minsize(witness) > 1}
 
-\moral{Union contracts behave globally}
+Having a witness of size 1 for every contract failure is a great property,
+yet when unions get introduced, it is lost.
+Imagine wrapping that same function with a contract that states that it either
+sends positive values to positive values, or positive values to negative values
+($let~g~=~(\lambda x.~x~-~7)@(Pos \rightarrow Pos) \cup (Pos \rightarrow NonPos)$),
+clearly, this contract should fail, yet there is not one single application
+of $f$ that would make it blame, at least two are needed ($(f~10,~f~5)$).
 
-This seemingly simple consequence breaks referential transparency on
-contract wrapping in functional languages, that is
-$let~h~=~g@(Bool \rightarrow Bool)~\cup~(Bool \rightarrow Num)~in~(h~True,~h~False)$
-won't behave the same as 
-$(g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) True, g@(Bool \rightarrow Bool) \cup (Bool \rightarrow Num) False)$.
-\info{Concretely, common-subexpression elimination is not valid}
-\unsure{How do our two major related work behave here?}
-\todo{Expand on the last paragraph}
+
+% \moral{Union contracts behave globally}
+
+This seemingly simple consequence breaks other major properties
+of functional languages.
+Consider the following programs:
+$let~g~=~(\lambda x.~x~-~7)@(Pos \rightarrow Pos) \cup (Pos \rightarrow NonPos)~in~(g~10,~g~3)$
+and
+$((\lambda x.~x~-~7)@(Pos \rightarrow Pos) \cup (Pos \rightarrow NonPos)~10,~(\lambda x.~x~-~7)@(Pos \rightarrow Pos) \cup (Pos \rightarrow NonPos)~3)$.
+Transforming the first one to the second one is what's usually considered as \emph{inlining},
+the other direction would be \emph{common subexpression elimination}.
+
+Both of this operations are heavily used on functional languages as optimizations,
+yet union contracts make their semantics to differ, the first case will violate the contract
+and fail, yet the second one will complete execution and return $(3, -4)$.
+
+Both reviewed papers suffer from this defect since it is the semantics
+of unions that interact badly with inlining/common subexpression elimination.
 
 \subsubsection*{Intersection contracts must not share information}
 
