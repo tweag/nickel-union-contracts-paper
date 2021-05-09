@@ -121,7 +121,7 @@ contracts as much as possible.
 
 This straightforward solutions makes composing the Keil and Thiemann
 system with other existing systems more difficult; in the words
-of Williams, Morrison, and Wadler:
+of Williams, Morris, and Wadler:
 "(...) the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (...) If uniformity helps composition, then
 special cases can hinder composition."\cite{RootCauseOfBlame}
@@ -144,14 +144,49 @@ is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
 difficult, or even impossible (as the case with common subexpression elimination).
 
-Williams, Morrison, and Wadler, take a different approach on flat contracts,
+Williams, Morris, and Wadler, take a different approach on flat contracts,
 they are completely forbidden in their system, explicitly to not encounter
 the previously mentioned issue.
 This restriction goes against what is usually expected from dynamic checks:
 validation of data, and not just inclusion on types, is an expected
-feature of these systems. 
+feature of contracts. 
 
-\todo{Monitoring sound problem}
+On top of that, a fundamental problem arises on said paper,
+symptom of the difficulty of establishing good enough, and yet
+simple semantics for union and intersection dynamic checks.
+One of their main results, is the fact that their calculus, obeys
+all of their expected monitoring properties for higher ordered, union
+and, intersection contracts.
+However, one of these properties states the following:
+
+$$ K \in \llbracket A \cap B \rrbracket ~ if ~ K \in \llbracket A \rrbracket \lor K \in \llbracket B \rrbracket $$ 
+
+Which means that a continuation ($K$) complies negatively with an
+intersection of $A$ and $B$ if it complies with at least one of these.
+Altough this is true, it's a weaker statement of what we'd like to have,
+since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$, 
+where $K_1 \in \llbracket A \rrbracket$ but $K_1 \not \in \llbracket B \rrbracket$,
+and dually for $K_2$, which would mean the continuation presented above would not
+be in $\llbracket A \cap B \rrbracket$, even though our intuition (and the
+introduction to the paper) indicates that it should.
+
+While this mistake does not invalidate their work (the system they present
+handles these correctly), it shows that existing research is still not on
+good shape to handle the growing usecases being developed for
+union and intersection around dynamic languages.
+
+% $$ K ::= Id | K \bullet \square N | K \bullet V \square | K \bullet \square @^pA  $$
+
+% Keil and Thiemann did noticed this problem, and their contract satisfaction
+% rules only apply to elimination context, a particular kind of context
+% where the hole is either being applied to an argument
+% ($\square N$) or is used as an argument for a primitive
+% operation ($O(\overrightarrow{\text{V}}, \square, \overrightarrow{\text{N}})$).
+
+
+
+% K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
+\unsure{Is this worth mentioning? Should we go so techincal?}
 
 \newpage
 
@@ -483,7 +518,7 @@ since it 3 is not a valid \texttt{string?}.
 \texttt{(define/contract overload
 (and/c (-> number? number?)
        (-> string? string?))
-(λ (x) x))}
+($\lambda$ (x) x))}
 
 Even worst, the or/c contract doesn't allow to have multiple higher order
 contracts that could (potentially) apply to a function, these have to be
