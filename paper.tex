@@ -76,7 +76,7 @@ to represent and type unions.
 
 \maketitle
 
-\section*{Introduction}
+\section{Introduction}
 Intro\unsure{todo}
 \info{Goals of the paper: position paper: unions/intersections nice in
 theory problematic in practice. In particular non-orthogonal with the
@@ -88,6 +88,59 @@ rest of the features of your language.}
 \info{Zoology of various features that we will eventually show
   conflict with this or that property or implementation of union and
   intersection. Including user-define contracts.}
+
+Programming language research no longer lives on the abstract world
+of ideal surfaces.
+Every addition needs to be compatible with years of research
+and development, and this is hard.
+Success was unavoidable.
+
+In this section we briefly introduce some aspects of real world
+programming languages that will cause trouble while interacting
+with union and intersection dynamic checks.
+
+\subsection*{User defined (flat) contracts}
+
+User defined contracts, also called flat contracts, are a particular
+kind of contract that behaves similar to an assertion, and whose
+main point is to apply some arbitrary predicate (as arbitrary as the
+host language allows it) to a value; if the predicate returns true,
+the contract passes, otherwise it fails.
+
+For instance, we could define a flat contract $even?$ as 
+$\lambda x. ~ x ~ \% ~ 2 ~ == ~ 0$, that checks
+whether a number is even.
+And then use it to check that a function always returns an
+even number, for example:
+
+$$let~f~=~(\lambda n. ~ n * 2)@Number ~ \rightarrow ~ even?$$
+
+\unsure{Do we need deeper examples?}
+
+This kind of contracts are present on many different languages,
+for instance, the Eiffel programming language, the precursor
+on the Design by Contract ideals, allows to assert
+exactly these kinds of expression as pre- and post-conditions on
+functions.
+
+The Racket programming language also has a system to work with
+contracts\footnote{And a gradual typing system
+built on top of that, but that goes beyond the scope of this
+work.} that provides a mechanism for defining them; and
+composing these with other kinds of constructs.
+
+Even if flat contracts may seem like too much, these are expected
+by programmers on dynamic languages, where testing and runtime
+assertions are a common pattern for safe programming, and 
+programmers are used to express complex predicates
+over values.
+
+
+\subsection*{Code manipulation (optimizations)}
+\info{Present inlining and CSE as two major code
+optimizations.
+Purity and immutability as two important factors.}
+
 
 \newpage
 
