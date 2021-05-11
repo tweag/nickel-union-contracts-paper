@@ -55,6 +55,75 @@
 
 %%%%%%%%%%%%%%%%% /Editing marks %%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%% LST listing confinguraiton %%%%%%%%%%%
+
+\lstdefinelanguage{nickel}{
+    keywords=[1]{
+      if,
+      then,
+      else,
+      switch,
+    },
+    keywords=[2]{
+      let,
+      rec,
+      fun,
+      in
+    },
+    keywords=[3]{
+      Num,
+      Bool,
+      Str,
+      List,
+      Dyn,
+      forall,
+    },
+    keywords=[4]{
+      true,
+      false,
+      null
+    },
+    keywords=[5]{
+      doc,
+      default,
+    },
+    sensitive=true, % keywords are case-sensitive
+    morecomment=[l]{//}, % l is for line comment
+    morecomment=**[is][\color{dark-grey}]{\$}{\$},
+    morestring=[b]", % defines that strings are enclosed in double quotes
+    morestring=[s]{m\#"}{"\#m},
+    moredelim=[is][\color{bright-grey}]{\$}{\$},
+    literate=
+        *{->}{$\rightarrow$}1
+        {=>}{$\Rightarrow$}1
+        {>=}{$\geq$}1
+        {<=}{$\leq$}1
+} %
+
+\lstset{
+  language={nickel},
+  basicstyle=\small\ttfamily, % Global Code Style
+  captionpos=b, % Position of the Caption (t for top, b for bottom)
+  extendedchars=true, % Allows 256 instead of 128 ASCII characters
+  tabsize=2, % number of spaces indented when discovering a tab
+  columns=fixed, % make all characters equal width
+  keepspaces=true, % does not ignore spaces to fit width, convert tabs to spaces
+  showstringspaces=false, % lets spaces in strings appear as real spaces
+  breaklines=true, % wrap lines if they don't fit
+  frame=trbl, % draw a frame at the top, right, left and bottom of the listing
+  frameround=tttt, % make the frame round at all four corners
+  framesep=4pt, % quarter circle size of the round corners
+  numbers=left, % show line numbers at the left
+  numberstyle=\tiny\ttfamily, % style of the line numbers
+  % commentstyle=\color{dark-grey}, % style of comments
+  % keywordstyle=[1]\color{blue-portage}, % style of keywords
+  % keywordstyle=[2]\color{orange-vivid-tangerine}, % style of keywords
+  % keywordstyle=[3]\color{blue-portage}, % style of keywords
+  % keywordstyle=[4]\color{green-pea}, % style of keywords
+  % keywordstyle=[5]\color{pink-froly}, % style of keywords
+  % stringstyle=\color{blue-marguerite}, % style of strings
+}
+
 \bibliographystyle{ACM-Reference-Format}
 
 \begin{abstract}
@@ -401,9 +470,9 @@ shape depends on the tag (see Figure \ref{fig:union-encoding}).
 
 \begin{figure}
   \begin{center}
-    \begin{lstlisting}
-        { tag: <Integer, String>, value: Dyn }
-    \end{lstlisting}
+\begin{lstlisting}[language=nickel]
+{tag: <Num, Str>, value: Dyn}
+\end{lstlisting}
   \end{center}
 \caption{Encoding of the union type: integer or a string}
 \label{fig:union-encoding}
@@ -462,11 +531,11 @@ are sufficient to implement the encoding illustrated in Figure
 \ref{fig:union-encoding}. For example, let us represent an algebraic data type
 (written in ML syntax) as an imaginary Nickel union type:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=caml]
 type either = Left of int | Right of string
 \end{lstlisting}
 
-\begin{lstlisting}
+\begin{lstlisting}[language=nickel]
 { tag : <Left>, val : Num} | { tag : <Right>, val : Str}
 \end{lstlisting}
 
