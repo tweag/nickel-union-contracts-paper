@@ -170,37 +170,46 @@ In this section we briefly introduce some aspects of real world
 programming languages that will cause trouble while interacting
 with union and intersection dynamic checks.
 
-\subsection*{User defined (flat) contracts}
+\subsection*{Flat contracts}
 
 User defined contracts, also called flat contracts, are a particular
 kind of contract that behaves similar to an assertion, and whose
 main point is to apply some arbitrary predicate (as arbitrary as the
-host language allows it) to a value; if the predicate returns true,
-the contract passes, otherwise it fails.
+host language allows it) to a value; if the predicate evaluates to
+true, the contract passes, otherwise it fails.
 
 For instance, we could define a flat contract $even?$ as
 $\lambda x. ~ x ~ \% ~ 2 ~ == ~ 0$, that checks
-whether a number is even.
+whether a number is even by checking the remainder of dividing it by 2.
 And then use it to check that a function always returns an
-even number, for example:
+even number, when applied to a $Number$:
 
-$$let~f~=~(\lambda n. ~ n * 2)@Number ~ \rightarrow ~ even?$$
+$$let~f~=~(\lambda n. ~ n * 2)@(Number ~ \rightarrow ~ even?)$$
 
-\unsure{Do we need deeper examples?}
+\unsure{Do we need deeper examples?
+Maybe something showing that flat contracts could evaluate
+a function.}
 
 This kind of contracts are present on many different languages,
 for instance, the Eiffel programming language, the precursor
-on the Design by Contract ideals, allows to assert
-exactly these kinds of expression as pre- and post-conditions on
-functions.
+of the Design by Contract ideals, allows to assert
+these kinds of expression as pre- and post-conditions on
+functions\cite{EiffelDesignByContract}.
+A somewhat newer language, the D programming
+language, allows, among other things, to have invariants on classes,
+written with flat contracts\cite{DLangContracts}.
 
-The Racket programming language also has a system to work with
+Finally, the Racket programming language also has a system to work with
 contracts\footnote{And a gradual typing system
 built on top of that, but that goes beyond the scope of this
-work.} that provides a mechanism for defining them; and
-composing these with other kinds of constructs.
+work.} that allows to define flat contracts, and
+to compose them with other kinds of dynamic checks,
+like higher order contracts or a lightweight take on union
+and intersection contracts\cite{RacketContracts}.
+\todo{Talk about this, probably later on the paper}
 
-Even if flat contracts may seem like too much, these are expected
+Even if flat contracts may seem like too much, the ability to make
+non trivial checks on values (to validate their output) is expected
 by programmers on dynamic languages, where testing and runtime
 assertions are a common pattern for safe programming, and
 programmers are used to express complex predicates
