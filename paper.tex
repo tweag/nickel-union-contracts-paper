@@ -126,6 +126,8 @@
   % stringstyle=\color{blue-marguerite}, % style of strings
 }
 
+\newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
+
 \bibliographystyle{ACM-Reference-Format}
 
 \begin{abstract}
@@ -178,13 +180,24 @@ main point is to apply some arbitrary predicate (as arbitrary as the
 host language allows it) to a value; if the predicate evaluates to
 true, the contract passes, otherwise it fails.
 
-For instance, we could define a flat contract $even?$ as
-$\lambda x. ~ x ~ \% ~ 2 ~ == ~ 0$, that checks
+For instance, we could define a flat contract \nickel{even} as
+\nickel{fun x => x \% 2 == 0}, that checks
 whether a number is even by checking the remainder of dividing it by 2.
 And then use it to check that a function always returns an
-even number, when applied to a $Number$:
+even number, when applied to a \nickel{Number}:
 
-$$let~f~=~(\lambda n. ~ n * 2)@(Number ~ \rightarrow ~ even?)$$
+\begin{figure}[h]
+\begin{center}
+\begin{lstlisting}[language=nickel]
+let f = (fun n => n * 2) @ (Number -> even)
+\end{lstlisting}
+  \end{center}
+\caption{A function wrapped with a contract stating that it always returns
+an even number}
+\label{fig:num-to-even}
+\end{figure}
+
+% $$let~f~=~(\lambda n. ~ n * 2)@(Number ~ \rightarrow ~ even?)$$
 
 \unsure{Do we need deeper examples?
 Maybe something showing that flat contracts could evaluate
@@ -197,18 +210,22 @@ these kinds of expression as pre- and post-conditions on
 functions\cite{EiffelDesignByContract}.
 A somewhat newer language, the D programming
 language, allows, among other things, to have invariants on classes,
-written with flat contracts\cite{DLangContracts}.
+written with flat contracts, that are
+dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
 Finally, the Racket programming language also has a system to work with
-contracts\footnote{And a gradual typing system
+contracts that allows to define flat contracts
+\footnote{And a gradual typing system
 built on top of that, but that goes beyond the scope of this
-work.} that allows to define flat contracts, and
+work.}
+, and
 to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
-\todo{Talk about this, probably later on the paper}
+\todo{Talk about this, probably later on the paper.
+See Related Works section}
 
-Even if flat contracts may seem like too much, the ability to make
+Even if flat contracts may seem like too permissive, the ability to make
 non trivial checks on values (to validate their output) is expected
 by programmers on dynamic languages, where testing and runtime
 assertions are a common pattern for safe programming, and
@@ -325,6 +342,7 @@ union and intersection around dynamic languages.
 
 \section{Related work}
 \info{Including a mention of statically typed systems with union}
+\info{Include something about Racket's and and or contracts}
 
 \newpage
 
