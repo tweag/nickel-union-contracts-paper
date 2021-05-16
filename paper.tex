@@ -127,6 +127,7 @@
 }
 
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
+\newcommand{\racket}[1]{\lstinline[language=lisp]{#1}}
 
 \bibliographystyle{ACM-Reference-Format}
 
@@ -269,6 +270,11 @@ and then eagerly opening up unions, but postponing intersection
 contracts as much as possible.
 \todo{This assumes the difficulty has been previously explained}
 
+For instance, if the value \nickel{V} is contracted with
+\nickel{A /\\ (B \\/ C)}, then, before the contract is checked,
+the contract gets opened up to something equivalent to
+\nickel{(A /\\ B) \\/ (A /\\ C)}.
+
 This straightforward solutions makes composing the Keil and Thiemann
 system with other existing systems more difficult; in the words
 of Williams, Morris, and Wadler:
@@ -279,17 +285,20 @@ special cases can hinder composition."\cite{RootCauseOfBlame}
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
 together.
-They provide two different set of rules for their calculus,
-the first one is non deterministic, which purpose is to provide
+\todo{This assumes the difficulty was already explained}
+They provide two different sets of rules for their calculus,
+the first one is non deterministic, whose purpose is to provide
 semantics that are simple to understand.
 The second one is a deterministic set of rules, that are intended
-to be simply to implement. These semantics need to perform operations
+to be simple to implement.
+This second set needs to perform operations
 on the evaluation context, to decide whether or not to evaluate
 a given contract.
 
 We see two problems here, a minor one is the fact that two different
 semantics need to be defined, which translates either to a difficult
-to implement or a difficult to understand system. A second, major one,
+to implement or a difficult to understand system.
+A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
 difficult, or even impossible (as the case with common subexpression elimination).
@@ -309,19 +318,19 @@ all of their expected monitoring properties for higher ordered, union
 and, intersection contracts.
 However, one of these properties states the following:
 
-$$ K \in \llbracket A \cap B \rrbracket ~ if ~ K \in \llbracket A \rrbracket \lor K \in \llbracket B \rrbracket $$
+$$ K \in \llbracket A \cap B \rrbracket^- ~ if ~ K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
 
 Which means that a continuation ($K$) complies negatively with an
-intersection of $A$ and $B$ if it complies with at least one of these.
+intersection of $A$ and $B$ if it complies negatively with at least one of these.
 Altough this is true, it's a weaker statement of what we'd like to have,
 since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$,
-where $K_1 \in \llbracket A \rrbracket$ but $K_1 \not \in \llbracket B \rrbracket$,
+where $K_1 \in \llbracket A \rrbracket^-$ but $K_1 \not \in \llbracket B \rrbracket^-$,
 and dually for $K_2$, which would mean the continuation presented above would not
-be in $\llbracket A \cap B \rrbracket$, even though our intuition (and the
+be in $\llbracket A \cap B \rrbracket^-$, even though our intuition (and the
 introduction to the paper) indicates that it should.
 
 While this mistake does not invalidate their work (the system they present
-handles these correctly), it shows that existing research is still not on
+handles these cases correctly), it shows that existing research is still not on
 good shape to handle the growing usecases being developed for
 union and intersection around dynamic languages.
 
@@ -336,7 +345,8 @@ union and intersection around dynamic languages.
 
 
 % K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
-\unsure{Is this worth mentioning? Should we go so techincal?}
+\unsure{Is it worth mentioning how continuations are formed?
+Should we go so techincal?}
 
 \newpage
 
@@ -671,7 +681,7 @@ Unions and intersection are starting to become more and more common
 on non-academic programming languages, as stated on the introduction,
 unions are a natural abstraction for dynamic languages, where the type
 of an expression could have many different shapes, without necessarily
-having a mark to distinguish between them.
+having a mark to distinguish between them at type level.
 With this in mind, a valid question is how do these languages solve the
 union/intersection conundrum? Or, even better, what is it that they
 solve?
@@ -680,38 +690,104 @@ In the rest of this section we revisit some different approaches.
 
 \subsection{Racket}
 
-Racket is language based on Scheme mainly thought as a language to experiment
+Racket is a language based on Scheme, mainly thought as a language to experiment
 with different language desings and ideas. It provides a very complete contract
-system.
+system\cite{RacketContracts}.
 
-Among those contracts, they provide \texttt{and/c} and \texttt{or/c} contracts.
-These contracts are lightweight versions of unions and intersections, they simply
-check that every contract holds, in the case of and/c, and that at least one contract
-holds, in the case of or/c.\unsure{It doesn't really make sense for a
-  contract to “hold”, in general}
+Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
+These contracts are lightweight versions of intersections and unions, they simply
+check that every contract is valid, in the case of \racket{and/c},
+and that at least one contract
+is valid, in the case of \racket{or/c}.
 
-So, for instance, the usual usecase of intersection to encode overloading
+So, for instance, the usual usecase of intersection to encode bounded overloading
 does not work on Racket. Take a look at the next example, the function
-\texttt{overload} should accept a call like \texttt{(overload 3)}, but it fails
-since it 3 is not a valid \texttt{string?}.
+\racket{overload} should accept a call like \racket{(overload 3)}, but it fails
+since 3 is not a valid \racket{string?}.
 
-\texttt{(define/contract overload
+\begin{figure}[h]
+  
+\begin{lstlisting}[language=lisp]
+(define/contract overload
 (and/c (-> number? number?)
        (-> string? string?))
-($\lambda$ (x) x))}
+(lambda (x) x))
+\end{lstlisting}
+\caption{Non working function overloading on Racket.}
 
-Even worst, the or/c contract doesn't allow to have multiple higher order
+\end{figure}
+
+Even worst, the \racket{or/c} contract doesn't allow to have multiple higher order
 contracts that could (potentially) apply to a function, these have to be
-differentiated by first order markers (for instance, the number of
-arguments).\unsure{This section is overall a bit hard to follow. I
+differentiated by first order markers.
+For instance, the code on Figure \ref{code:racket:or/c:working}
+would correctly allow only to call
+\racket{united} with a \racket{number?},
+and it can make this distinction since it knows that
+\racket{(lambda (x) x)} can not be a function that takes 2 parameters.
+However, the code on Figure \ref{code:racket:or/c:non-working} would fail
+before running, since the \racket{or/c} contract is unable to know
+which of the two function contracts to use.
+Ideally, this last example should just behave as wrapping
+the function with the \racket{(-> even? even?)} contract.
+
+\begin{figure}[h]
+  
+\begin{lstlisting}[language=lisp]
+(define/contract united
+(or/c (-> number? number?)
+      (-> string? string? string?))
+(lambda (x) x))
+\end{lstlisting}
+\caption{Working \racket{or/c} example on Racket.}
+\label{code:racket:or/c:working}
+
+\end{figure}
+
+\begin{figure}[h]
+  
+\begin{lstlisting}[language=lisp]
+(define/contract united
+(or/c (-> number? number?)
+      (-> even? even?))
+(lambda (x) x))
+\end{lstlisting}
+\caption{Non working \racket{or/c} example on Racket.}
+\label{code:racket:or/c:non-working}
+
+\end{figure}
+
+
+\unsure{This section is overall a bit hard to follow. I
   think I've figured out what it means, but it needs more love. Also
   give an example which doesn't work and one that does for or/c.}
 
 \subsubsection*{case->}
 
 Racket does provide an alternative for overloading methods, called the
-\texttt{case->} contract, however, this overloading of methods only
+\racket{case->} contract, however, this overloading of methods only
 works over contracts of functions with different amount of parameters.
+It's a good alternative to allow limited overloading of functions.
+As an example, consider the following non failing piece of code, and
+try to understand how Racket can decide, at each application,
+which function contract to use.
+
+\begin{figure}[h]
+
+\begin{lstlisting}[language=lisp]
+(define/contract overcase
+  (case-> (-> string? string?)
+          (-> number? number? number?)
+          )
+  (lambda (x [y 0]) (if (number? x)
+                   (+ x y)
+                   x)))
+
+(overcase 1 2)
+
+(overcase "hello")
+\end{lstlisting}
+\end{figure}
 
 \todo{Coming back to the problems of composing U/I with other typing
 features, Racket has made a clear choice and decided that higher order
