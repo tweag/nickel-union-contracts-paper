@@ -239,6 +239,49 @@ over values.
 optimizations.
 Purity and immutability as two important factors.}
 
+The good performances of modern programs heavily rely on complex optimizations
+performed by the compiler or the interpreter. Even more so for functional
+languages, because the functional which model is very different from what actual
+computers are good at executing, naive code generation can exhibit unacceptable
+slowdowns. Functional programs tend to make heavy use of functions, and function
+is a costly operation from the point of view of low-level execution.
+
+One such crucial optimization is inlining. Inlining eliminates a function
+application by substituting the function for its definition at compile time (or
+before execution, for interpreted language). This is especially important for
+short functions that are called repeatedly.
+
+% EXAMPLE INLINING
+
+Another optimization is common subexpression elimination (CSE). CSE somehow
+goes into the other direction: it factors out equal subexpressions to avoid
+recomputing them several times.
+
+% EXAMPLE CSE
+
+Beyond CSE, there exists other similar transformations, such as Haskell's
+let-floating~\ref{} or loop-invariant code motion, which amount to hoist
+invariant out from repeated blocks.
+
+More generally, there is a whole family of opitmizations, such as let-floating,
+\begin{lstlisting}[language=caml]
+type Ordering = Smaller | Equals | Greater
+sort : 'a list
+       -> ('a -> 'a -> Ordering)
+       -> 'a list
+random_list : unit -> int list
+
+sort (random_list ()) (fun x y ->
+  if x < y then Smaller
+  else if x == y then Equals
+  else Greater)
+\end{lstlisting}
+
+Common subexpression elemination (CSE) etc.
+
+\begin{lstlisting}[language=caml]
+
+\end{lstlisting}
 
 \newpage
 
@@ -449,9 +492,17 @@ typed terms, and first-class contracts. In "first-class contracts", we include
 the ability to write user-defined contracts. Because built-in types are too
 simplistic for the purpose of data validation, the ability to write a small
 validation function for, say, a port number, to have it immediately available as
-a contract that can be composed with other type constructors\unsure{Needs code
+a contract that can be composed with other type constructors\resolved{Needs code
 to illustrate.}, is in our opinion one of the main appeal of Nickel's contracts
-system.
+system. An example is given in Figure~\ref{fig:contract-composition}. The first
+line defines a port contract from a predicate and use it in the definition of a
+larger \lstinline+Configuration+ record contract. The \lstinline+Configuration+
+contract checks that a value is a record with the following shape: it must have
+a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
+\lstinline+host+ field obeying a \lstinline+Host+ contract. It plays the role of
+a \emph{schema}, used to validate the final data. The \lstinline+|+ operator
+entails that a value respect a contract, akin to \lstinline+:+ for types. We
+assume that a \lstinline+Host+ contract has been defined in a similar way.
 
 \begin{figure}
   \begin{center}
@@ -468,7 +519,7 @@ let Configuration = {
 \end{lstlisting}
   \end{center}
 \caption{Contract composition}
-\label{fig:union-encoding}
+\label{fig:contract-composition}
 \medskip
 \small
 Defines a port contract from a predicate and use it in the definition of a
@@ -480,7 +531,7 @@ contract to a value, similar to `:` for static types. We assume that a
 
 In this hybrid system, each type constructor of the static type system - arrows,
 records, foralls - must have a contract counterpart that checks at run-time that
-a value is indeed a member of the corresponding type. Contracts for various
+a value is a member of the corresponding type. Contracts for various
 extensions of the simply typed $\lambda$-calculus have been investigated
 \cite{BlameForAll, KeilThiemannUnionIntersection, RootCauseOfBlame,
 DependentContracts, GradualTypingClasses}, with solutions of varying complexity.
