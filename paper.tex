@@ -91,10 +91,10 @@
     },
     sensitive=true, % keywords are case-sensitive
     morecomment=[l]{//}, % l is for line comment
-    morecomment=**[is][\color{dark-grey}]{\$}{\$},
+    morecomment=**[is][\color{gray}]{\$}{\$},
     morestring=[b]", % defines that strings are enclosed in double quotes
     morestring=[s]{m\#"}{"\#m},
-    moredelim=[is][\color{bright-grey}]{\$}{\$},
+    moredelim=[is][\color{gray}]{\$}{\$},
     literate=
         *{->}{$\rightarrow$}1
         {=>}{$\Rightarrow$}1
@@ -239,50 +239,73 @@ over values.
 optimizations.
 Purity and immutability as two important factors.}
 
-The good performances of modern programs heavily rely on complex optimizations
+The performance of modern programs heavily relies on non-trivial optimizations
 performed by the compiler or the interpreter. Even more so for functional
-languages, because the functional which model is very different from what actual
-computers are good at executing, naive code generation can exhibit unacceptable
-slowdowns. Functional programs tend to make heavy use of functions, and function
-is a costly operation from the point of view of low-level execution.
+languages, whose operational semantics is usually very different from the actual
+primitives of modern processors: naive code generation can exhibit unacceptable
+slowdowns. Functional programs tend to make heavy use of functions, and a function
+call is a costly operation from the point of view of low-level execution.
 
 One such crucial optimization is inlining. Inlining eliminates a function
-application by substituting the function for its definition at compile time (or
-before execution, for interpreted language). This is especially important for
-short functions that are called repeatedly.
+application by directly substituting the function for its definition at compile
+time (or before execution, for interpreted language). This is especially
+important for small functions that are called repeatedly.
 
-% EXAMPLE INLINING
+\begin{lstlisting}[language=nickel]
+let elem = fun elt =>
+  lists.any (fun x => x == elt) in
+
+let subList = fun l1 l2 =>
+  elem (lists.head l1) l2
+  && subList (list.tail l1) l2
+\end{lstlisting}
 
 Another optimization is common subexpression elimination (CSE). CSE somehow
 goes into the other direction: it factors out equal subexpressions to avoid
 recomputing them several times.
 
-% EXAMPLE CSE
-
-Beyond CSE, there exists other similar transformations, such as Haskell's
-let-floating~\ref{} or loop-invariant code motion, which amount to hoist
-invariant out from repeated blocks.
-
-More generally, there is a whole family of opitmizations, such as let-floating,
-\begin{lstlisting}[language=caml]
-type Ordering = Smaller | Equals | Greater
-sort : 'a list
-       -> ('a -> 'a -> Ordering)
-       -> 'a list
-random_list : unit -> int list
-
-sort (random_list ()) (fun x y ->
-  if x < y then Smaller
-  else if x == y then Equals
-  else Greater)
+\begin{lstlisting}[language=nickel]
+let elemAtOrLast = fun index list =>
+  if index == lists.length list then
+    lists.elemAt (lists.length list - 1) list
+  else
+    lists.elemAt index list
 \end{lstlisting}
 
-Common subexpression elemination (CSE) etc.
+Similar transformations exist beyond CSE, such as loop-invariant code motion or
+some of Haskell's let-floating~\ref{}, which amount to hoist invariant
+expressions out from repeated blocks in order to avoid recomputing them. In
+particular, take the following example:
 
-\begin{lstlisting}[language=caml]
+\begin{lstlisting}[language=nickel]
+let f = fun x =>
+  g y (x + y) 
 
+// We want
+let f =
+  let _g = g y in
+  fun x => \_g (x + y)
 \end{lstlisting}
 
+The soundness of these optimizations is tied the invariance of the semantics of
+programs with respect to substitution. Inlining requires that one can replace
+the application of a function by its body: this is $\beta$-reduction, and it is
+hard to think of a language when it is not a valid transformations. On the other
+hand, CSE-like transformations require an expansion property, of the form
+
+$$M[N/x] \simeq let~x~=~M~in~M[x]$$
+
+This does not necessarily holds, and is in particular trivially violated in
+presence of side effects:
+
+$$let~f~x~=~print~"hi";~(x+1)~in~(f~1, f~1) \\
+\not \simeq let~f~x~=~print~"hi";~(x+1)~in~let~y~=~f~1~in~(y,y)$$
+
+However, this property does hold for \emph{pure} terms, that are terms without
+side-effects. Pure languages, or languages with a form of effect tracking such
+as Haskell, are able to identify such pure terms. Other languages rely on
+sub-approximations (for instance, applying optimizations to arithmetic
+expressions).
 \newpage
 
 \section{Union \& intersection}
