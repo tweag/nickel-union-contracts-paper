@@ -336,11 +336,11 @@ particular, take the example of Figure~\ref{fig:optimizations-let-floating-ex}.
 \begin{figure}
   \begin{center}
 \begin{lstlisting}[language=nickel,title={Source program}]
-let f = fun x => g y (x + 1) 
+let f = fun x => g y (x + 1)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel,title={Optimized program}]
-let f' = let g' = g y in
-  fun x => g' (x + 1)
+let g' = g y
+let f' = fun x => g' (x + 1)
 \end{lstlisting}
   \end{center}
 \caption{Let-floating}
@@ -367,15 +367,16 @@ $$M[N/x] \simeq let~x~=~N~in~M[x]$$
 This equation clearly fails in a call-by-value language with side effects:
 
 \begin{lstlisting}[language=Nickel]
-let f x = print "hi";(x+1) in (f 1,f 1) 
+let f x = print "hi";(x+1) in (f 1,f 1)
 (*@ $\not \simeq$ @*) let f x = print "hi";(x+1) in
 (*@ \phantom{$\not \simeq$} @*) let y = f 1 in (y,y)
 \end{lstlisting}
 
 However, this property does hold for \emph{pure} terms, that are terms without
 side-effects. In a pure language, or a language with effect tracking like
-Haskell, pure terms can be safely identified for applying optimizations. Other
-languages rely on under-approximations.
+Haskell\todo{Cite a different language, or remove citation}, pure terms can be
+safely identified for applying optimizations. Other languages rely on
+under-approximations.
 
 \subsubsection*{Lazyness}
 \unsure{Should we talk about lazyness?
@@ -383,48 +384,58 @@ this would be a good place to introduce it}
 
 \unsure{Should we tease already here that unions and intersections break this
 even for pure terms?}
+
+\subsection*{Laziness}
+
 \newpage
 
 \section{Union \& intersection}
 \info{What are they, what are they used for.}
 
-% Content:
-%   - Unions are useful as a fundamental data block
-%     Examples: nullable, tree-like data structure, multiple representations
+Unions are useful as a fundamental data block.
+Examples: nullable, tree-like data structure, multiple representations
 
-\begin{lstlisting}
+\begin{lstlisting}[title={Tree-like data structure}]
 type BinaryTree =
 Integer | (BinaryTree, BinaryTree)
 \end{lstlisting}
 
-\begin{lstlisting}
+\begin{lstlisting}[title={Plain enumeration}]
+protocol : `Http | `Ftp | `Sftp
+\end{lstlisting}
+
+\begin{lstlisting}[title={Nullable values}]
 optionalValue : String | Null
 \end{lstlisting}
 
-\begin{lstlisting}
-person : {name : String, age : Number}
+\begin{lstlisting}[title={Alternative representations}]
+person : {name : String, age : Int}
   | {name : String, dateOfBirth : String}
 \end{lstlisting}
 
+
 %   - Intersections are useful for subtyping or refinement (integers/floats
 %       e.g)
-\begin{lstlisting}
+\begin{lstlisting}[title={Value subtyping}]
 1 : Int & Float
 \end{lstlisting}
 %   - Intersections are useful to encode overloading
-\begin{lstlisting}
-incr: (Int -> Int) & (Float -> Float)
+\begin{lstlisting}[title={Overloading}]
+incr: (Int -> Int) & (Float -> Float) =
+  fun x => x + 1
 \end{lstlisting}
 
 %   - Intersections are useful to encode mixins (see Scala3)
-\begin{lstlisting}
+\begin{lstlisting}[title={Structural mixins}]
 Comparator: {cmp: T -> T -> Bool}
 Shower: {show: T -> String}
 
 showSmaller : (dict: Comparator & Shower) -> T -> T -> String
 \end{lstlisting}
 %   - Intersections appears in some form as unions' dual
-\begin{lstlisting}
+\begin{lstlisting}[title={Intersection as the dual of unions}]
+f : (Num | String) -> Bool
+(*@ $\simeq$ @*) f : (Num -> Bool) (*@ $\cup$ @*) (String -> Bool)
 \end{lstlisting}
 
 \todo{Either here or the next section, show examples of unintuitive behaviour
@@ -432,6 +443,7 @@ of U and I. For example, I is not jos composition of contracts.
 And union has to be treated as any one of the options}
 % Things to settle: how to motivate them, how to compare them to ADTs. Purely
 % dynamic approach, or typed approach too?
+
 \newpage
 
 \section{Issues coming from the semantics}
@@ -901,7 +913,7 @@ does not work on Racket. Take a look at the next example, the function
 since 3 is not a valid \racket{string?}.
 
 \begin{figure}[h]
-  
+ 
 \begin{lstlisting}[language=racket]
 (define/contract overload
 (and/c (-> number? number?)
@@ -940,8 +952,8 @@ the function with the \racket{(-> even? even?)} contract.
 \end{figure}
 
 \begin{figure}[h]
-  
-\begin{lstlisting}[language=racket]
+
+\begin{lstlisting}[language=lisp]
 (define/contract united
 (or/c (-> number? number?)
       (-> even? even?))
