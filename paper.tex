@@ -102,6 +102,34 @@
         {<=}{$\leq$}1
 } %
 
+% Copied from https://hal.inria.fr/hal-01140459/file/racket.inc.tex
+\lstdefinelanguage{racket} {
+  morekeywords=[1]{define, define-syntax, define-macro, lambda, define-stream, stream-lambda},
+  morekeywords=[2]{begin, call-with-current-continuation, call/cc,
+    call-with-input-file, call-with-output-file, case, cond,
+    do, else, for-each, if,
+    let*, let, let-syntax, letrec, letrec-syntax,
+    define-context, define-controller, Integer, Boolean, get, when-required, when-provided,
+    maybe_publish, require, submod, or/c, ->, \#\%module-begin,
+    always_publish, with-syntax, define-struct/contract, syntax-case,
+    define/contract,
+    let-values, let*-values,
+    module, provide,
+    and, or, not, delay, force,
+    \#`, \#',
+    \#lang, implement, begin-for-syntax, rename-out,
+    quasiquote, quote, unquote, unquote-splicing,
+    map, fold, syntax, syntax-rules, eval, environment, query },
+  morekeywords=[3]{import, export},
+  alsoletter={',`,-,/,>,<,\#,\%},
+  morecomment=[l]{;},
+%  literate={lambda}{{\lambdaup}}1, % lambda -- look at https://tex.stackexchange.com/questions/119879/math-symbols-in-tt-font
+  moredelim=**[is][\color{light-gray}]{<<@<<}{>>@>>},
+  moredelim=**[is][\itshape\color{OliveGreen}]{<<;<<}{>>;>>},
+  morecomment=[s]{\#|}{|\#},
+  sensitive=true,
+}
+
 \lstset{
   language={nickel},
   basicstyle=\small\ttfamily, % Global Code Style
@@ -128,7 +156,7 @@
 }
 
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
-\newcommand{\racket}[1]{\lstinline[language=lisp]{#1}}
+\newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
 
 \bibliographystyle{ACM-Reference-Format}
 
@@ -176,6 +204,7 @@ with union and intersection dynamic checks.
 
 \subsection*{Flat contracts}
 
+\unsure{Should we define contracts prior to this?}
 User defined contracts, also called flat contracts, are a particular
 kind of contract that behaves similar to an assertion, and whose
 main point is to apply some arbitrary predicate (as arbitrary as the
@@ -186,12 +215,12 @@ For instance, we could define a flat contract \nickel{even} as
 \nickel{fun x => x \% 2 == 0}, that checks
 whether a number is even by checking the remainder of dividing it by 2.
 And then use it to check that a function always returns an
-even number, when applied to a \nickel{Number}:
+even number, when applied to a \nickel{Integer}:
 
 \begin{figure}[h]
 \begin{center}
 \begin{lstlisting}[language=nickel]
-let f = (fun n => n * 2) @ (Number -> even)
+let f = (fun n => n * 2) @ (Integer -> even)
 \end{lstlisting}
   \end{center}
 \caption{A function wrapped with a contract stating that it always returns
@@ -866,7 +895,7 @@ since 3 is not a valid \racket{string?}.
 
 \begin{figure}[h]
   
-\begin{lstlisting}[language=lisp]
+\begin{lstlisting}[language=racket]
 (define/contract overload
 (and/c (-> number? number?)
        (-> string? string?))
@@ -892,7 +921,7 @@ the function with the \racket{(-> even? even?)} contract.
 
 \begin{figure}[h]
   
-\begin{lstlisting}[language=lisp]
+\begin{lstlisting}[language=racket]
 (define/contract united
 (or/c (-> number? number?)
       (-> string? string? string?))
@@ -905,7 +934,7 @@ the function with the \racket{(-> even? even?)} contract.
 
 \begin{figure}[h]
   
-\begin{lstlisting}[language=lisp]
+\begin{lstlisting}[language=racket]
 (define/contract united
 (or/c (-> number? number?)
       (-> even? even?))
@@ -933,7 +962,7 @@ which function contract to use.
 
 \begin{figure}[h]
 
-\begin{lstlisting}[language=lisp]
+\begin{lstlisting}[language=racket]
 (define/contract overcase
   (case-> (-> string? string?)
           (-> number? number? number?)
