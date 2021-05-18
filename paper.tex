@@ -377,6 +377,10 @@ side-effects. In a pure language, or a language with effect tracking like
 Haskell, pure terms can be safely identified for applying optimizations. Other
 languages rely on under-approximations.
 
+\subsubsection*{Lazyness}
+\unsure{Should we talk about lazyness?
+this would be a good place to introduce it}
+
 \unsure{Should we tease already here that unions and intersections break this
 even for pure terms?}
 \newpage
@@ -423,6 +427,9 @@ showSmaller : (dict: Comparator & Shower) -> T -> T -> String
 \begin{lstlisting}
 \end{lstlisting}
 
+\todo{Either here or the next section, show examples of unintuitive behaviour
+of U and I. For example, I is not jos composition of contracts.
+And union has to be treated as any one of the options}
 % Things to settle: how to motivate them, how to compare them to ADTs. Purely
 % dynamic approach, or typed approach too?
 \newpage
