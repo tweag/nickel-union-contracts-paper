@@ -355,6 +355,47 @@ even for pure terms?}
 \section{Union \& intersection}
 \info{What are they, what are they used for.}
 
+% Content:
+%   - Unions are useful as a fundamental data block
+%     Examples: nullable, tree-like data structure, multiple representations
+
+\begin{lstlisting}
+type BinaryTree =
+Integer | (BinaryTree, BinaryTree)
+\end{lstlisting}
+
+\begin{lstlisting}
+optionalValue : String | Null
+\end{lstlisting}
+
+\begin{lstlisting}
+person : {name : String, age : Number}
+  | {name : String, dateOfBirth : String}
+\end{lstlisting}
+
+%   - Intersections are useful for subtyping or refinement (integers/floats
+%       e.g)
+\begin{lstlisting}
+1 : Int & Float
+\end{lstlisting}
+%   - Intersections are useful to encode overloading
+\begin{lstlisting}
+incr: (Int -> Int) & (Float -> Float)
+\end{lstlisting}
+
+%   - Intersections are useful to encode mixins (see Scala3)
+\begin{lstlisting}
+Comparator: {cmp: T -> T -> Bool}
+Shower: {show: T -> String}
+
+showSmaller : (dict: Comparator & Shower) -> T -> T -> String
+\end{lstlisting}
+%   - Intersections appears in some form as unions' dual
+\begin{lstlisting}
+\end{lstlisting}
+
+% Things to settle: how to motivate them, how to compare them to ADTs. Purely
+% dynamic approach, or typed approach too?
 \newpage
 
 \section{Issues coming from the semantics}
