@@ -117,6 +117,7 @@
   framesep=4pt, % quarter circle size of the round corners
   numbers=left, % show line numbers at the left
   numberstyle=\tiny\ttfamily, % style of the line numbers
+  escapeinside={(*@}{@*)} % escape sequence to insert latex
   % commentstyle=\color{dark-grey}, % style of comments
   % keywordstyle=[1]\color{blue-portage}, % style of keywords
   % keywordstyle=[2]\color{orange-vivid-tangerine}, % style of keywords
@@ -241,17 +242,20 @@ Purity and immutability as two important factors.}
 
 The performance of modern programs heavily relies on non-trivial optimizations
 performed by the compiler or the interpreter. Even more so for functional
-languages, whose operational semantics is usually very different from the actual
-primitives of modern processors: naive code generation can exhibit unacceptable
-slowdowns. Functional programs tend to make heavy use of functions, and a function
-call is a costly operation from the point of view of low-level execution.
+languages, whose operational semantics is usually far removed from the actual
+primitives of modern processors: naive execution can exhibit unacceptable
+slowdowns. Functional programs tend to make heavy use of functions, and a
+function call is a costly operation from the point of view of low-level
+execution.
 
-One such crucial optimization is inlining. Inlining eliminates a function
-application by directly substituting the function for its definition at compile
-time (or before execution, for interpreted language). This is especially
-important for small functions that are called repeatedly.
+One crucial optimization is inlining(Figure~\ref{fig:optimizations-inlining-ex}). Inlining eliminates a function application
+by directly substituting the function for its definition at compile time (or
+before execution, for interpreted language). This is especially important for
+small functions that are called repeatedly.
 
-\begin{lstlisting}[language=nickel]
+\begin{figure}
+  \begin{center}
+\begin{lstlisting}[language=nickel,title={Source program}]
 let elem = fun elt =>
   lists.any (fun x => x == elt) in
 
@@ -259,53 +263,93 @@ let subList = fun l1 l2 =>
   elem (lists.head l1) l2
   && subList (list.tail l1) l2
 \end{lstlisting}
+\begin{lstlisting}[language=nickel,title={Optimized program}]
+let subList = fun l1 l2 =>
+  lists.any (fun x => x == elt)
+  && subList (list.tail l1) l2
+\end{lstlisting}
+  \end{center}
+\caption{Inlining}
+\label{fig:optimizations-inlining-ex}
+\end{figure}
 
-Another optimization is common subexpression elimination (CSE). CSE somehow
-goes into the other direction: it factors out equal subexpressions to avoid
-recomputing them several times.
+Another optimization is common subexpression elimination (CSE,
+Figure~\ref{fig:optimizations-cse-ex}). CSE goes into the other direction: it
+factors out equal subexpressions to avoid recomputing them multiple times.
 
-\begin{lstlisting}[language=nickel]
+\begin{figure}
+  \begin{center}
+\begin{lstlisting}[language=nickel,title={Source program}]
 let elemAtOrLast = fun index list =>
-  if index == lists.length list then
+  if index > lists.length list - 1 then
     lists.elemAt (lists.length list - 1) list
   else
     lists.elemAt index list
 \end{lstlisting}
+\begin{lstlisting}[language=nickel,title={Optimized program}]
+let elemAtOrLast = fun index list =>
+  let l = lists.length list - 1 in
+  if index > l then
+    lists.elemAt l list
+  else
+    lists.elemAt index list
+\end{lstlisting}
+  \end{center}
+\caption{Common subexpression elimination}
+\label{fig:optimizations-cse-ex}
+\end{figure}
 
 Similar transformations exist beyond CSE, such as loop-invariant code motion or
 some of Haskell's let-floating~\ref{}, which amount to hoist invariant
 expressions out from repeated blocks in order to avoid recomputing them. In
-particular, take the following example:
+particular, take the example of Figure~\ref{fig:optimizations-let-floating-ex}.
 
-\begin{lstlisting}[language=nickel]
-let f = fun x =>
-  g y (x + y) 
-
-// We want
-let f =
-  let _g = g y in
-  fun x => \_g (x + y)
+\begin{figure}
+  \begin{center}
+\begin{lstlisting}[language=nickel,title={Source program}]
+let f = fun x => g y (x + 1) 
 \end{lstlisting}
+\begin{lstlisting}[language=nickel,title={Optimized program}]
+let f' = let g' = g y in
+  fun x => g' (x + 1)
+\end{lstlisting}
+  \end{center}
+\caption{Let-floating}
+\label{fig:optimizations-let-floating-ex}
+\end{figure}
+
+The partial application \lstinline+g y+ is recomputed each time \lstinline+f+ is
+called. This may be costly, in particular in the presence of contracts: if
+\lstinline+y+ is a list for example, and \lstinline+g+ applies a list contract
+on it, the penalty could be linear in the size of \lstinline+y+. A sensible
+thing to do is to factor \lstinline+g y+ out of \lstinline+f+ as in
+Figure~\ref{fig:optimizations-let-floating-ex}, which is something Haskell's
+let-floating transformations could indeed do, given \lstinline+g+ is pure.
 
 The soundness of these optimizations is tied the invariance of the semantics of
-programs with respect to substitution. Inlining requires that one can replace
-the application of a function by its body: this is $\beta$-reduction, and it is
-hard to think of a language when it is not a valid transformations. On the other
-hand, CSE-like transformations require an expansion property, of the form
+programs with respect to some substitutive transformations\todo{bad naming}.
+Inlining requires that one can replace the application of a function by its
+body: this is $\beta$-reduction, and it is hard to think of a language where it
+is not a valid transformations. On the other hand, CSE-like transformations
+require an expansion property of the form
 
-$$M[N/x] \simeq let~x~=~M~in~M[x]$$
+$$M[N/x] \simeq let~x~=~N~in~M[x]$$
 
-This does not necessarily holds, and is in particular trivially violated in
-presence of side effects:
+This equation clearly fails in a call-by-value language with side effects:
 
-$$let~f~x~=~print~"hi";~(x+1)~in~(f~1, f~1) \\
-\not \simeq let~f~x~=~print~"hi";~(x+1)~in~let~y~=~f~1~in~(y,y)$$
+\begin{lstlisting}[language=Nickel]
+let f x = print "hi";(x+1) in (f 1,f 1) 
+(*@ $\not \simeq$ @*) let f x = print "hi";(x+1) in
+(*@ \phantom{$\not \simeq$} @*) let y = f 1 in (y,y)
+\end{lstlisting}
 
 However, this property does hold for \emph{pure} terms, that are terms without
-side-effects. Pure languages, or languages with a form of effect tracking such
-as Haskell, are able to identify such pure terms. Other languages rely on
-sub-approximations (for instance, applying optimizations to arithmetic
-expressions).
+side-effects. In a pure language, or a language with effect tracking like
+Haskell, pure terms can be safely identified for applying optimizations. Other
+languages rely on under-approximations.
+
+\unsure{Should we tease already here that unions and intersections break this
+even for pure terms?}
 \newpage
 
 \section{Union \& intersection}
