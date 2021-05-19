@@ -372,67 +372,134 @@ let f x = print "hi";(x+1) in (f 1,f 1)
 (*@ \phantom{$\not \simeq$} @*) let y = f 1 in (y,y)
 \end{lstlisting}
 
-However, this property does hold for \emph{pure} terms, that are terms without
-side-effects. In a pure language, or a language with effect tracking like
-Haskell\todo{Cite a different language, or remove citation}, pure terms can be
-safely identified for applying optimizations. Other languages rely on
-under-approximations.
-
-\subsubsection*{Lazyness}
-\unsure{Should we talk about lazyness?
-this would be a good place to introduce it}
+In the example above, the first term prints \nickel{"hi"} two times while the
+second term prints it only once. However, this property does hold for
+\emph{pure} terms, that are terms without side-effects. In a pure language, or a
+language with effect tracking like Haskell\todo{Cite a different language, or
+remove citation}, pure terms can be safely identified for applying
+optimizations. Other languages rely on under-approximations.
 
 \unsure{Should we tease already here that unions and intersections break this
 even for pure terms?}
 
-\subsection*{Laziness}
+\subsubsection*{Lazyness}
+\unsure{Should we talk about lazyness?
+this would be a good place to introduce it}
 
 \newpage
 
 \section{Union \& intersection}
 \info{What are they, what are they used for.}
 
-Unions are useful as a fundamental data block.
-Examples: nullable, tree-like data structure, multiple representations
+\subsection*{Unions}
+Unions are fundamental building blocks of programs. A union holds a value whose
+shape is known to be in a fixed set of alternatives: for example, a value that
+can be either a boolean or a string. They corresponds logically to conjunctions.
+Used in combination with products, they can represent arbitrary tree-like
+structures, allowing to model a large class of data
+(\ref{fig:union-adt-ex}).
 
+\label{fig:union-adt-ex}
 \begin{lstlisting}[title={Tree-like data structure}]
 type BinaryTree =
 Integer | (BinaryTree, BinaryTree)
 \end{lstlisting}
 
-\begin{lstlisting}[title={Plain enumeration}]
-protocol : `Http | `Ftp | `Sftp
-\end{lstlisting}
 
+Other use-cases for unions include:
+\begin{itemize}
+    \item To represent nullable values in JSON (\ref{fig:union-nullable-ex}).
+    \item For plain enumerations (\ref{fig:union-enum-ex}).
+    \item To support different representations of the same data
+        (\ref{fig:union-alt-ex}).
+\end{itemize}
+All of which are useful in a configuration language.
+
+\label{fig:union-nullable-ex}
 \begin{lstlisting}[title={Nullable values}]
 optionalValue : String | Null
 \end{lstlisting}
 
+\label{fig:union-enum-ex}
+\begin{lstlisting}[title={Plain enumeration}]
+protocol : `Http | `Ftp | `Sftp
+\end{lstlisting}
+
+\label{fig:union-alt-ex}
 \begin{lstlisting}[title={Alternative representations}]
 person : {name : String, age : Int}
   | {name : String, dateOfBirth : String}
 \end{lstlisting}
 
+In statically typed languages, and more specifically in functional programming
+languages, sums (also called tagged unions, or discriminated unions) are usually
+preferred, as constructors for algebraic datatypes. \unsure{This is a very
+    misleading statement at best. Sums are "tagged union" sure, but that refers
+to an encoding a sums with unions, certainly not an encoding of unions with
+sums!} [references]. Sums are unions' cousin where the alternatives are
+syntactically separated by an associated discriminating label. Well-known
+programming languages with first-class tagged unions include Haskell, OCaml,
+Rust, Scala, PureScript, Elm, Swift and many more.
 
-%   - Intersections are useful for subtyping or refinement (integers/floats
-%       e.g)
+On the other hand, in dynamically typed languages, it is customary to directly
+store different kinds of data in one variable without further ceremony. The
+runtime system needs to attach type tags to values anyway, which can usually be
+observed using functions like JavaScript's \verb+typeof+. Using such bare
+unions\resolved{If you can observe with typeof, then it's pretty much a tagged
+union, though the tag is implicit} has already been an idiom in dynamically
+typed language for a long time. Being able to type and handle these unions is an
+important aspect of the migration to a gradual type system. Indeed, a lot of
+gradually typed languages either existed originally as dynamically typed
+language or aim at backward compatibility with a dynamically typed base
+language. This is why despite the presence of a static type system, gradually
+typed languages tend to favor bare unions types which is the typed counterpart
+of this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
+
+In the case of Nickel, there is no pre-existing untyped language that we have to
+support, so we are freer of our choice. However, Nickel is a configuration
+language, whose contract and type system is intended to encode data schemas encountered in the wild. Since these schemas do use
+untagged unions, there is a strong incentive to support untagged unions at the
+type level, or at least, at the contract level.
+
+\subsection*{Intersections}
+
+Intersections are less prevalent. An intersection is a value that belongs to to
+two types at the same time. A simple example is a number literal \nickel{1}
+which could be accepted as both an \nickel{Int} and a \nickel{Float} without
+having to perform conversions(Figure~\ref{fig:intersection-subytping-ex}). In
+this example, the intersection \nickel{Int & Float} plays the role of a subtype
+of both \nickel{Int} and \nickel{Float}.
+
+\label{fig:intersection-subytping-ex}
 \begin{lstlisting}[title={Value subtyping}]
 1 : Int & Float
 \end{lstlisting}
-%   - Intersections are useful to encode overloading
+
+Intersections of higher-order types corresponding to overloading
+(Figure~\ref{fig:intersection-overloading-ex}).
+
+\label{fig:intersection-overloading-ex}
 \begin{lstlisting}[title={Overloading}]
 incr: (Int -> Int) & (Float -> Float) =
   fun x => x + 1
 \end{lstlisting}
 
-%   - Intersections are useful to encode mixins (see Scala3)
+They can also be used to combine constraints (such as traits or interfaces), as
+done in Scala 3 (Figure~\ref{fig:intersection-mixins-ex}).
+
+\label{fig:intersection-mixins-ex}
 \begin{lstlisting}[title={Structural mixins}]
 Comparator: {cmp: T -> T -> Bool}
 Shower: {show: T -> String}
 
 showSmaller : (dict: Comparator & Shower) -> T -> T -> String
 \end{lstlisting}
-%   - Intersections appears in some form as unions' dual
+
+Finally, intersection naturally show up as the dual of unions. Thus, in a system
+featuring unions, a union in a negative positions is a form of intersection
+(Figure~\ref{fig:intersection-dual}).
+
+\label{fig:intersection-dual}
 \begin{lstlisting}[title={Intersection as the dual of unions}]
 f : (Num | String) -> Bool
 (*@ $\simeq$ @*) f : (Num -> Bool) (*@ $\cup$ @*) (String -> Bool)
