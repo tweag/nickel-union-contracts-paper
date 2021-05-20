@@ -405,7 +405,7 @@ this would be a good place to introduce it}
 \subsection*{Unions}
 Unions are fundamental building blocks of programs. A union holds a value whose
 shape is known to be in a fixed set of alternatives: for example, a value that
-can be either a boolean or a string. They corresponds logically to conjunctions.
+can be either a boolean or a string. They correspond logically to conjunctions.
 Used in combination with products, they can represent arbitrary tree-like
 structures, allowing to model a large class of data
 (\ref{fig:union-adt-ex}).
@@ -417,14 +417,15 @@ Integer | (BinaryTree, BinaryTree)
 \end{lstlisting}
 
 
-Other use-cases for unions include:
+In addition to internal program representations, unions are also useful to model
+external data:
 \begin{itemize}
-    \item To represent nullable values in JSON (\ref{fig:union-nullable-ex}).
+    \item To represent nullable values(\ref{fig:union-nullable-ex}).
     \item For plain enumerations (\ref{fig:union-enum-ex}).
     \item To support different representations of the same data
         (\ref{fig:union-alt-ex}).
 \end{itemize}
-All of which are useful in a configuration language.
+All of which are common in configurations.
 
 \label{fig:union-nullable-ex}
 \begin{lstlisting}[title={Nullable values}]
