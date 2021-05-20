@@ -467,8 +467,8 @@ Intersections are less prevalent. An intersection is a value that belongs to to
 two types at the same time. A simple example is a number literal \nickel{1}
 which could be accepted as both an \nickel{Int} and a \nickel{Float} without
 having to perform conversions(Figure~\ref{fig:intersection-subytping-ex}). In
-this example, the intersection \nickel{Int & Float} plays the role of a subtype
-of both \nickel{Int} and \nickel{Float}.
+this example, the intersection \nickel{Int & Float} can be used as a subtype of
+both \nickel{Int} and \nickel{Float}.
 
 \label{fig:intersection-subytping-ex}
 \begin{lstlisting}[title={Value subtyping}]
@@ -536,17 +536,20 @@ and then eagerly opening up unions, but postponing intersection
 contracts as much as possible.
 \todo{This assumes the difficulty has been previously explained}
 
-For instance, if the value \nickel{V} is contracted with
-\nickel{A /\\ (B \\/ C)}, then, before the contract is checked,
+For instance, if the value \nickel{V} is contracted\todo{(Yann) Contracted means
+something else I think} with
+\nickel{A & (B | C)}, then, before the contract is checked,
 the contract gets opened up to something equivalent to
-\nickel{(A /\\ B) \\/ (A /\\ C)}.
+\nickel{(A & B) | (A & C)}.
 
 This straightforward solutions makes composing the Keil and Thiemann
 system with other existing systems more difficult; in the words
 of Williams, Morris, and Wadler:
-"(...) the monitoring semantics for contracts of intersection and union types given by Keil
-and Thiemann are not uniform. (...) If uniformity helps composition, then
-special cases can hinder composition."\cite{RootCauseOfBlame}
+"(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
+and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
+special cases can hinder composition."\cite{RootCauseOfBlame}\info{(Yann) Does
+it also make it less efficient? If $(A \& B)$ fails because of $B$, their
+development causes to recheck the contract $A$ that has been duplicated?}
 
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
@@ -563,11 +566,20 @@ a given contract.
 
 We see two problems here, a minor one is the fact that two different
 semantics need to be defined, which translates either to a difficult
-to implement or a difficult to understand system.
+to implement or a difficult to understand system\unsure{(Yann) Is it really a
+    problem per se? It is common thing to do (a nice declarative system
+    for proofs and an algorithmic one for implementation, proved equivalent).
+    Maybe the point is that the algorithmic system is way more complex than the
+declarative one}.
 A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
-difficult, or even impossible (as the case with common subexpression elimination).
+difficult, or even impossible (as the case with common subexpression
+elimination)\unsure{(Yann) I think we need to substantiate this claim. If this
+context dependency explains why CSE is invalid, maybe have a little example?}
+\todo{(Yann) TODO: see if there's a low hanging complexity
+    argument we can make (like it's quadratic in the number of open contracts or
+whatever)}.
 
 Williams, Morris, and Wadler, take a different approach on flat contracts,
 they are completely forbidden in their system, explicitly to not encounter
@@ -584,7 +596,7 @@ all of their expected monitoring properties for higher ordered, union
 and, intersection contracts.
 However, one of these properties states the following:
 
-$$ K \in \llbracket A \cap B \rrbracket^- ~ if ~ K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
+$$ K \in \llbracket A \cap B \rrbracket^-~if~K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
 
 Which means that a continuation ($K$) complies negatively with an
 intersection of $A$ and $B$ if it complies negatively with at least one of these.
@@ -613,6 +625,9 @@ union and intersection around dynamic languages.
 % K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
 \unsure{Is it worth mentioning how continuations are formed?
 Should we go so techincal?}
+\todo{(Yann) Maybe adding a concrete example of this (it can be the same term but with
+    concrete types like Number and String and simple contexts like application
+to a dumb argument) is sufficient to make the point}
 
 \newpage
 
@@ -994,12 +1009,12 @@ since 3 is not a valid \racket{string?}.
 Even worst, the \racket{or/c} contract doesn't allow to have multiple higher order
 contracts that could (potentially) apply to a function, these have to be
 differentiated by first order markers.
-For instance, the code on Figure \ref{code:racket:or/c:working}
+For instance, the code on Figure~\ref{code:racket:or/c:working}
 would correctly allow only to call
 \racket{united} with a \racket{number?},
 and it can make this distinction since it knows that
 \racket{(lambda (x) x)} can not be a function that takes 2 parameters.
-However, the code on Figure \ref{code:racket:or/c:non-working} would fail
+However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
 before running, since the \racket{or/c} contract is unable to know
 which of the two function contracts to use.
 Ideally, this last example should just behave as wrapping
