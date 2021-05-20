@@ -215,7 +215,11 @@ For instance, we could define a flat contract \nickel{even} as
 \nickel{fun x => x \% 2 == 0}, that checks
 whether a number is even by checking the remainder of dividing it by 2.
 And then use it to check that a function always returns an
-even number, when applied to a \nickel{Integer}:
+even number, when applied to an \nickel{Integer}, as shown in
+Figure \ref{fig:num-to-even}.
+Or even, we could come up with a contract that checks that a function
+maps \nickel{0} to \nickel{0}, as can be seen on Figure
+\ref{fig:0-to-0}.
 
 \begin{figure}[h]
 \begin{center}
@@ -230,6 +234,15 @@ an even number}
 
 % $$let~f~=~(\lambda n. ~ n * 2)@(Number ~ \rightarrow ~ even?)$$
 
+\begin{figure}[h]
+  \begin{center}
+\begin{lstlisting}[language=nickel]
+fun f => f 0 == 0
+\end{lstlisting}
+    \end{center}
+  \caption{A contract that checks that a function maps 0 to 0}
+  \label{fig:0-to-0}
+\end{figure}
 \unsure{Do we need deeper examples?
 Maybe something showing that flat contracts could evaluate
 a function.}
@@ -257,9 +270,9 @@ and intersection contracts\cite{RacketContracts}.
 See Related Works section}
 
 Even if flat contracts may seem like too permissive, the ability to make
-non trivial checks on values (to validate their output) is expected
+non trivial checks on values (that is, to validate their output) is expected
 by programmers on dynamic languages, where testing and runtime
-assertions are a common pattern for safe programming, and
+assertions are extremely useful tools for safe programming, and
 programmers are used to express complex predicates
 over values.
 
@@ -294,7 +307,7 @@ let subList = fun l1 l2 =>
 \end{lstlisting}
 \begin{lstlisting}[language=nickel,title={Optimized program}]
 let subList = fun l1 l2 =>
-  lists.any (fun x => x == elt)
+  lists.any (fun x => x == (lists.head l1)) l2
   && subList (list.tail l1) l2
 \end{lstlisting}
   \end{center}
@@ -368,7 +381,7 @@ basically $\beta$-reduction: as long as the arguments are evaluated following
 the language's strategy, it is a valid transformation. On the other hand,
 CSE-like transformations require an expansion property of the form
 
-$$M[N/x] \simeq let~x~=~N~in~M[x]$$
+$$M[N] \simeq let~x~=~N~in~M[x]$$
 
 This equation clearly fails in a call-by-value language with side effects:
 
@@ -406,6 +419,7 @@ this would be a good place to introduce it}
 Unions are fundamental building blocks of programs. A union holds a value whose
 shape is known to be in a fixed set of alternatives: for example, a value that
 can be either a boolean or a string. They correspond logically to conjunctions.
+\unsure{disjunctions, right?}
 Used in combination with products, they can represent arbitrary tree-like
 structures, allowing to model a large class of data
 (\ref{fig:union-adt-ex}).
@@ -548,10 +562,12 @@ and then eagerly opening up unions, but postponing intersection
 contracts as much as possible.
 \todo{This assumes the difficulty has been previously explained}
 
-For instance, if the value \nickel{V} is contracted\todo{(Yann) Contracted means
-something else I think} with
+For instance, if the value \nickel{V} is wrapped with contract
+\todo{(Yann) Contracted means
+something else I think.
+(Teo) changed}
 \nickel{A & (B | C)}, then, before the contract is checked,
-the contract gets opened up to something equivalent to
+it will get opened up to something equivalent to
 \nickel{(A & B) | (A & C)}.
 
 This straightforward solutions makes composing the Keil and Thiemann
@@ -559,9 +575,13 @@ system with other existing systems more difficult; in the words
 of Williams, Morris, and Wadler:
 "(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
-special cases can hinder composition."\cite{RootCauseOfBlame}\info{(Yann) Does
+special cases can hinder composition."\cite{RootCauseOfBlame}
+\info{(Yann) Does
 it also make it less efficient? If $(A \& B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
+And it also could harm performance, or at least complicate an implementation,
+since some sharing mechanism should be used to avoid checking the same contract,
+over the same value, multiple times.
 
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
@@ -578,11 +598,13 @@ a given contract.
 
 We see two problems here, a minor one is the fact that two different
 semantics need to be defined, which translates either to a difficult
-to implement or a difficult to understand system\unsure{(Yann) Is it really a
+to implement or a difficult to understand system
+\unsure{(Yann) Is it really a
     problem per se? It is common thing to do (a nice declarative system
     for proofs and an algorithmic one for implementation, proved equivalent).
     Maybe the point is that the algorithmic system is way more complex than the
-declarative one}.
+declarative one
+(Teo) I think you're right, I'll try to reword it}.
 A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
@@ -603,7 +625,7 @@ feature of contracts.
 On top of that, a fundamental problem arises on said paper,
 symptom of the difficulty of establishing good enough, and yet
 simple semantics for union and intersection dynamic checks.
-One of their main results, is the fact that their calculus, obeys
+One of their main results, is the fact that their calculus obeys
 all of their expected monitoring properties for higher ordered, union
 and, intersection contracts.
 However, one of these properties states the following:
@@ -612,12 +634,23 @@ $$ K \in \llbracket A \cap B \rrbracket^-~if~K \in \llbracket A \rrbracket^- \lo
 
 Which means that a continuation ($K$) complies negatively with an
 intersection of $A$ and $B$ if it complies negatively with at least one of these.
+
 Altough this is true, it's a weaker statement of what we'd like to have,
-since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$,
-where $K_1 \in \llbracket A \rrbracket^-$ but $K_1 \not \in \llbracket B \rrbracket^-$,
-and dually for $K_2$, which would mean the continuation presented above would not
-be in $\llbracket A \cap B \rrbracket^-$, even though our intuition (and the
+since it rules out continuations like $(\lambda f.~((f~3)~+~4,~not~(f ~ true)))$,
+where $(\square 3)~+~4 \in \llbracket Number \rightarrow Number \rrbracket^-$
+but $(\square 3)~+~4 \not \in \llbracket Boolean \rightarrow Boolean \rrbracket^-$,
+and dually for $not~(f ~ true)$.
+Which would mean, according to their semantics, that
+the continuation presented above would not
+be in $\llbracket Number \rightarrow Number \cap Boolean \rightarrow Boolean \rrbracket^-$,
+even though our intuition (and the
 introduction to the paper) indicates that it should.
+
+% since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$,
+% where $K_1 \in \llbracket A \rrbracket^-$ but $K_1 \not \in \llbracket B \rrbracket^-$,
+% and dually for $K_2$, which would mean the continuation presented above would not
+% be in $\llbracket A \cap B \rrbracket^-$, even though our intuition (and the
+% introduction to the paper) indicates that it should.
 
 While this mistake does not invalidate their work (the system they present
 handles these cases correctly), it shows that existing research is still not on
