@@ -269,18 +269,18 @@ over values.
 optimizations.
 Purity and immutability as two important factors.}
 
-The performance of modern programs heavily relies on non-trivial optimizations
-performed by the compiler or the interpreter. Even more so for functional
-languages, whose operational semantics is usually far removed from the actual
-primitives of modern processors: naive execution can exhibit unacceptable
-slowdowns. Functional programs tend to make heavy use of functions, and a
-function call is a costly operation from the point of view of low-level
-execution.
+The performance of modern programs heavily relies on the optimizations performed
+by the compiler or the interpreter. Even more so for functional languages, whose
+execution model is often far removed from actual processors, causing naive
+execution to exhibit unacceptable slowdowns.
 
-One crucial optimization is inlining(Figure~\ref{fig:optimizations-inlining-ex}). Inlining eliminates a function application
-by directly substituting the function for its definition at compile time (or
-before execution, for interpreted language). This is especially important for
-small functions that are called repeatedly.
+One crucial optimization is
+inlining(Figure~\ref{fig:optimizations-inlining-ex}). Functional programs tend
+to make heavy use of functions, and a function call is a costly operation from
+the point of view of low-level execution. Inlining eliminates a function
+application by directly substituting the function for its definition at compile
+time (or before execution, for interpreted language). This is especially
+efficient for small functions that are called repeatedly.
 
 \begin{figure}
   \begin{center}
@@ -302,9 +302,13 @@ let subList = fun l1 l2 =>
 \label{fig:optimizations-inlining-ex}
 \end{figure}
 
-Another optimization is common subexpression elimination (CSE,
-Figure~\ref{fig:optimizations-cse-ex}). CSE goes into the other direction: it
-factors out equal subexpressions to avoid recomputing them multiple times.
+While inlining expands an expression by substituting a definition for its value,
+an opposite transformation is sometimes beneficial, for example when a composite
+expression is repeated several times. This causes the same expression to be
+wastefully recomputed at each occurrence. Common subexpression elimination (CSE)
+consist in introducing a new identifier for this expression and using the
+identifier in place of the original occurrences
+(Figure~\ref{fig:optimizations-cse-ex}), computing the result once and for all.
 
 \begin{figure}
   \begin{center}
@@ -328,10 +332,11 @@ let elemAtOrLast = fun index list =>
 \label{fig:optimizations-cse-ex}
 \end{figure}
 
-Similar transformations exist beyond CSE, such as loop-invariant code motion or
-some of Haskell's let-floating~\ref{}, which amount to hoist invariant
-expressions out from repeated blocks in order to avoid recomputing them. In
-particular, take the example of Figure~\ref{fig:optimizations-let-floating-ex}.
+Beyond CSE, optimizations such as loop-invariant code motion or
+let-floating~\ref{} apply the same principle of extracting an invariant
+expression to avoid recomputation respectively across loop iterations and
+function calls. For example, take the code of
+Figure~\ref{fig:optimizations-let-floating-ex}.
 
 \begin{figure}
   \begin{center}
@@ -350,17 +355,18 @@ let f' = fun x => g' (x + 1)
 The partial application \lstinline+g y+ is recomputed each time \lstinline+f+ is
 called. This may be costly, in particular in the presence of contracts: if
 \lstinline+y+ is a list for example, and \lstinline+g+ applies a list contract
-on it, the penalty could be linear in the size of \lstinline+y+. A sensible
-thing to do is to factor \lstinline+g y+ out of \lstinline+f+ as in
-Figure~\ref{fig:optimizations-let-floating-ex}, which is something Haskell's
-let-floating transformations could indeed do, given \lstinline+g+ is pure.
+on it, the cost could be linear in the size of \lstinline+y+. A sensible thing
+to do is to factor \lstinline+g y+ out of \lstinline+f+ as in
+Figure~\ref{fig:optimizations-let-floating-ex}, which is something a
+let-floating transformation could indeed do (given \lstinline+g+ is pure, as
+explained below).
 
-The soundness of these optimizations is tied the invariance of the semantics of
-programs with respect to some substitutive transformations\todo{bad naming}.
-Inlining requires that one can replace the application of a function by its
-body: this is $\beta$-reduction, and it is hard to think of a language where it
-is not a valid transformations. On the other hand, CSE-like transformations
-require an expansion property of the form
+The soundness of all these optimizations is tied to the invariance of the
+semantics of programs with respect to specific substitutions. Inlining requires
+that one can replace the application of a function by its body, which is
+basically $\beta$-reduction: as long as the arguments are evaluated following
+the language's strategy, it is a valid transformation. On the other hand,
+CSE-like transformations require an expansion property of the form
 
 $$M[N/x] \simeq let~x~=~N~in~M[x]$$
 
@@ -377,7 +383,12 @@ second term prints it only once. However, this property does hold for
 \emph{pure} terms, that are terms without side-effects. In a pure language, or a
 language with effect tracking like Haskell\todo{Cite a different language, or
 remove citation}, pure terms can be safely identified for applying
-optimizations. Other languages rely on under-approximations.
+optimizations.
+
+Strikingly, we will see in section~\ref{} that the introduction of unions and
+intersections can make this equivalence \todo{name it} unsound \emph{even in a
+pure setting}, making the optimization of
+Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 
 \unsure{Should we tease already here that unions and intersections break this
 even for pure terms?}
