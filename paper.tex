@@ -278,6 +278,7 @@ over values.
 
 
 \subsection*{Code manipulation (optimizations)}
+\label{sec:optimizations}
 \info{Present inlining and CSE as two major code
 optimizations.
 Purity and immutability as two important factors.}
@@ -542,6 +543,121 @@ And union has to be treated as any one of the options}
 \section{Issues coming from the semantics}
 \info{What goes wrong or difficult when trying to implement union and
   intersection literally}
+
+Type systems featuring intersection types are hard in a fundamental way,
+from their discovery, they've been studied as a way to characterize
+lambda-calculus terms normalizability; which means that typechecking a
+term on a system with intersection types is undecidable,
+similar to how the halting problem is undecidable\todo{reference}.
+
+Usually, when thinking about programming languages, there's an intuition
+that static checks (like typechecking) are more difficult and less powerful
+than dynamic checks (like testing).
+For instance, it is very easy to check if,
+in a given execution of a program, a variable holds an integer value; while it
+may become more challenging to check if a variable will always hold an integer value,
+no matter the particular execution.
+
+As we intend to show on this paper, unions and intersections are not only
+statically hard to check, but they are also dynamically hard;
+\emph{they are fundamentally hard}.
+In this section, we present intuitively the main challenges that arise
+when attempting to develop a runtime check system for unions and intersections.
+
+\subsubsection*{Union contracts are hard to brake}
+
+When programming with dynamic checks it is assumed that lack of
+failure does not mean that the program works perfectly.
+For instance, imagine having a function wrapped in a contract
+that checks that maps positive numbers to positive numbers, like
+function \nickel{f} on Figure \ref{fig:pos-to-pos}.
+
+Clearly, there is an error on this program, but if the first call
+to \nickel{f} that gets executed is \nickel{f 10}, the error will not
+be found at that point, and the first operand of the addition would be
+evaluated to \nickel{3}.
+If, later on, \nickel{f 5} gets executed, the contract would get violated,
+since \nickel{f} gets called with a positive value, but returns a negative
+one (\nickel{-2}).
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let f = (fun x => x - 7) @ Positive -> Positive in
+(f 10) + (f 5) 
+\end{lstlisting}
+\caption{Wrong positive to positive function}
+\label{fig:pos-to-pos}
+\end{figure}
+
+Even if the program performed two different applications of \nickel{f}
+before finding the contract violation, the first one is not actually
+needed, and executing only \nickel{f 5} is enough to find the problem.
+
+Having a witness of size 1 for every contract failure is a nice to have property
+since it means, for example, that every time that a contract is violated,
+the stack trace is enough to understand how it was violated.
+However, when unions get introduced, it is lost.
+Consider now the program presented at Figure \ref{fig:wrong-union-function},
+this program (and in particular, \nickel{f}'s contract) still presents a problem,
+since \nickel{fun x => x - 7} does not map positive numbers to positive numbers,
+nor does it map positive numbers to non-positive numbers, so it won't be a valid
+value for the union of those contracts.
+
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let f = (fun x => x - 7) @ (Positive -> Positive) | (Positive -> NonPositive) in
+(f 10) + (f 5) 
+\end{lstlisting}
+\caption{Still wrong positive to positive or positive to non-positive function}
+\label{fig:wrong-union-function}
+\end{figure}
+
+Still, the program presents enough function calls to find that issue
+and violate the contract,
+since \nickel{f 10} is a witness of \nickel{f} failing \nickel{Positive -> NonPositive},
+and \nickel{f 5} is a witness of \nickel{f} failing \nickel{Positive -> Positive}.
+But, what makes this case completely different from the one presented before, is that
+both function calls are needed, and, what is more, there is not a single way to
+use the wrapped value \nickel{f} that would find a violation to its contract;
+at least two are needed.
+
+This seemingly simple consequence generates major issues when considered in real
+life languages.
+For example, remember the different mechanisms for code manipulation presented
+in Section \ref{sec:optimizations}, inlining and commmon subexpression elimination,
+both of these rely on the fact that substituting a pure function call by its body,
+or joining equal pure expressions and sharing their result, is a semantically valid
+transformation.
+However, consider the examples presented at Figure \ref{fig:optimized-programs},
+the first one is the inlined version of the second one, while the second
+one has something like a CSE applied to it.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=Inlined]
+let f = (fun x y => if y then x else "False") @ Number -> (Boolean -> Number) | (Boolean -> String) in
+(f 1 true, f 1 false)
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=Common Subexpression Eliminated]
+let f = (fun x y => if y then x else "False") @ Number -> (Boolean -> Number) | (Boolean -> String) in
+let g x = f 1 x in
+(g true, g false)
+\end{lstlisting}
+\caption{Equivalent programs, with inlining or CSE applied}
+\label{fig:optimized-programs}
+\end{figure}
+\todo{Improve example}
+
+However, this two programs behave differently, the first one will return
+\nickel{(1, "False)}, without failing.
+While the second one will fail, since the single application of \nickel{f 1},
+applied to both \nickel{true} and \nickel{false} will be able to find the error.
+
+Summing it up, wrapping a value with a union of higer order contracts means that
+that value now has a state, that may get modified silently at every use site.
+Both reviewed papers suffer from this defect since it is the semantics
+of unions that interact badly with code manipulation operations,
+not a particular implementation.
 
 \newpage
 
