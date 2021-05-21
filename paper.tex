@@ -476,6 +476,9 @@ unions\resolved{If you can observe with typeof, then it's pretty much a tagged
 union, though the tag is implicit} has already been an idiom in dynamically
 typed language for a long time. Being able to type and handle these unions is an
 important aspect of the migration to a gradual type system. Indeed, a lot of
+\unsure{This is the first time discussing gradual type systems, maybe it should
+be introduced earlier, in particular how they relate to contracts 
+(I think is mentioned on the appendix)}
 gradually typed languages either existed originally as dynamically typed
 language or aim at backward compatibility with a dynamically typed base
 language. This is why despite the presence of a static type system, gradually
@@ -490,10 +493,10 @@ type level, or at least, at the contract level.
 
 \subsection*{Intersections}
 
-Intersections are less prevalent. An intersection is a value that belongs to to
+Intersections are less prevalent. An intersection is a value that belongs to
 two types at the same time. A simple example is a number literal \nickel{1}
 which could be accepted as both an \nickel{Int} and a \nickel{Float} without
-having to perform conversions(Figure~\ref{fig:intersection-subytping-ex}). In
+having to perform conversions (Figure~\ref{fig:intersection-subytping-ex}). In
 this example, the intersection \nickel{Int & Float} can be used as a subtype of
 both \nickel{Int} and \nickel{Float}.
 
@@ -529,7 +532,7 @@ featuring unions, a union in a negative positions is a form of intersection
 \label{fig:intersection-dual}
 \begin{lstlisting}[title={Intersection as the dual of unions}]
 f : (Num | String) -> Bool
-(*@ $\simeq$ @*) f : (Num -> Bool) (*@ $\cup$ @*) (String -> Bool)
+(*@ $\simeq$ @*) f : (Num -> Bool) & (String -> Bool)
 \end{lstlisting}
 
 \todo{Either here or the next section, show examples of unintuitive behaviour
