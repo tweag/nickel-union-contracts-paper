@@ -218,8 +218,9 @@ And then use it to check that a function always returns an
 even number, when applied to an \nickel{Integer}, as shown in
 Figure \ref{fig:num-to-even}.
 Or even, we could come up with a contract that checks that a function
-maps \nickel{0} to \nickel{0}, as can be seen on Figure
-\ref{fig:0-to-0}.
+maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true},
+and use it as a contract for the \nickel{not} function, as can be seen on Figure
+\ref{fig:checked-not}.
 
 \begin{figure}[h]
 \begin{center}
@@ -237,17 +238,15 @@ an even number}
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
-fun f => f 0 == 0
+let notC = fun f => (f true == false) and (f false == true) in
+let checkedNot = not @ notC
 \end{lstlisting}
-    \end{center}
-  \caption{A contract that checks that a function maps 0 to 0}
-  \label{fig:0-to-0}
+\end{center}
+\caption{A contract that checks the not function behaves as expected}
+\label{fig:checked-not}
 \end{figure}
-\unsure{Do we need deeper examples?
-Maybe something showing that flat contracts could evaluate
-a function.}
 
-This kind of contracts are present on many different languages,
+This type of contracts are present on many different languages,
 for instance, the Eiffel programming language, the precursor
 of the Design by Contract ideals, allows to assert
 these kinds of expression as pre- and post-conditions on
@@ -258,7 +257,7 @@ written with flat contracts, that are
 dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
 Finally, the Racket programming language also has a system to work with
-contracts that allows to define flat contracts
+contracts, powerful enough to define flat contracts
 \footnote{And a gradual typing system
 built on top of that, but that goes beyond the scope of this
 work.}
@@ -273,7 +272,7 @@ Even if flat contracts may seem like too permissive, the ability to make
 non trivial checks on values (that is, to validate their output) is expected
 by programmers on dynamic languages, where testing and runtime
 assertions are extremely useful tools for safe programming, and
-programmers are used to express complex predicates
+programmers are accustomed to express complex predicates
 over values.
 
 
@@ -289,14 +288,15 @@ execution model is often far removed from actual processors, causing naive
 execution to exhibit unacceptable slowdowns.
 
 One crucial optimization is
-inlining(Figure~\ref{fig:optimizations-inlining-ex}). Functional programs tend
+inlining (Figure \ref{fig:optimizations-inlining-ex}). Functional programs tend
 to make heavy use of functions, and a function call is a costly operation from
 the point of view of low-level execution. Inlining eliminates a function
 application by directly substituting the function for its definition at compile
 time (or before execution, for interpreted language). This is especially
 efficient for small functions that are called repeatedly.
 
-\begin{figure}
+\info{I think it's better to use [h] on figures, we can discuss it}
+\begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel,title={Source program}]
 let elem = fun elt =>
@@ -320,11 +320,11 @@ While inlining expands an expression by substituting a definition for its value,
 an opposite transformation is sometimes beneficial, for example when a composite
 expression is repeated several times. This causes the same expression to be
 wastefully recomputed at each occurrence. Common subexpression elimination (CSE)
-consist in introducing a new identifier for this expression and using the
+consists in introducing a new identifier for this expression and using the
 identifier in place of the original occurrences
-(Figure~\ref{fig:optimizations-cse-ex}), computing the result once and for all.
+(Figure \ref{fig:optimizations-cse-ex}), computing the result once and for all.
 
-\begin{figure}
+\begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel,title={Source program}]
 let elemAtOrLast = fun index list =>
@@ -764,6 +764,7 @@ the continuation presented above would not
 be in $\llbracket Number \rightarrow Number \cap Boolean \rightarrow Boolean \rrbracket^-$,
 even though our intuition (and the
 introduction to the paper) indicates that it should.
+\todo{Simplify example}
 
 % since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$,
 % where $K_1 \in \llbracket A \rrbracket^-$ but $K_1 \not \in \llbracket B \rrbracket^-$,
@@ -806,6 +807,8 @@ to a dumb argument) is sufficient to make the point}
 \bibliography{nickel}
 
 \appendix
+
+\todo{Remove parts that are already on the main part}
 
 \section{Background on union types}
 
