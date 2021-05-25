@@ -792,7 +792,6 @@ over the same value, multiple times.
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
 together.
-\todo{This assumes the difficulty was already explained}
 They provide two different sets of rules for their calculus,
 the first one is non deterministic, whose purpose is to provide
 semantics that are simple to understand.
@@ -801,22 +800,27 @@ to be simple to implement.
 This second set needs to perform operations
 on the evaluation context, to decide whether or not to evaluate
 a given contract.
+\unsure{Worth showing how the non deterministic version works? (See section B.1.1)}
 
-We see two problems here, a minor one is the fact that two different
-semantics need to be defined, which translates either to a difficult
-to implement or a difficult to understand system
+We see two problems here, a minor one is the fact that the two
+different semantics defined for the calculus are really far apart
+one from the other, both on the strategies used for contract resolution,
+as well as on the complexity levels.
 \unsure{(Yann) Is it really a
     problem per se? It is common thing to do (a nice declarative system
     for proofs and an algorithmic one for implementation, proved equivalent).
     Maybe the point is that the algorithmic system is way more complex than the
 declarative one
-(Teo) I think you're right, I'll try to reword it}.
+(Teo) reworded}.
 A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
-difficult, or even impossible (as the case with common subexpression
-elimination)\unsure{(Yann) I think we need to substantiate this claim. If this
-context dependency explains why CSE is invalid, maybe have a little example?}
+difficult, or even impossible
+\unsure{(Yann) I think we need to substantiate this claim. If this
+context dependency explains why CSE is invalid, maybe have a little example?
+(Teo) I removed it, I don't think there's an example, mainly since
+this context dependency is not part of the language. I do think it complicates
+implementation of said feature}
 \todo{(Yann) TODO: see if there's a low hanging complexity
     argument we can make (like it's quadratic in the number of open contracts or
 whatever)}.
