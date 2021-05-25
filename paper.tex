@@ -203,6 +203,7 @@ programming languages that will cause trouble while interacting
 with union and intersection dynamic checks.
 
 \subsection*{Flat contracts}
+\label{sec:flat-contracts}
 
 \unsure{Should we define contracts prior to this?}
 User defined contracts, also called flat contracts, are a particular
@@ -420,11 +421,13 @@ this would be a good place to introduce it}
 Unions are fundamental building blocks of programs. A union holds a value whose
 shape is known to be in a fixed set of alternatives: for example, a value that
 can be either a boolean or a string. They correspond logically to disjunctions.
-\unsure{disjunctions, right?}
 Used in combination with products, they can represent arbitrary tree-like
 structures, allowing to model a large class of data
 (\ref{fig:union-adt-ex}).
 
+
+\change{These next few labels need to be inside figures,
+they are not working}
 \label{fig:union-adt-ex}
 \begin{lstlisting}[title={Tree-like data structure}]
 type BinaryTree =
@@ -572,7 +575,7 @@ when attempting to develop a runtime check system for unions and intersections.
 When programming with dynamic checks it is assumed that lack of
 failure does not mean that the program works perfectly.
 For instance, imagine having a function wrapped in a contract
-that checks that maps positive numbers to positive numbers, like
+that checks that it maps positive numbers to positive numbers, like
 function \nickel{f} on Figure \ref{fig:pos-to-pos}.
 
 Clearly, there is an error on this program, but if the first call
@@ -598,7 +601,8 @@ needed, and executing only \nickel{f 5} is enough to find the problem.
 
 Having a witness of size 1 for every contract failure is a nice to have property
 since it means, for example, that every time that a contract is violated,
-the stack trace is enough to understand how it was violated.
+the stack trace is enough to understand how it was violated, and to potentially
+come up with a minimal example that breaks the contract.
 However, when unions get introduced, it is lost.
 Consider now the program presented at Figure \ref{fig:wrong-union-function},
 this program (and in particular, \nickel{f}'s contract) still presents a problem,
@@ -621,8 +625,8 @@ and violate the contract,
 since \nickel{f 10} is a witness of \nickel{f} failing \nickel{Positive -> NonPositive},
 and \nickel{f 5} is a witness of \nickel{f} failing \nickel{Positive -> Positive}.
 But, what makes this case completely different from the one presented before, is that
-both function calls are needed, and, what is more, there is not a single way to
-use the wrapped value \nickel{f} that would find a violation to its contract;
+both function calls are needed, and, what is more, there is not a way to
+use the wrapped value \nickel{f} only once that would find a violation to its contract;
 at least two are needed.
 
 This seemingly simple consequence generates major issues when considered in real
@@ -651,8 +655,8 @@ let g x = f 1 x in
 \end{figure}
 \todo{Improve example}
 
-However, this two programs behave differently, the first one will return
-\nickel{(1, "False)}, without failing.
+Unexpectedly, this two programs behave differently, the first one will return
+\nickel{(1, "False")}, without failing.
 While the second one will fail, since the single application of \nickel{f 1},
 applied to both \nickel{true} and \nickel{false} will be able to find the error.
 
@@ -661,6 +665,89 @@ that value now has a state, that may get modified silently at every use site.
 Both reviewed papers suffer from this defect since it is the semantics
 of unions that interact badly with code manipulation operations,
 not a particular implementation.
+This addition of global state complicates both the work of the language
+implementor, as well as the language user, since it adds non trivial
+side effects to your code.
+\unsure{Maybe mention CSE is actualy commonly done by hand as well}
+
+\subsubsection*{[WIP] Flat contracts are too permissive}
+
+Stop for a second and think how you could implement an intersection
+contract. The first thought you may have is "just apply
+both contracts", as shown on the Implementation of Figure \ref{fig:inter-contracts}.
+Of course, if it were that simple we wouldn't be writing this paper,
+this idea starts to show problems when you first combine it with
+higher order contracts, since it would mean not complying with
+at least one of these contracts negatively would mean breaking the
+whole thing, as shown on the second example on the same Figure.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=Implementation]
+x @ A & B
+(*@ $\simeq$ @*)
+(x @ A) @ B
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=Problem]
+let g = (fun x => x) @ (Number -> Number) & (String -> String) in
+g 1
+\end{lstlisting}
+\caption{Implementations of intersection contracts: first iteration}
+\label{fig:inter-contracts}
+\end{figure}
+
+Still, not all hope is lost, we could pass some extra shared state
+to each one of the sub contracts and let them only fail if the other
+side of the contract has failed as well, as shown in Figure
+\ref{fig:inter-contracts-2}, where the sared state is
+represented by a label \nickel{l}.
+This idea is still quite reasonable, for instance, when executing
+\nickel{g 1}, from Figure \ref{fig:inter-contracts}, the first contract
+that gets checked is the argument of \nickel{String -> String} over the function parameter, so
+something like \nickel{1 @ String}.
+Of course, this fails, but before raising a violation, this contract could
+check if the other side of the intersection (\nickel{Number -> Number}) has
+also tried to raise negative blame (on the parameter \nickel{1}), since
+it hasn't, the contract would return normally, and would mark itself as failed.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=Implementation]
+x @ A & B
+(*@ $\simeq$ @*)
+(x @ A[l]) @ B[l]
+\end{lstlisting}
+\caption{Implementations of intersection contracts: second iteration}
+\label{fig:inter-contracts-2}
+\end{figure}
+
+This idea, which is an oversimplification of the ideas
+presented by Williams, Morris, and Wadler, seems to be spot on.
+However, it presents a major problem, it's not compatible with flat contracts,
+presented in Section \ref{sec:flat-contracts}.
+Consider the example presented on Figure \ref{fig:inter-flat-contracts},
+if the implementation presented previously were to be used, we may end up with
+something like this \nickel{((fun x => x) @ (String -> String)[l]) @ C[l]}, where
+\nickel{l} represents the shared state.
+At this point, the intuitive thing to do is to check contract \nickel{C}, by checking
+\nickel{((fun x => x) @ (String -> String)[l]) 0 == 0}.
+This will fail, since applying \nickel{0} to a \nickel{String -> String} contract
+fails negatively.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let C = fun f => (f 0) == 0 in
+let g = (fun x => x) @ (String -> String) & C
+\end{lstlisting}
+\caption{Intersection and flat contracts}
+\label{fig:inter-flat-contracts}
+\end{figure}
+
+But this should not have happened, since in the program of Figure \ref{fig:inter-flat-contracts}
+\nickel{g} is never applied to \nickel{0}, in fact, it is never applied.
+Checking if \nickel{C} has already failed, and marking \nickel{String -> String} as
+failed negatively on \nickel{l} is not enough, the contract \nickel{String -> String}
+should not have been used inside the evaluation of \nickel{C}, which
+adds an extra layer of complexity, contracts should be guarded, and execution
+depends on the shape of the surrounding evaluation context.
 
 \newpage
 
