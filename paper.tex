@@ -201,7 +201,6 @@ to represent and type unions.
 
 \unsure{TODO: CCS classification; Keywords}
 \section{Introduction}
-Intro\unsure{todo}
 \info{Goals of the paper: position paper: unions/intersections nice in
 theory problematic in practice. In particular non-orthogonal with the
 rest of the features of your language.}
@@ -301,7 +300,7 @@ Felleisen introduce a principled approach to run-time assertion checking that
 nicely supports higher-order functions and introduces the notion of blame, which
 is crucial to good error reporting. It became apparent later that their
 contracts are closely related to the type casts introduced by gradual typing,
-modulo blame: both \cite{FindlerMultiLang} and \cite{FelleisenInterLang} see the
+modulo blame\unsure{What does ``modulo blame'' means here?}: both \cite{FindlerMultiLang} and \cite{FelleisenInterLang} see the
 value of contracts as a safe interface between typed and untyped code. In
 \cite{WellTypedBlamed}, the authors precisely introduce a system integrating
 gradual typing with contracts \textit{à la Findler \& Felleisen}.\unsure{The
@@ -321,7 +320,10 @@ a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
 \lstinline+host+ field obeying a \lstinline+Host+ contract. It plays the role of
 a \emph{schema}, used to validate the final data. The \lstinline+|+ operator
 entails that a value respect a contract, akin to \lstinline+:+ for types. We
-assume that a \lstinline+Host+ contract has been defined in a similar way.
+assume that a \lstinline+Host+ contract has been defined in a similar
+way.\unsure{What's missing in this section is an example of how
+  contracts differ from standard dynamic type checking on some
+  function. Namely, the quality of error messages.}
 
 \begin{figure}
   \begin{center}
@@ -421,12 +423,14 @@ let checkedNot = not @ notC
 \end{figure}
 
 This type of contracts are present on many different languages,
-for instance, the Eiffel programming language, the precursor
+for instance, the Eiffel programming language\unsure{Citation?}, the precursor
 of the Design by Contract ideals, allows to assert
 these kinds of expression as pre- and post-conditions on
 functions\cite{EiffelDesignByContract}.
 A somewhat newer language, the D programming
-language, allows, among other things, to have invariants on classes,
+language, allows, among other things, to have invariants on
+classes\unsure{I (Arnaud) believe Eiffel has this feature as well,
+  doesn't it?},
 written with flat contracts, that are
 dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
@@ -1165,7 +1169,7 @@ simplistic for the purpose of data validation, the ability to write a small
 validation function for, say, a port number, to have it immediately available as
 a contract that can be composed with other type constructors\resolved{Needs code
 to illustrate.}, is in our opinion one of the main appeal of Nickel's contracts
-system. An example is given in Figure~\ref{fig:contract-composition}. The first
+system. An example is given in Figure~\ref{fig:contract-composition-appendix}. The first
 line defines a port contract from a predicate and use it in the definition of a
 larger \lstinline+Configuration+ record contract. The \lstinline+Configuration+
 contract checks that a value is a record with the following shape: it must have
@@ -1190,7 +1194,7 @@ let Configuration = {
 \end{lstlisting}
   \end{center}
 \caption{Contract composition}
-\label{fig:contract-composition}
+\label{fig:contract-composition-appendix}
 \medskip
 \small
 Defines a port contract from a predicate and use it in the definition of a
