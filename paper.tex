@@ -640,10 +640,7 @@ person : {name : String, age : Int}
 
 In statically typed languages, and more specifically in functional programming
 languages, sums (also called tagged unions, or discriminated unions) are usually
-preferred, as constructors for algebraic datatypes. \unsure{This is a very
-    misleading statement at best. Sums are "tagged union" sure, but that refers
-to an encoding a sums with unions, certainly not an encoding of unions with
-sums!} [references]. Sums are unions' cousin where the alternatives are
+preferred, as constructors for algebraic datatypes. [references]. Sums are unions' cousin where the alternatives are
 syntactically separated by an associated discriminating label. Well-known
 programming languages with first-class tagged unions include Haskell, OCaml,
 Rust, Scala, PureScript, Elm, Swift and many more.
@@ -781,7 +778,7 @@ since it means, for example, that every time that a contract is violated,
 the stack trace is enough to understand how it was violated, and to potentially
 come up with a minimal example that breaks the contract.
 However, when unions get introduced, it is lost.
-Consider now the program presented at Figure \ref{fig:wrong-union-function},
+Consider now the program presented in Figure \ref{fig:wrong-union-function},
 this program (and in particular, \nickel{f}'s contract) still presents a problem,
 since \nickel{fun x => x - 7} does not map positive numbers to positive numbers,
 nor does it map positive numbers to non-positive numbers, so it won't be a valid
@@ -935,6 +932,9 @@ The papers that previously researched union and intersection
 as dynamic checks have, in our eyes, different shortcomings
 that makes them suboptimal solutions.
 
+\subsection{Keil and Thiemann}
+\label{sec:keil-thiemann}
+\unsure{Subsection title?}
 Starting with the Keil and Thiemann work \cite{KeilThiemannUnionIntersection},
 they noticed that, since union contracts should share information between
 different application contexts, while intersection contracts should behave
@@ -946,25 +946,24 @@ contracts as much as possible.
 \todo{This assumes the difficulty has been previously explained}
 
 For instance, if the value \nickel{V} is wrapped with contract
-\todo{(Yann) Contracted means
-something else I think.
-(Teo) changed}
 \nickel{A & (B | C)}, then, before the contract is checked,
 it will get opened up to something equivalent to
 \nickel{(A & B) | (A & C)}.
 
 This straightforward solutions makes composing the Keil and Thiemann
 system with other existing systems more difficult; in the words
-of Williams, Morris, and Wadler:
-"(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
+of Williams, Morris, and Wadler (see Section~\ref{sec:will-morr-wadl}):
+``(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
-special cases can hinder composition."\cite{RootCauseOfBlame}
+special cases can hinder composition.''\cite{RootCauseOfBlame}
 \info{(Yann) Does
 it also make it less efficient? If $(A \& B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
 And it also could harm performance, or at least complicate an implementation,
 since some sharing mechanism should be used to avoid checking the same contract,
-over the same value, multiple times.
+over the same value, multiple times.\unsure{Arnaud says: this whole
+  section is too abstract give concrete code and explain what goes
+  wrong. It's fine to give code in Nickel syntax}
 
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
@@ -1001,6 +1000,10 @@ implementation of said feature}
 \todo{(Yann) TODO: see if there's a low hanging complexity
     argument we can make (like it's quadratic in the number of open contracts or
 whatever)}.
+
+\subsection{Williams, Morris, and Wadler}
+\label{sec:will-morr-wadl}
+\unsure{Subsection title?}
 
 Williams, Morris, and Wadler, take a different approach on flat contracts,
 they are completely forbidden in their system, explicitly to not encounter
@@ -1060,7 +1063,13 @@ union and intersection around dynamic languages.
 Should we go so techincal?}
 \todo{(Yann) Maybe adding a concrete example of this (it can be the same term but with
     concrete types like Number and String and simple contexts like application
-to a dumb argument) is sufficient to make the point}
+    to a dumb argument) is sufficient to make the point}
+
+\subsection{Racket}
+\label{sec:racket}
+
+\unsure{Todo}
+
 
 \newpage
 
