@@ -233,9 +233,9 @@ and generating valid data. Nickel originated as a rethink of the language of the
 Nix package manager, used to describe one of the biggest sets of packaged
 software in existence\cite{repology}.  Nickel targets build systems, cloud
 deployment tools (Kubernetes, Terraform or NixOps), or anything requiring a
-non-trivial configuration as well.
+non-trivial configuration.
 
-\subsection*{To type or not to type}
+\subsection*{Correct programs \& valid data}
 
 The end goal being data generation, Nickel is a dynamic, pure and functional
 language. Our goal is that writing a simple configuration in Nickel feels as
@@ -246,21 +246,21 @@ both correctness and validity:
 \begin{description}
     \item[(correctness)] The program runs without errors. Errors may be type
         errors, raised for example when evaluating the nonsensical division
-        \nickel{1 / "ftp"}. More generally, they can any the violation of a pre-
-        or post-condition. When such an error cannot be prevented, we want at
-        least early failures and relevant error messages.
-    \item[(validity)] The program generates valid data, i.e. data that
-        conforms to a schema (imposed by the system consuming the
-        configuration). For example, when configuring a systemd service, the
-        schema may require the presence of a field \lstinline+port+ that holds a
-        valid port number.
+        \nickel{1 / "ftp"}. More generally, they can be any the violation of a
+        pre- or post-condition. When such an error cannot be prevented, we want
+        at least early failures and relevant error messages.\todo{make this
+        definition more precise}
+    \item[(validity)] The program generates valid data, i.e. data that conforms
+        to a schema (imposed by the system consuming the configuration). For
+        example, when configuring a web service, the schema may require the
+        presence of a field \lstinline+port+ that holds a valid port number.
 \end{description}
 
-A traditional answer is to use static types, in particular static types for
+A traditional answer is to use static types, and in particular static types for
 correctness. However, Nickel programs are of a special kind: they are usually
 simple, terminating programs that run on fixed inputs. Correctness errors will
 show up at evaluation anyway, or will not matter (dead code). With respect to
-validation, traditional types seem too limited. Validation commonly involves
+validation, traditional types are too limited. Validation commonly involves
 checking requirements such as being a valid port number or a valid URL which
 are, while not technically impossible, really hard to check statically.
 
@@ -268,13 +268,13 @@ In a dynamic language, it is natural and easier to validate data at runtime.
 This underlies the approach of dynamic typing. But dynamically typed languages
 usually only check the same simple predicates as static types (being a number,
 being a string, etc.), and solely for data that are arguments to a primitive
-operation. For validation, we want to check arbitrary predicates on arbitrary
+operation. For validation, one needs to check arbitrary predicates on arbitrary
 values. This is provided in a basic form by assertions, available in most
 languages out there. An assertion is an expression that verifies that a
 predicate holds, or abort the program otherwise.  While assertions are fine for
-simple sanity checks, they can quickly becomes verbose, clumsy to compose and to
-reuse, and provide very limited context attached to an error. It turns out there
-is a better tool than plain assertions: contracts.
+simple sanity checks, their use can incur verbosity, they are clumsy to compose
+and to reuse, and they provide limited context attached to an error. It turns
+out there is a better tool than plain assertions: contracts.
 
 \subsection*{Contracts}
 
@@ -285,13 +285,13 @@ principled approach to run-time assertion checking called contracts. As opposed
 to plain assertions, contracts can be composed naturally into more complex ones.
 Nickel features such a contract system. For example, contracts nicely support
 higher-order functions. If the user has written an \nickel{Even} contract for
-number, they can use it right away to form a \nickel{#Even -> #Int} contract, as
-illustrated in Figure~\ref{fig:contract-higher-order}. This contract will check
-at each call that the argument is an even number (pre-condition) and that the
-return value is a integer (post-condition). The \nickel{#} character
-distinguishes contracts in Nickel. Contracts also introduce the notion of blame
-which is crucial to good error reporting in presence of higher-order contracts
-and other composed contracts.
+numbers, they can use it right away to form a function contract \nickel{#Even ->
+#Int} contract, as illustrated in Figure~\ref{fig:contract-higher-order}. This
+contract will check at each call that the argument is an even number
+(pre-condition) and that the return value is a integer (post-condition). The
+\nickel{#} character distinguishes contracts in Nickel. Contracts also introduce
+the notion of blame which is crucial to good error reporting in presence of
+higher-order contracts and other composed contracts.
 
 \begin{figure}
   \begin{center}
@@ -311,21 +311,20 @@ let Int = contracts.fromPred (fun val =>
 
 In our opinion, one of the main appeals of Nickel is this ability to write a
 simple validation function for, say, a port number, and have it immediately
-available as a contract that can be used to construct other contracts by
-writing natural type-like expressions. Another example is given in
-Figure~\ref{fig:contract-composition}. The first line defines a port contract
-from a predicate and use it in the definition of a larger
-\lstinline+Configuration+ record contract. The \lstinline+Configuration+
+available to construct other contracts by writing simple type-like expressions.
+Another example is given in Figure~\ref{fig:contract-composition}. The first
+line defines a port contract from a predicate and use it in the definition of a
+larger \lstinline+Configuration+ record contract. The \lstinline+Configuration+
 contract checks that a value is a record with the following shape: it must have
 a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
 \lstinline+host+ field obeying a \lstinline+Host+ contract. It plays the role of
 a \emph{schema} used to validate the final data, which is exactly what we were
 looking for in the previous section. Not only it plays the role of a schema, but
-it also \emph{looks} like one, as opposed to a less readable plain validation
+it also \emph{looks} like one, as opposed to the corresponding plain validation
 function. The \lstinline+|+ operator entails that a value respects a contract,
 akin to \lstinline+:+ for types. We assume that a \lstinline+Host+ contract has
 been defined in a similar way. \unsure{What's missing in this section is an
-example of how contracts differ from standard dynamic type checking on some
+    example of how contracts differ from standard dynamic type checking on some
 function. Namely, the quality of error messages.}
 
 \begin{figure}
@@ -338,14 +337,14 @@ let Configuration = {
   host | #Host,
   port | #Port,
 } in
-{host = "nickel-lang.org", port = 80}
+{host = "nixos.org", port = 80}
 | #Configuration
 \end{lstlisting}
   \end{center}
 \caption{Contract composition}
 \label{fig:contract-composition}
 \end{figure}
-\unsure{I wouldn't use nickel-lang.org unless you are
+\resolved{I wouldn't use nickel-lang.org unless you are
 planning on putting something up there. Maybe nixos.org?}
 
 Contracts have another perk: they correspond to the type casts of gradual
@@ -362,15 +361,15 @@ stressing the following points:
         appealing feature for validation and correctness}. The gradual
         typing part deserved to be mentioned, but is is out of the scope of this
         paper. 
-    \item \textbf{User-defined contracts are essential for validation}. Some contract
-        systems (as the one of~\cite{RootCauseOfBlame} that will be extensively
-        discussed later in the paper) do not feature user-defined contracts.
-        Rather, a fixed set of built-in contracts such as \nickel{Number} or
-        \nickel{String} are provided, very much like base types. The absence of
-        user-defined contracts is understandable when using contracts as a
-        dynamic typing discipline for correctness. But a system without
-        user-defined contracts is limited in the same way as static typing with
-        respect to validation.
+    \item \textbf{User-defined contracts are essential for validation}. Some
+        contract systems (as the one of~\cite{RootCauseOfBlame}, that will be
+        extensively discussed later in the paper) do not feature user-defined
+        contracts.  Rather, a fixed set of built-in contracts such as
+        \nickel{Number} or \nickel{String} are provided, very much like base
+        types. The absence of user-defined contracts is understandable when
+        using contracts as a dynamic typing discipline for correctness. But a
+        system without user-defined contracts is limited in the same way as
+        static typing with respect to validation.
 \end{itemize}
 
 \newpage
