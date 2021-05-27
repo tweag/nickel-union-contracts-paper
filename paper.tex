@@ -597,9 +597,32 @@ Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 \unsure{Should we tease already here that unions and intersections break this
 even for pure terms?}
 
-\subsubsection*{Lazyness}
-\unsure{Should we talk about lazyness?
-this would be a good place to introduce it}
+\subsection*{Lazyness}
+Evaluation strategies relates to the evaluation of the expression bound to
+identifiers. Expressions are be bound by assignments (e.g. the \nickel{blah} construct in Nickel), or arguments are bound to
+parameters in a function application. We will use Figure~\ref{} as a working
+example.
+
+The eager strategy consists in evaluating right away a bound value before
+storing it in an identifier. If an identifier is not used, this leads to
+unnecessary work: in Figure~\ref{}, the expression \nickel{fibonacci 100} would
+be computed although it is never used. The lazy strategy, on the other hand,
+only evaluates expression if they are needed. In the lazy model, bound
+expressions are stored as in their current unevaluated form, also called a
+\emph{thunk}. Thunks are only evaluated at their first usage, and their value is
+memoized for future usages.
+
+The eager strategy has been chosen in the vast majority of languages: while
+theoretically less efficient, it is simpler to implement and more predictable
+for the programmer. Also, lazy evaluation can occur performance overhead and
+memory leaks in unexpected ways. While eager evaluation is the default, some
+languages however offer a form of lazy evaluation, either as an opt-in option
+(e.g. Ocaml and ReScript), or by default for specific primitives types such as
+like list (e.g.  Swift and Perl6). The most notable lazy language is Haskell
+(and its web avatar PureScript). Although rare in general purpose languages,
+lazy evaluation is more widespread in the configuration space: the configuration
+languages Dhall, CUE and Jsonnet also implements full lazy evaluation. So are
+the Nix language, which inspired Nickel, and Nickel itself.
 
 \newpage
 
