@@ -221,7 +221,7 @@ However, static text-based configurations show their limits beyond a certain
 size and complexity. Data cannot be transformed, combined, shared, nor validated
 (without resorting to separate schemas and tools).  This lack of expressivity
 results at best in boilerplate and duplication of information, but it can also
-make data invalid or inconsistent.  Correctly configuring a modern system is ard
+make data invalid or inconsistent.  Correctly configuring a modern system is hard
 and failures may have substantial negative consequences.
 
 This is why the authors have been developing the Nickel
@@ -283,10 +283,10 @@ post-conditions of functions at runtime. In their foundational
 paper\cite{FindlerFelleisenHOContracts}, Findler and Felleisen introduce a
 principled approach to run-time assertion checking called contracts. As opposed
 to plain assertions, contracts can be composed naturally into more complex ones.
-Nickel features such a contract system. For example, contracts nicely supports
+Nickel features such a contract system. For example, contracts nicely support
 higher-order functions. If the user has written an \nickel{Even} contract for
 number, they can use it right away to form a \nickel{#Even -> #Int} contract, as
-illustrated in Figure~\ref{fig:contract-higher-order}. This contracts will check
+illustrated in Figure~\ref{fig:contract-higher-order}. This contract will check
 at each call that the argument is an even number (pre-condition) and that the
 return value is a integer (post-condition). The \nickel{#} character
 distinguishes contracts in Nickel. Contracts also introduce the notion of blame
@@ -309,9 +309,9 @@ let Int = contracts.fromPred (fun val =>
 \label{fig:contract-higher-order}
 \end{figure}
 
-In our opinion, one of the main appeal of Nickel is this ability to write a
+In our opinion, one of the main appeals of Nickel is this ability to write a
 simple validation function for, say, a port number, and have it immediately
-available as a contract that can be used to construct a other contracts by
+available as a contract that can be used to construct other contracts by
 writing natural type-like expressions. Another example is given in
 Figure~\ref{fig:contract-composition}. The first line defines a port contract
 from a predicate and use it in the definition of a larger
@@ -322,7 +322,7 @@ a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
 a \emph{schema} used to validate the final data, which is exactly what we were
 looking for in the previous section. Not only it plays the role of a schema, but
 it also \emph{looks} like one, as opposed to a less readable plain validation
-function. The \lstinline+|+ operator entails that a value respect a contract,
+function. The \lstinline+|+ operator entails that a value respects a contract,
 akin to \lstinline+:+ for types. We assume that a \lstinline+Host+ contract has
 been defined in a similar way. \unsure{What's missing in this section is an
 example of how contracts differ from standard dynamic type checking on some
@@ -345,6 +345,8 @@ let Configuration = {
 \caption{Contract composition}
 \label{fig:contract-composition}
 \end{figure}
+\unsure{I wouldn't use nickel-lang.org unless you are
+planning on putting something up there. Maybe nixos.org?}
 
 Contracts have another perk: they correspond to the type casts of gradual
 typing, a discipline for mixing static and dynamic typing in the same language.
@@ -361,7 +363,7 @@ stressing the following points:
         typing part deserved to be mentioned, but is is out of the scope of this
         paper. 
     \item \textbf{User-defined contracts are essential for validation}. Some contract
-        systems (as the one of~\ref{RootCauseOfBlame} that will be extensively
+        systems (as the one of~\cite{RootCauseOfBlame} that will be extensively
         discussed later in the paper) do not feature user-defined contracts.
         Rather, a fixed set of built-in contracts such as \nickel{Number} or
         \nickel{String} are provided, very much like base types. The absence of
