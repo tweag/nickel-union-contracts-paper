@@ -241,7 +241,7 @@ The end goal being data generation, Nickel is a dynamic, pure and functional
 language. Our goal is that writing a simple configuration in Nickel feels as
 easy as writing JSON or YAML. Unlike JSON, though, Nickel anticipates large
 configurations by being programmable, and by providing means of ensuring
-both correctness and validity: 
+both correctness and validity:
 
 \begin{description}
     \item[(correctness)] The program runs without errors. Errors may be type
@@ -360,7 +360,7 @@ stressing the following points:
     \item \textbf{Even in a purely dynamically typed language, contracts are an
         appealing feature for validation and correctness}. The gradual
         typing part deserved to be mentioned, but is is out of the scope of this
-        paper. 
+        paper.
     \item \textbf{User-defined contracts are essential for validation}. Some
         contract systems (as the one of~\cite{RootCauseOfBlame}, that will be
         extensively discussed later in the paper) do not feature user-defined
@@ -537,10 +537,9 @@ let elemAtOrLast = fun index list =>
 \end{figure}
 
 Beyond CSE, optimizations such as loop-invariant code motion or
-let-floating~\ref{} apply the same principle of extracting an invariant
-expression to avoid recomputation respectively across loop iterations and
-function calls. For example, take the code of
-Figure~\ref{fig:optimizations-let-floating-ex}.
+let-floating~\ref{} apply the same principle of extracting out an invariant
+expression to avoid its recomputation respectively across loop iterations and
+function calls.
 
 \begin{figure}
   \begin{center}
@@ -556,6 +555,7 @@ let f' = fun x => g' (x + 1)
 \label{fig:optimizations-let-floating-ex}
 \end{figure}
 
+For example, take the code of Figure~\ref{fig:optimizations-let-floating-ex}.
 The partial application \lstinline+g y+ is recomputed each time \lstinline+f+ is
 called. This may be costly, in particular in the presence of contracts: if
 \lstinline+y+ is a list for example, and \lstinline+g+ applies a list contract
@@ -666,7 +666,7 @@ union, though the tag is implicit} has already been an idiom in dynamically
 typed language for a long time. Being able to type and handle these unions is an
 important aspect of the migration to a gradual type system. Indeed, a lot of
 \unsure{This is the first time discussing gradual type systems, maybe it should
-be introduced earlier, in particular how they relate to contracts 
+be introduced earlier, in particular how they relate to contracts
 (I think is mentioned on the appendix)}
 gradually typed languages either existed originally as dynamically typed
 language or aim at backward compatibility with a dynamically typed base
@@ -776,7 +776,7 @@ one (\nickel{-2}).
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (fun x => x - 7) @ Positive -> Positive in
-(f 10) + (f 5) 
+(f 10) + (f 5)
 \end{lstlisting}
 \caption{Wrong positive to positive function}
 \label{fig:pos-to-pos}
@@ -802,7 +802,7 @@ value for the union of those contracts.
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (fun x => x - 7) @ (Positive -> Positive) | (Positive -> NonPositive) in
-(f 10) + (f 5) 
+(f 10) + (f 5)
 \end{lstlisting}
 \caption{Still wrong positive to positive or positive to non-positive function}
 \label{fig:wrong-union-function}
@@ -994,7 +994,7 @@ of the contract imposed to \nickel{g}.
 \begin{lstlisting}[language=nickel]
 let f = fun x y => x in
 let g = f @ (Number -> Number -> Number) & (Number -> Boolean -> Number) in
-let h = g 1 in 
+let h = g 1 in
 (h 1, h true)
 \end{lstlisting}
 \caption{Intersection contracts don't distribute}
@@ -1531,7 +1531,7 @@ does not work on Racket. Take a look at the next example, the function
 since 3 is not a valid \racket{string?}.
 
 \begin{figure}[h]
- 
+
 \begin{lstlisting}[language=racket]
 (define/contract overload
 (and/c (-> number? number?)
@@ -1557,7 +1557,7 @@ Ideally, this last example should just behave as wrapping
 the function with the \racket{(-> even? even?)} contract.
 
 \begin{figure}[h]
-  
+
 \begin{lstlisting}[language=racket]
 (define/contract united
 (or/c (-> number? number?)
