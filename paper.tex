@@ -344,8 +344,6 @@ let Configuration = {
 \caption{Contract composition}
 \label{fig:contract-composition}
 \end{figure}
-\resolved{I wouldn't use nickel-lang.org unless you are
-planning on putting something up there. Maybe nixos.org?}
 
 Contracts have another perk: they correspond to the type casts of gradual
 typing, a discipline for mixing static and dynamic typing in the same language.
@@ -890,6 +888,7 @@ side effects to your code.
 
 
 \subsection*{Flat contracts do not intersect}
+\label{sec:flat-and-inter}
 
 Stop for a second and think how you could implement an intersection
 contract. The first thought you may have is "just apply
@@ -1051,30 +1050,50 @@ can be given the type \nickel{(Number -> Number) & (Boolean -> Number)}.
 \section{Issues in concrete restrictions from the literature}
 \info{The various papers and the tradeoffs they make}
 
-The papers that previously researched union and intersection
+The existing work that previously researched and implemented
+union and intersection
 as dynamic checks have, in our eyes, different shortcomings
 that makes them suboptimal solutions.
+In this section, we present informally present those issues,
+starting with the foundational paper by Keil and Thiemann
+\cite{KeilThiemannUnionIntersection}, then following to a recent
+work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
+finally going over some similar contracts available in the Racket
+programming language.
 
 \subsection*{Keil and Thiemann}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
-Starting with the Keil and Thiemann work \cite{KeilThiemannUnionIntersection},
-they noticed that, since union contracts should share information between
+Keil and Thiemann noticed that, since union contracts should share information between
 different application contexts, while intersection contracts should behave
 independently between each application context, the system becomes much
 simpler if every contract gets transformed into a union of intersections
-of other contracts, by using the usual De Morgan laws,
+of other contracts, by using the common De Morgan laws,
 and then eagerly opening up unions, but postponing intersection
 contracts as much as possible.
 \todo{This assumes the difficulty has been previously explained}
 
-For instance, if the value \nickel{V} is wrapped with contract
-\nickel{A & (B | C)}, then, before the contract is checked,
-it will get opened up to something equivalent to
-\nickel{(A & B) | (A & C)}.
+For instance, if someone were to wrap a value \nickel{x}
+in a contract as shown on the Original code snippet on Figure
+\ref{fig:kt-contract-transf}, then, before actually executing that
+contract, it would get transformed, and intersections would
+be pushed inside the unions, as can be seen on the Transformed
+code snippet on the same figure.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=Original]
+x @ A & (B | C)
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=Transformed]
+x @ (A & B) | (A & C)
+\end{lstlisting}
+\caption{Contract transformation performed by the Keil and
+Thiemann work}
+\label{fig:kt-contract-transf}
+\end{figure}
 
 This straightforward solutions makes composing the Keil and Thiemann
-system with other existing systems more difficult; in the words
+solution with other existing systems more difficult; in the words
 of Williams, Morris, and Wadler (see Section~\ref{sec:will-morr-wadl}):
 ``(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
@@ -1090,23 +1109,51 @@ over the same value, multiple times.\unsure{Arnaud says: this whole
 
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
-together.
+together, as shown on Section \ref{sec:flat-and-inter}.
 They provide two different sets of rules for their calculus,
-the first one is non deterministic, whose purpose is to provide
+the first one is non deterministic, and its purpose is to provide
 semantics that are simple to understand.
-The second one is a deterministic set of rules, that are intended
+With these rules, the interaction between flat contracts and
+intersections becomes much simpler, since they are able to check
+both sides of an intersection on separate threads.
+This allows them to be sure that contracts from one branch of the intersection
+won't get blamed while executing the other branch.
+
+As an example, consider the programs shown on Figure
+\ref{fig:kt-non-deterministic}, if the Original program
+gets executed, it will spawn two instances of said program,
+one with the first branch of the intersection (the First Program),
+and the other one with the second one (the Second Program),
+and these will get joined if they reach an equal execution point.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=Original]
+x @ A & B
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=First Program]
+x @ A
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=Second Program]
+x @ B
+\end{lstlisting}
+\caption{Non deterministic intersection contract opening}
+\label{fig:kt-non-deterministic}
+\end{figure}
+
+
+The second set of rules is deterministic, and it is intended
 to be simple to implement.
-This second set needs to perform operations
+However, this second set needs to perform operations
 on the evaluation context, to decide whether or not to evaluate
 a given contract.
-\unsure{Worth showing how the non deterministic version works? (See section B.1.1)
-try with an example}
+\footnote{You can check more on this topic on Section 5.1 of
+\cite{KeilThiemannUnionIntersection}}
 
 We see two problems here, a minor one is the fact that the two
 different semantics defined for the calculus are really far apart
 one from the other, both on the strategies used for contract resolution,
 as well as on the complexity levels.
-\unsure{(Yann) Is it really a
+\resolved{(Yann) Is it really a
     problem per se? It is common thing to do (a nice declarative system
     for proofs and an algorithmic one for implementation, proved equivalent).
     Maybe the point is that the algorithmic system is way more complex than the
@@ -1116,7 +1163,7 @@ A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
 difficult, or even impossible
-\unsure{(Yann) I think we need to substantiate this claim. If this
+\resolved{(Yann) I think we need to substantiate this claim. If this
 context dependency explains why CSE is invalid, maybe have a little example?
 (Teo) I removed it, I don't think there's an example, mainly since
 this context dependency is not part of the language. I do think it complicates
@@ -1189,8 +1236,112 @@ Should we go so techincal?}
     concrete types like Number and String and simple contexts like application
     to a dumb argument) is sufficient to make the point}
 
-\subsection*{Racket}
+\subsection*{[WIP] Racket}
 \label{sec:racket}
+
+
+Racket is a language based on Scheme, mainly thought as a language to experiment
+with different language desings and ideas. It provides a very complete contract
+system\cite{RacketContracts}.
+
+Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
+These contracts are lightweight versions of intersections and unions, they simply
+check that every contract is valid, in the case of \racket{and/c},
+and that at least one contract
+is valid, in the case of \racket{or/c}.
+
+So, for instance, the usual usecase of intersection to encode bounded overloading
+does not work on Racket. Take a look at the next example, the function
+\racket{overload} should accept a call like \racket{(overload 3)}, but it fails
+since 3 is not a valid \racket{string?}.
+
+\begin{figure}[h]
+
+\begin{lstlisting}[language=racket]
+(define/contract overload
+(and/c (-> number? number?)
+       (-> string? string?))
+(lambda (x) x))
+\end{lstlisting}
+\caption{Non working function overloading on Racket.}
+
+\end{figure}
+
+Even worst, the \racket{or/c} contract doesn't allow to have multiple higher order
+contracts that could (potentially) apply to a function, these have to be
+differentiated by first order markers.
+For instance, the code on Figure~\ref{code:racket:or/c:working}
+would correctly allow only to call
+\racket{united} with a \racket{number?},
+and it can make this distinction since it knows that
+\racket{(lambda (x) x)} can not be a function that takes 2 parameters.
+However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
+before running, since the \racket{or/c} contract is unable to know
+which of the two function contracts to use.
+Ideally, this last example should just behave as wrapping
+the function with the \racket{(-> even? even?)} contract.
+
+\begin{figure}[h]
+
+\begin{lstlisting}[language=racket]
+(define/contract united
+(or/c (-> number? number?)
+      (-> string? string? string?))
+(lambda (x) x))
+\end{lstlisting}
+\caption{Working \racket{or/c} example on Racket.}
+\label{code:racket:or/c:working}
+
+\end{figure}
+
+\begin{figure}[h]
+
+\begin{lstlisting}[language=lisp]
+(define/contract united
+(or/c (-> number? number?)
+      (-> even? even?))
+(lambda (x) x))
+\end{lstlisting}
+\caption{Non working \racket{or/c} example on Racket.}
+\label{code:racket:or/c:non-working}
+
+\end{figure}
+
+
+\unsure{This section is overall a bit hard to follow. I
+  think I've figured out what it means, but it needs more love. Also
+  give an example which doesn't work and one that does for or/c.}
+
+\subsubsection*{case->}
+
+Racket does provide an alternative for overloading methods, called the
+\racket{case->} contract, however, this overloading of methods only
+works over contracts of functions with different amount of parameters.
+It's a good alternative to allow limited overloading of functions.
+As an example, consider the following non failing piece of code, and
+try to understand how Racket can decide, at each application,
+which function contract to use.
+
+\begin{figure}[h]
+
+\begin{lstlisting}[language=racket]
+(define/contract overcase
+  (case-> (-> string? string?)
+          (-> number? number? number?)
+          )
+  (lambda (x [y 0]) (if (number? x)
+                   (+ x y)
+                   x)))
+
+(overcase 1 2)
+
+(overcase "hello")
+\end{lstlisting}
+\end{figure}
+
+\todo{Coming back to the problems of composing U/I with other typing
+features, Racket has made a clear choice and decided that higher order
+is more important (a wise decision)}
 
 \unsure{Todo}
 
@@ -1549,108 +1700,6 @@ In the rest of this section we revisit some different approaches.
 
 \subsection{Racket}
 
-Racket is a language based on Scheme, mainly thought as a language to experiment
-with different language desings and ideas. It provides a very complete contract
-system\cite{RacketContracts}.
-
-Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
-These contracts are lightweight versions of intersections and unions, they simply
-check that every contract is valid, in the case of \racket{and/c},
-and that at least one contract
-is valid, in the case of \racket{or/c}.
-
-So, for instance, the usual usecase of intersection to encode bounded overloading
-does not work on Racket. Take a look at the next example, the function
-\racket{overload} should accept a call like \racket{(overload 3)}, but it fails
-since 3 is not a valid \racket{string?}.
-
-\begin{figure}[h]
-
-\begin{lstlisting}[language=racket]
-(define/contract overload
-(and/c (-> number? number?)
-       (-> string? string?))
-(lambda (x) x))
-\end{lstlisting}
-\caption{Non working function overloading on Racket.}
-
-\end{figure}
-
-Even worst, the \racket{or/c} contract doesn't allow to have multiple higher order
-contracts that could (potentially) apply to a function, these have to be
-differentiated by first order markers.
-For instance, the code on Figure~\ref{code:racket:or/c:working}
-would correctly allow only to call
-\racket{united} with a \racket{number?},
-and it can make this distinction since it knows that
-\racket{(lambda (x) x)} can not be a function that takes 2 parameters.
-However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
-before running, since the \racket{or/c} contract is unable to know
-which of the two function contracts to use.
-Ideally, this last example should just behave as wrapping
-the function with the \racket{(-> even? even?)} contract.
-
-\begin{figure}[h]
-
-\begin{lstlisting}[language=racket]
-(define/contract united
-(or/c (-> number? number?)
-      (-> string? string? string?))
-(lambda (x) x))
-\end{lstlisting}
-\caption{Working \racket{or/c} example on Racket.}
-\label{code:racket:or/c:working}
-
-\end{figure}
-
-\begin{figure}[h]
-
-\begin{lstlisting}[language=lisp]
-(define/contract united
-(or/c (-> number? number?)
-      (-> even? even?))
-(lambda (x) x))
-\end{lstlisting}
-\caption{Non working \racket{or/c} example on Racket.}
-\label{code:racket:or/c:non-working}
-
-\end{figure}
-
-
-\unsure{This section is overall a bit hard to follow. I
-  think I've figured out what it means, but it needs more love. Also
-  give an example which doesn't work and one that does for or/c.}
-
-\subsubsection*{case->}
-
-Racket does provide an alternative for overloading methods, called the
-\racket{case->} contract, however, this overloading of methods only
-works over contracts of functions with different amount of parameters.
-It's a good alternative to allow limited overloading of functions.
-As an example, consider the following non failing piece of code, and
-try to understand how Racket can decide, at each application,
-which function contract to use.
-
-\begin{figure}[h]
-
-\begin{lstlisting}[language=racket]
-(define/contract overcase
-  (case-> (-> string? string?)
-          (-> number? number? number?)
-          )
-  (lambda (x [y 0]) (if (number? x)
-                   (+ x y)
-                   x)))
-
-(overcase 1 2)
-
-(overcase "hello")
-\end{lstlisting}
-\end{figure}
-
-\todo{Coming back to the problems of composing U/I with other typing
-features, Racket has made a clear choice and decided that higher order
-is more important (a wise decision)}
 
 \subsection{Python - MyPy}
 
