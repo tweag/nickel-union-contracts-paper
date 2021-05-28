@@ -97,6 +97,7 @@
     moredelim=[is][\color{gray}]{\$}{\$},
     literate=
         *{->}{$\rightarrow$}1
+        {...}{\ldots}1
         {=>}{$\Rightarrow$}1
         {>=}{$\geq$}1
         {<=}{$\leq$}1
@@ -234,6 +235,16 @@ Nix package manager, used to describe one of the biggest sets of packaged
 software in existence\cite{repology}.  Nickel targets build systems, cloud
 deployment tools (Kubernetes, Terraform or NixOps), or anything requiring a
 non-trivial configuration.
+
+We will use the syntax of Nickel to write most examples throughout this paper.
+Syntactically, Nickel looks like a simple ML language with records. \nickel{let
+id = value in exp} is used to bind a value to an identifier in an expression.
+Functions are declared using the \nickel{fun arg1 ... argn => body} syntax. List
+are written as \nickel{[x1, ..., xn]} and records as \nickel{\{ field1 = value1,
+..., fieldn = valuen \}}. Some examples uses constructions that are not
+currently available in Nickel for illustration purpose: in particular, we will
+use \nickel{A & B} (resp.  \nickel{A | B}) for the intersection (resp. union) of
+contracts (or types) \nickel{A} and \nickel{B}.
 
 \subsection*{Correct programs \& valid data}
 
