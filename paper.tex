@@ -358,7 +358,7 @@ let Configuration = {
 
 Contracts have another perk: they correspond to the type casts of gradual
 typing, a discipline for mixing static and dynamic typing in the same language.
-As such, they are a precious ingredient for handling the interaction of
+As such, they are a precious ingredient for handling the interaction between 
 statically typed and dynamically typed code. While we focused on the writing of
 configuration, Nickel is a proper programming language that is also designed to
 write generic and reusable library code. There, the typing trade-off is
@@ -367,9 +367,8 @@ which is yet another argument for having contracts. Let us end this section by
 stressing the following points:
 \begin{itemize}
     \item \textbf{Even in a purely dynamically typed language, contracts are an
-        appealing feature for validation and correctness}. The gradual
-        typing part deserved to be mentioned, but is is out of the scope of this
-        paper.
+        appealing feature for validation and correctness}. The gradual typing
+        part enters the general picture but is out of the scope of this paper.
     \item \textbf{User-defined contracts are essential for validation}. Some
         contract systems (as the one of~\cite{RootCauseOfBlame}, that will be
         extensively discussed later in the paper) do not feature user-defined
@@ -608,9 +607,9 @@ even for pure terms?}
 
 \subsection*{Lazyness}
 Evaluation strategies relates to the evaluation of the expression bound to
-identifiers. Expressions are be bound by assignments (e.g. the \nickel{blah} construct in Nickel), or arguments are bound to
-parameters in a function application. We will use Figure~\ref{} as a working
-example.
+identifiers. Expressions are be bound by assignments (e.g. let bindings in
+Nickel), or by function applications (arguments are bound to parameters). We
+will use Figure~\ref{} as a working example.
 
 The eager strategy consists in evaluating right away a bound value before
 storing it in an identifier. If an identifier is not used, this leads to
