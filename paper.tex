@@ -979,18 +979,18 @@ should not have been used inside the evaluation of \nickel{C}, which
 adds an extra layer of complexity: contracts should be guarded, and execution
 depends on the shape of the surrounding evaluation context.
 
-\subsection*{[WIP] Union and intersection are not a silver bullet}
+\subsection*{Union and intersection are not a silver bullet}
 
-Before wrapping up this section, we'd like to show that maybe, union and intersection
+Before wrapping up this section, we would like to show that maybe, union and intersection
 contracts are not exactly what we would want them to be.
 As stated throughout this work, programmers coming from dynamic languages
 are accustomed to perform safety checks (data validation) with
-great amounts of flexibility, and the whole power of their
-language of choice at their disposition.
+great amounts of flexibility and the whole power of their
+language of choice at their disposal.
 
 For instance, a Python programmer may have no problem in checking
 at runtime, that a given variable is an integer if a given flag is
-not set, as shown in Figure \ref{fig:python-assertion},
+not set, as shown in Figure \ref{fig:python-assertion};
 while a Haskell programmer might close her eyes and leave the room
 instantly.
 
@@ -998,13 +998,16 @@ instantly.
 \begin{lstlisting}[language=python]
 result = 42 if flag else "Disabled"
 ...
-assert ((not flag) or isinstance(result, int))
+assert (
+  (not flag) 
+  or isinstance(result, int)
+)
 \end{lstlisting}
 \caption{Asserting at runtime the type of a variable}
 \label{fig:python-assertion}
 \end{figure}
 
-These expectations are not really met by how unions and intersection
+These expectations are not really met by how unions and intersections
 contracts are supposed to work.
 For example, consider the Nickel code shown on Figure
 \ref{fig:intersection-distrbution}, at first sight, this code should
@@ -1025,14 +1028,22 @@ let h = g 1 in
 \end{figure}
 
 The reason this happens is that
-there is a fundamental characterization of how intersection
+there is a fundamental property of how intersection
 contracts behave: the choice of which branch to choose is made exactly
-when the intersection is opened up, and not delayed as much as possible.
+when the intersection is opened up, and not delayed as much as possible,
+as one would like.
 This means, that the contract presented on Figure \ref{fig:intersection-distrbution},
 \nickel{(Number -> Number -> Number) & (Number -> Boolean -> Number)},
 will not behave the same way that
 \nickel{(Number -> (Number -> Number) & (Boolean -> Number)},
-when these two expressions should be logically equivalent.
+when, with an intuitive view of how intersections should behave,
+these two expressions should be logically equivalent.
+
+It is worth noting, that intersection types do have this property,
+since subtyping would allow to correctly type check a term like
+\nickel{g 1} as both \nickel{Number -> Number} as well as
+\nickel{Boolean -> Number}, and then deducing that \nickel{g 1}
+can be given the type \nickel{(Number -> Number) & (Boolean -> Number)}.
 
 
 \newpage
@@ -1044,7 +1055,7 @@ The papers that previously researched union and intersection
 as dynamic checks have, in our eyes, different shortcomings
 that makes them suboptimal solutions.
 
-\subsection{Keil and Thiemann}
+\subsection*{Keil and Thiemann}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
 Starting with the Keil and Thiemann work \cite{KeilThiemannUnionIntersection},
@@ -1114,7 +1125,7 @@ implementation of said feature}
     argument we can make (like it's quadratic in the number of open contracts or
 whatever)}.
 
-\subsection{Williams, Morris, and Wadler}
+\subsection*{Williams, Morris, and Wadler}
 \label{sec:will-morr-wadl}
 \unsure{Subsection title?}
 
@@ -1178,7 +1189,7 @@ Should we go so techincal?}
     concrete types like Number and String and simple contexts like application
     to a dumb argument) is sufficient to make the point}
 
-\subsection{Racket}
+\subsection*{Racket}
 \label{sec:racket}
 
 \unsure{Todo}
