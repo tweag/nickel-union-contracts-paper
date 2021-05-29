@@ -1064,7 +1064,7 @@ The existing work that previously researched and implemented
 union and intersection
 as dynamic checks have, in our eyes, different shortcomings
 that makes them suboptimal solutions.
-In this section, we present informally present those issues,
+In this section, we informally present those issues,
 starting with the foundational paper by Keil and Thiemann
 \cite{KeilThiemannUnionIntersection}, then following to a recent
 work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
@@ -1102,20 +1102,22 @@ Thiemann work}
 \label{fig:kt-contract-transf}
 \end{figure}
 
-This straightforward solutions makes composing the Keil and Thiemann
+This straightforward idea makes composing the Keil and Thiemann
 solution with other existing systems more difficult; in the words
 of Williams, Morris, and Wadler (see Section~\ref{sec:will-morr-wadl}):
 ``(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
 and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
-special cases can hinder composition.''\cite{RootCauseOfBlame}
+special cases can hinder composition.''\cite{RootCauseOfBlame}.
 \info{(Yann) Does
 it also make it less efficient? If $(A \& B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
 And it also could harm performance, or at least complicate an implementation,
 since some sharing mechanism should be used to avoid checking the same contract,
-over the same value, multiple times.\unsure{Arnaud says: this whole
-  section is too abstract give concrete code and explain what goes
-  wrong. It's fine to give code in Nickel syntax}
+over the same value, multiple times, exemplified by contract \nickel{A} on
+Figure \ref{fig:kt-contract-transf}, that gets duplicated.
+\unsure{Arnaud says: this whole
+section is too abstract give concrete code and explain what goes
+wrong. It's fine to give code in Nickel syntax}
 
 Another difficult issue Keil and Thiemann were able to solve, is the
 fact that flat contracts and intersection do not usually play nice
@@ -1127,24 +1129,28 @@ With these rules, the interaction between flat contracts and
 intersections becomes much simpler, since they are able to check
 both sides of an intersection on separate threads.
 This allows them to be sure that contracts from one branch of the intersection
-won't get blamed while executing the other branch.
+won't get blamed while executing the other branch, and vice versa.
 
 As an example, consider the programs shown on Figure
 \ref{fig:kt-non-deterministic}, if the Original program
 gets executed, it will spawn two instances of said program,
-one with the first branch of the intersection (the First Program),
-and the other one with the second one (the Second Program),
-and these will get joined if they reach an equal execution point.
+one with the first branch of the intersection (\nickel{3 @ Number}),
+and the other one with the second branch (\nickel{3 @ Positive}),
+and these will get joined once they reach an equal point, in this case
+it will be \nickel{3}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Original]
-x @ A & B
+3 @ Number & Positive
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=First Program]
-x @ A
+3 @ Number
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Second Program]
-x @ B
+3 @ Positive
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=Joined Program]
+3
 \end{lstlisting}
 \caption{Non deterministic intersection contract opening}
 \label{fig:kt-non-deterministic}
@@ -1152,12 +1158,18 @@ x @ B
 
 
 The second set of rules is deterministic, and it is intended
-to be simple to implement.
+to be simpler to implement.
 However, this second set needs to perform operations
 on the evaluation context, to decide whether or not to evaluate
 a given contract.
 \footnote{You can check more on this topic on Section 5.1 of
 \cite{KeilThiemannUnionIntersection}}
+For instance, in the program presented on Figure \ref{fig:inter-flat-contracts},
+when using the value \nickel{(fun x => x) @ (String -> String)}
+inside the execution of contract \nickel{C}, and applying it to \nickel{0},
+the contract runtime would check the context of execution and it would
+deduce that contract \nickel{String -> String} does not apply in this case,
+skipping it.
 
 We see two problems here, a minor one is the fact that the two
 different semantics defined for the calculus are really far apart
@@ -1172,7 +1184,7 @@ declarative one
 A second, major one,
 is the dependency added over the evaluation context, since, again,
 it makes composing this, with other features desired on programming languages,
-difficult, or even impossible
+difficult, or even impossible.
 \resolved{(Yann) I think we need to substantiate this claim. If this
 context dependency explains why CSE is invalid, maybe have a little example?
 (Teo) I removed it, I don't think there's an example, mainly since
@@ -1180,7 +1192,7 @@ this context dependency is not part of the language. I do think it complicates
 implementation of said feature}
 \todo{(Yann) TODO: see if there's a low hanging complexity
     argument we can make (like it's quadratic in the number of open contracts or
-whatever)}.
+whatever)}
 
 \subsection*{Williams, Morris, and Wadler}
 \label{sec:will-morr-wadl}
@@ -1190,44 +1202,75 @@ Williams, Morris, and Wadler, take a different approach on flat contracts,
 they are completely forbidden in their system, explicitly to not encounter
 the previously mentioned issue.
 This restriction goes against what is usually expected from dynamic checks:
-validation of data, and not just inclusion on types, is an expected
-feature of contracts.
+validation of data, and not just inclusion on types.
 
 On top of that, a fundamental problem arises on said paper,
 symptom of the difficulty of establishing good enough, and yet
 simple semantics for union and intersection dynamic checks.
 One of their main results, is the fact that their calculus obeys
 all of their expected monitoring properties for higher ordered, union
-and, intersection contracts.
+and intersection contracts.
 However, one of these properties states the following:
 
+\begin{figure}[h]
 $$ K \in \llbracket A \cap B \rrbracket^-~if~K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
+\caption{Sound monitoring property for intersection from Williams, Morris, and Wadler.}
+\label{fig:wmw-semantics}
+\end{figure}
 
-Which means that a continuation ($K$) complies negatively with an
+Which means that a continuation $K$ complies negatively with an
 intersection of $A$ and $B$ if it complies negatively with at least one of these.
+Or, less formally, that if you have a program that is missing a value at a given point,
+you can put a value wrapped with a contract stating $A \cap B$,
+and expect not to get a negative violation of that contract,
+if you can either put a value
+wrapped with $A$, or a value wrapped with $B$.
 
 Altough this is true, it's a weaker statement of what we'd like to have,
-since it rules out continuations like $(\lambda f.~((f~3)~+~4,~not~(f ~ true)))$,
-where $(\square 3)~+~4 \in \llbracket Number \rightarrow Number \rrbracket^-$
-but $(\square 3)~+~4 \not \in \llbracket Boolean \rightarrow Boolean \rrbracket^-$,
-and dually for $not~(f ~ true)$.
-Which would mean, according to their semantics, that
-the continuation presented above would not
-be in $\llbracket Number \rightarrow Number \cap Boolean \rightarrow Boolean \rrbracket^-$,
-even though our intuition (and the
-introduction to the paper) indicates that it should.
-\todo{Simplify example}
+consider the two contexts presented on Figure \ref{fig:valid-contexts},
+the first one is a valid context for a \nickel{Number -> Number} function,
+that is, you could replace the $\square$ by some function wrapped in a
+\nickel{Number -> Number} contract, and the context will not violate it.
+Similarly, the second context from the same figure is a valid
+\nickel{Boolean -> Boolean} context.
 
-% since it rules out continuations like $(\lambda f.~(K_1[f],~K_2[f])) \square$,
-% where $K_1 \in \llbracket A \rrbracket^-$ but $K_1 \not \in \llbracket B \rrbracket^-$,
-% and dually for $K_2$, which would mean the continuation presented above would not
-% be in $\llbracket A \cap B \rrbracket^-$, even though our intuition (and the
-% introduction to the paper) indicates that it should.
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel, title=\nickel{Number -> Number} context]
+(*@$\square$@*) 3
+\end{lstlisting}
+\begin{lstlisting}[language=nickel, title=\nickel{Boolean -> Boolean} context]
+(*@$\square$@*) true
+\end{lstlisting}
+\caption{Two different contexts in Nickel}
+\label{fig:valid-contexts}
+\end{figure}
 
-While this mistake does not invalidate their work (the system they present
+Next, we can combine these two contexts into one, that essentially
+has one single missing value, that will be used independently in both contexts
+from Figure \ref{fig:valid-contexts}, as shown on Figure \ref{fig:invalid-context}.
+This context is not a valid \nickel{Number -> Number} context, since it will apply
+the value put on $\square$ (through \nickel{f}) to a non \nickel{Number} (\nickel{true}).
+In a similar way, it is not a valid \nickel{Boolean -> Boolean} context either.
+Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
+shown on Figure \ref{fig:wmw-semantics}, it is not a valid
+\nickel{(Number -> Number) & (Boolean -> Boolean)} context.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let f = (*@$\square$@*) in
+(f 3, f true) 
+\end{lstlisting}
+\caption{Invalid \nickel{(Number -> Number) & (Boolean -> Boolean)} context,
+combining contexts from Figure \ref{fig:valid-contexts}}
+\label{fig:invalid-context}
+\end{figure}
+
+However, both our intuition, as the most common use case of intersections
+(that is, overloading), tells us that this should work.
+While this problem does not invalidate their work (in fact, the system they present
 handles these cases correctly), it shows that existing research is still not on
 good shape to handle the growing usecases being developed for
-union and intersection around dynamic languages.
+unions and intersections around dynamic languages.
 
 % $$ K ::= Id | K \bullet \square N | K \bullet V \square | K \bullet \square @^pA  $$
 
@@ -1240,9 +1283,7 @@ union and intersection around dynamic languages.
 
 
 % K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
-\unsure{Is it worth mentioning how continuations are formed?
-Should we go so techincal?}
-\todo{(Yann) Maybe adding a concrete example of this (it can be the same term but with
+\resolved{(Yann) Maybe adding a concrete example of this (it can be the same term but with
     concrete types like Number and String and simple contexts like application
     to a dumb argument) is sufficient to make the point}
 
