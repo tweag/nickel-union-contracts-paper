@@ -111,7 +111,7 @@
     do, else, for-each, if,
     let*, let, let-syntax, letrec, letrec-syntax,
     define-context, define-controller, Integer, Boolean, get, when-required, when-provided,
-    maybe_publish, require, submod, or/c, ->, \#\%module-begin,
+    maybe_publish, require, submod, or/c, and/c, ->, \#\%module-begin,
     always_publish, with-syntax, define-struct/contract, syntax-case,
     define/contract,
     let-values, let*-values,
@@ -1287,7 +1287,7 @@ unions and intersections around dynamic languages.
     concrete types like Number and String and simple contexts like application
     to a dumb argument) is sufficient to make the point}
 
-\subsection*{[WIP] Racket}
+\subsection*{Racket}
 \label{sec:racket}
 
 
@@ -1390,12 +1390,12 @@ which function contract to use.
 \end{lstlisting}
 \end{figure}
 
-\todo{Coming back to the problems of composing U/I with other typing
-features, Racket has made a clear choice and decided that higher order
-is more important (a wise decision)}
-
-\unsure{Todo}
-
+Even if Racket's intent is not to implement union and intersection
+dynamic checks, they do provide contracts that are, in some sense,
+simplified versions of those.
+In our eyes, Racket has accepted the difficulty of correctly and practically
+combine union, intersection, and higher order contracts, and has choose
+to prioritise the highe order ones.
 
 \newpage
 
