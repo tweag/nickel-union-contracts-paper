@@ -131,7 +131,7 @@ Typed Racket implements this idea, but calls intersection and union contracts
     want to say that since Nickel is lazy, almost every value is morally a
 function (thunk)?}
 
-\subsubsection*{Flat contracts are not idempotent}
+% \subsubsection*{Flat contracts are not idempotent}
 
 % Following the simple case presented above, there's another kind of extension that could be
 % applied to a contract system, and that is contracts written by the
@@ -174,90 +174,90 @@ function (thunk)?}
 % unfeasible to implement\unsure{Strong statement, can we back this up?
 %   I think we want to explain what Keil and Thiemann looks like}.
 
-The gist of their proposal, is to have a calculus that allows non deterministic
-executions, that are joined if they reach an equal term, so $M \parallel M$ gets
-rewritten as $M$.
-So, for instance, when evaluating $(M \parallel N) ~ T$, it gets
-reduced to $ M ~ T \parallel N ~ T$.
-And non determinism gets introduced when an intersection contract gets applied
-over a value, that is being applied to another value, $(V @ Q \cap R) ~ W$
-gets rewritten as $(V @ Q) ~ W \parallel (V @ R) ~ W$\footnote{This is overly
-simplified version of their system, only focused on how non determinism behaves.}.
+% The gist of their proposal, is to have a calculus that allows non deterministic
+% executions, that are joined if they reach an equal term, so $M \parallel M$ gets
+% rewritten as $M$.
+% So, for instance, when evaluating $(M \parallel N) ~ T$, it gets
+% reduced to $ M ~ T \parallel N ~ T$.
+% And non determinism gets introduced when an intersection contract gets applied
+% over a value, that is being applied to another value, $(V @ Q \cap R) ~ W$
+% gets rewritten as $(V @ Q) ~ W \parallel (V @ R) ~ W$\footnote{This is overly
+% simplified version of their system, only focused on how non determinism behaves.}.
 
-This approach is a literal reading of the logical semantics of intersection, where
-a context is free to chose any one of the intersected contracts.
-In this case, both are tried, and computation only fails negatively if both
-threads of execution do.
+% This approach is a literal reading of the logical semantics of intersection, where
+% a context is free to chose any one of the intersected contracts.
+% In this case, both are tried, and computation only fails negatively if both
+% threads of execution do.
 
-They also propose a different approach, by checking the context at which
-each contract is opened, dropping
-it if the context indicates it is being applied inside the evaluation of another
-(related by an intersection) contract.
-This check implies traversing the context of execution.
-We consider that having execution dependent on the context
-of evaluation breaks locality of
-the language execution in undesired ways.\todo{Unclear. Is it a bad thing
-    "philosophically" (in general, because it breaks local reasoning?) If there
-are concrete unwiding examples, we should add some}.
+% They also propose a different approach, by checking the context at which
+% each contract is opened, dropping
+% it if the context indicates it is being applied inside the evaluation of another
+% (related by an intersection) contract.
+% This check implies traversing the context of execution.
+% We consider that having execution dependent on the context
+% of evaluation breaks locality of
+% the language execution in undesired ways.\todo{Unclear. Is it a bad thing
+%     "philosophically" (in general, because it breaks local reasoning?) If there
+% are concrete unwiding examples, we should add some}.
 
-\unsure{The next paragraph is a draft that tries to answer the todo comment above}
-Breaking locality on the semantics of a programming language can unwind
-multiple undesired consequences, for instance, put yourself in the shoes
-of a compiler programmer, it does not matter whether your language is eager
-(C) or lazy (Haskell) you don't want to waste time evaluating
-the same exact thing multiple times.
-The dependency added in KT to the context of evaluation forces their system
-to treat a value, wrapped in a function contract (or an intersection of function
-contracts) as a value by itself. This means that the contract needs to be reopened
-at every evaluation context.
+% \unsure{The next paragraph is a draft that tries to answer the todo comment above}
+% Breaking locality on the semantics of a programming language can unwind
+% multiple undesired consequences, for instance, put yourself in the shoes
+% of a compiler programmer, it does not matter whether your language is eager
+% (C) or lazy (Haskell) you don't want to waste time evaluating
+% the same exact thing multiple times.
+% The dependency added in KT to the context of evaluation forces their system
+% to treat a value, wrapped in a function contract (or an intersection of function
+% contracts) as a value by itself. This means that the contract needs to be reopened
+% at every evaluation context.
 
-WMW decided to disallow flat contracts completely,
-we believe this hurts badly a dynamically checked framework, since it goes against
-the common practice, in dynamic languages, of checking for properties
-that go beyond the expressiveness given by a type system.
-\todo{Maybe mention explicitly the word "validation": contracts allow for
-    principled, higher-order compatible, composable validation. For validation,
-you want to check things much more complex than just belonging to a type.}
+% WMW decided to disallow flat contracts completely,
+% we believe this hurts badly a dynamically checked framework, since it goes against
+% the common practice, in dynamic languages, of checking for properties
+% that go beyond the expressiveness given by a type system.
+% \todo{Maybe mention explicitly the word "validation": contracts allow for
+%     principled, higher-order compatible, composable validation. For validation,
+% you want to check things much more complex than just belonging to a type.}
 
-\subsubsection*{Inflexibility of union and intersection contracts}
+% \subsubsection*{Inflexibility of union and intersection contracts}
 
-Solutions for union and intersection contracts do exist (KT, WMW) however,
-they do not provide the flexibility that one may be used to when using dynamic checks.
-Consider a Python programmer, she would not care to see something like this
-\texttt{assert(isinstance(3 if True else "hello", int)))}, while a Haskell programmer
-might perform a harakiri upon reading it.
+% Solutions for union and intersection contracts do exist (KT, WMW) however,
+% they do not provide the flexibility that one may be used to when using dynamic checks.
+% Consider a Python programmer, she would not care to see something like this
+% \texttt{assert(isinstance(3 if True else "hello", int)))}, while a Haskell programmer
+% might perform a harakiri upon reading it.
 
-Without falling into the eternal discussion of static vs dynamic type checking,
-regular users of dynamically checked languages expect this flexibility.
-Sadly, the current work on union and intersection does not provide it.
+% Without falling into the eternal discussion of static vs dynamic type checking,
+% regular users of dynamically checked languages expect this flexibility.
+% Sadly, the current work on union and intersection does not provide it.
 
-For instance, consider the following code
-% \texttt{(\\f.(\\xy.x) (f 1) (f true))((\\xy.x)@(N -> N -> N) /\\ (N -> B -> N) 1)}.
-$let~f~=~((\lambda~x~y.x)@(N -> N -> N) \cap (N -> B -> N))~1~in~(f~1,~f~True)$.
-If we use any of the KT or WMW frameworks, both our Haskell programmer and our
-Python programmer will change their career path towards photography, or something
-similar.
-Our Haskell programmer, will do so because this code compiles;
-while the Python programmer would do so because this code fails on execution.
+% For instance, consider the following code
+% % \texttt{(\\f.(\\xy.x) (f 1) (f true))((\\xy.x)@(N -> N -> N) /\\ (N -> B -> N) 1)}.
+% $let~f~=~((\lambda~x~y.x)@(N -> N -> N) \cap (N -> B -> N))~1~in~(f~1,~f~True)$.
+% If we use any of the KT or WMW frameworks, both our Haskell programmer and our
+% Python programmer will change their career path towards photography, or something
+% similar.
+% Our Haskell programmer, will do so because this code compiles;
+% while the Python programmer would do so because this code fails on execution.
 
-The reason this happens, is that even if you would expect
-$(N -> N -> N) \cap (N -> B -> N)$
-and $N -> (N -> N) \cap (B -> N)$ to behave equally, the point at which
-the decission of which path of the intersection to use is taken
-matters.
-When working with dynamic checks, it is expected that this kind of
-flexibility works.
+% The reason this happens, is that even if you would expect
+% $(N -> N -> N) \cap (N -> B -> N)$
+% and $N -> (N -> N) \cap (B -> N)$ to behave equally, the point at which
+% the decission of which path of the intersection to use is taken
+% matters.
+% When working with dynamic checks, it is expected that this kind of
+% flexibility works.
 
-\todo{better phrasing and try to use the dual example}
+% \todo{better phrasing and try to use the dual example}
 
-\moral{Are union and intersection contracts really what we want? Is there an alternative (simpler) option?}
+% \moral{Are union and intersection contracts really what we want? Is there an alternative (simpler) option?}
 
-\subsection{Complexity of existing solutions}
+% \subsection{Complexity of existing solutions}
 
-The Keil and Thiemann paper presents a complete system that handles union and intersection
-contracts in the presence of higher order contracts, however, we consider it to be overly
-complicated for a reasonable to implement language.
-In what follows, we state some of the reasons that we consider troublesome.
+% The Keil and Thiemann paper presents a complete system that handles union and intersection
+% contracts in the presence of higher order contracts, however, we consider it to be overly
+% complicated for a reasonable to implement language.
+% In what follows, we state some of the reasons that we consider troublesome.
 
 % \subsubsection{Non deterministic semantics}
 
@@ -291,37 +291,37 @@ In what follows, we state some of the reasons that we consider troublesome.
 % of evaluation breaks locality of
 % the language execution in undesired ways.
 
-\subsubsection{Contract normalization}
+% \subsubsection{Contract normalization}
 
-GOAL: The relation between union and intersection have to be modified, transforming them
-in a union of intersections.
+% GOAL: The relation between union and intersection have to be modified, transforming them
+% in a union of intersections.
 
-In the Keil and Thiemann paper, before the validation of contracts can begin, the
-contracts have to be normalized into unions of intersections of (other) contracts.
-This problem  is the starting point from which
-WMW deliver their work, and we share their opinion:
+% In the Keil and Thiemann paper, before the validation of contracts can begin, the
+% contracts have to be normalized into unions of intersections of (other) contracts.
+% This problem  is the starting point from which
+% WMW deliver their work, and we share their opinion:
 
-"However, the monitoring semantics for contracts of intersection and union types given by Keil
-and Thiemann are not uniform. (...) If uniformity helps composition, then
-special cases can hinder composition.", [Ref]
+% "However, the monitoring semantics for contracts of intersection and union types given by Keil
+% and Thiemann are not uniform. (...) If uniformity helps composition, then
+% special cases can hinder composition.", [Ref]
 
-\subsection{Shortcomings in WMW}
+% \subsection{Shortcomings in WMW}
 
-The second paper worth mentioning is the one by Williams, Morrison and Wadler [ref].
-This work, attempts to provide a simpler contract system with
-union and intersection types.
-However, we believe this work has some issues and shortcomings, which make it
-not that useful in practice; we briefly outline them below.
+% The second paper worth mentioning is the one by Williams, Morrison and Wadler [ref].
+% This work, attempts to provide a simpler contract system with
+% union and intersection types.
+% However, we believe this work has some issues and shortcomings, which make it
+% not that useful in practice; we briefly outline them below.
 
-% \subsubsection*{Lack of flat contracts}
+% % \subsubsection*{Lack of flat contracts}
 
-% In order to save themselves from dropping some contracts when checking a union
-% or intersection branch, WMW decided to eliminate completely flat contracts from
-% their system.
-% We believe this hurts badly a dynamically checked framework, since it goes against
-% the common practice, in dynamic languages, of checking for non trivial properties.
+% % In order to save themselves from dropping some contracts when checking a union
+% % or intersection branch, WMW decided to eliminate completely flat contracts from
+% % their system.
+% % We believe this hurts badly a dynamically checked framework, since it goes against
+% % the common practice, in dynamic languages, of checking for non trivial properties.
 
-\subsubsection*{Problem in semantics (monitoring)}
-Is the problem in the semantics worth mentioning? or is it attacking
-too much on the paper.\unsure{I don't know, show it to me first and we
-can decide!}
+% \subsubsection*{Problem in semantics (monitoring)}
+% Is the problem in the semantics worth mentioning? or is it attacking
+% too much on the paper.\unsure{I don't know, show it to me first and we
+% can decide!}
