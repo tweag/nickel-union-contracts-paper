@@ -176,11 +176,12 @@ to represent and type unions.
 \title{Contracts for unions and intersections are hard for Nickel}
 \author{Teodoro Freund}
 \affiliation{
-  \institution{???}
+  \institution{Universidad de Buenos Aires}
   \city{Buenos Aires}
   \country{Argentina}
 }
-\email{???}
+\email{tfreund95@gmail.com}
+
 \author{Yann Hamdaoui}
 \affiliation{
   \institution{Tweag}
@@ -202,6 +203,7 @@ to represent and type unions.
 
 \unsure{TODO: CCS classification; Keywords}
 \section{Introduction}
+\label{sec:intro}
 \info{Goals of the paper: position paper: unions/intersections nice in
 theory problematic in practice. In particular non-orthogonal with the
 rest of the features of your language.}
@@ -380,9 +382,26 @@ stressing the following points:
         static typing with respect to validation.
 \end{itemize}
 
+\subsection*{Structure of this paper}
+This paper is structured as follows, Section \ref{sec:intro} introduces
+this paper; Section \ref{sec:feat-lang} outlines various features
+of programming languages that may interact badly with union and intersection
+contracts.
+Section \ref{sec:union-inter} gives a primer on Unions and Intersections,
+enough to understand this work.
+
+Section \ref{sec:issues-sem} shows what difficulties or issues, proper of
+unions and intersections, one may
+encounter when trying to develop a union and intersection contracts.
+Section \ref{sec:issues-literature} presents issues and shortcomings found
+in existing attempts to solve this problem.
+Section \ref{sec:related-work} provides some related work, and Section
+\ref{sec:conclusion} concludes.
+
 \newpage
 
 \section{Features of languages}
+\label{sec:feat-lang}
 \info{Zoology of various features that we will eventually show
   conflict with this or that property or implementation of union and
   intersection. Including user-define contracts.}
@@ -635,6 +654,7 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \newpage
 
 \section{Union \& intersection}
+\label{sec:union-inter}
 \info{What are they, what are they used for.}
 
 \subsection*{Unions}
@@ -764,6 +784,7 @@ And union has to be treated as any one of the options}
 \newpage
 
 \section{Issues coming from the semantics}
+\label{sec:issues-sem}
 \info{What goes wrong or difficult when trying to implement union and
   intersection literally}
 
@@ -1058,6 +1079,7 @@ can be given the type \nickel{(Number -> Number) & (Boolean -> Number)}.
 \newpage
 
 \section{Issues in concrete restrictions from the literature}
+\label{sec:issues-literature}
 \info{The various papers and the tradeoffs they make}
 
 The existing work that previously researched and implemented
@@ -1400,12 +1422,13 @@ to prioritise the highe order ones.
 \newpage
 
 \section{Related work}
+\label{sec:related-work}
 \info{Including a mention of statically typed systems with union}
-\info{Include something about Racket's and and or contracts}
 
 \newpage
 
 \section{Conclusion}
+\label{sec:conclusion}
 
 \bibliography{nickel}
 
