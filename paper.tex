@@ -426,35 +426,39 @@ main point is to apply some arbitrary predicate (as arbitrary as the
 host language allows it) to a value; if the predicate evaluates to
 true, the contract passes, otherwise it fails.
 
-For instance, we could define a flat contract \nickel{even} as
-\nickel{fun x => x \% 2 == 0}, that checks
-whether a number is even by checking the remainder of dividing it by 2.
-And then use it to check that a function always returns an
-even number, when applied to an \nickel{Integer}, as shown in
-Figure \ref{fig:num-to-even}.
-Or even, we could come up with a contract that checks that a function
-maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true},
-and use it as a contract for the \nickel{not} function, as can be seen on Figure
+For instance, the contract \nickel{Even} shown on Figure
+\ref{fig:contract-higher-order} is a flat contract, defined
+by taking the value that needs to be checked, and validating
+that is both a number and that the remainder of dividing it by 2
+is 0.
+And then, as seen on the same figure, we can use it to check that a function always
+returns an \nickel{Int} when applied to an \nickel{Even}.
+
+% \begin{figure}[h]
+% \begin{center}
+% \begin{lstlisting}[language=nickel]
+% let f = (fun n => n * 2) @ (Integer -> even)
+% \end{lstlisting}
+%   \end{center}
+% \caption{A function wrapped with a contract stating that it always returns
+% an even number}
+% \label{fig:num-to-even}
+% \end{figure}
+
+
+Or even more interesting, we could come up with a contract that checks that a function
+maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true}
+by applying the function and checking its results,
+and then use it as a contract for the \nickel{not} function, as can be seen on Figure
 \ref{fig:checked-not}.
-
-\begin{figure}[h]
-\begin{center}
-\begin{lstlisting}[language=nickel]
-let f = (fun n => n * 2) @ (Integer -> even)
-\end{lstlisting}
-  \end{center}
-\caption{A function wrapped with a contract stating that it always returns
-an even number}
-\label{fig:num-to-even}
-\end{figure}
-
-% $$let~f~=~(\lambda n. ~ n * 2)@(Number ~ \rightarrow ~ even?)$$
 
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
-let notC = fun f => (f true == false) and (f false == true) in
-let checkedNot = not @ notC
+let NotC = contracts.fromPred (
+  fun f => builtins.isFun f && (f true == false) && (f false == true)
+) in
+let checkedNot = not | #NotC
 \end{lstlisting}
 \end{center}
 \caption{A contract that checks the not function behaves as expected}
@@ -462,16 +466,18 @@ let checkedNot = not @ notC
 \end{figure}
 
 This type of contracts are present on many different languages,
-for instance, the Eiffel programming language\unsure{Citation?}, the precursor
+for instance, the Eiffel programming language\cite{meyer1987eiffel}, the precursor
 of the Design by Contract ideals, allows to assert
 these kinds of expression as pre- and post-conditions on
-functions\cite{EiffelDesignByContract}.
-A somewhat newer language, the D programming
-language, allows, among other things, to have invariants on
-classes\unsure{I (Arnaud) believe Eiffel has this feature as well,
-  doesn't it?},
-written with flat contracts, that are
-dinamically checked at the frontiers of every public method \cite{DLangContracts}.
+functions and as invariants on classes\cite{EiffelDesignByContract}.
+\resolved{I (Arnaud) believe Eiffel has this feature as well,
+  doesn't it? (Teo) You're right},
+
+% A somewhat newer language, the D programming
+% language, allows, among other things, to have invariants on
+% classes
+% written with flat contracts, that are
+% dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
 Finally, the Racket programming language also has a system to work with
 contracts, powerful enough to define flat contracts
@@ -482,8 +488,6 @@ work.}
 to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
-\todo{Talk about this, probably later on the paper.
-See Related Works section}
 
 Even if flat contracts may seem like too permissive, the ability to make
 non trivial checks on values (that is, to validate their output) is expected
@@ -564,7 +568,8 @@ let elemAtOrLast = fun index list =>
 \end{figure}
 
 Beyond CSE, optimizations such as loop-invariant code motion or
-let-floating~\ref{} apply the same principle of extracting out an invariant
+let-floating~\cite{letFloating} apply the same principle of extracting out an invariant
+\unsure{Was this the inteded citation?}
 expression to avoid its recomputation respectively across loop iterations and
 function calls.
 
@@ -616,7 +621,7 @@ language with effect tracking like Haskell\todo{Cite a different language, or
 remove citation}, pure terms can be safely identified for applying
 optimizations.
 
-Strikingly, we will see in section~\ref{} that the introduction of unions and
+Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of unions and
 intersections can make this equivalence \todo{name it} unsound \emph{even in a
 pure setting}, making the optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
@@ -625,8 +630,9 @@ Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 even for pure terms?}
 
 \subsection*{Lazyness}
+\todo{Lazyness does not appear on sec 4, if we don't put somethign there, I'd remove it}
 Evaluation strategies relates to the evaluation of the expression bound to
-identifiers. Expressions are be bound by assignments (e.g. let bindings in
+identifiers. Expressions are bound by assignments (e.g. let bindings in
 Nickel), or by function applications (arguments are bound to parameters). We
 will use Figure~\ref{} as a working example.
 
@@ -645,7 +651,7 @@ for the programmer. Also, lazy evaluation can occur performance overhead and
 memory leaks in unexpected ways. While eager evaluation is the default, some
 languages however offer a form of lazy evaluation, either as an opt-in option
 (e.g. Ocaml and ReScript), or by default for specific primitives types such as
-like list (e.g.  Swift and Perl6). The most notable lazy language is Haskell
+list (e.g.  Swift and Perl6). The most notable lazy language is Haskell
 (and its web avatar PureScript). Although rare in general purpose languages,
 lazy evaluation is more widespread in the configuration space: the configuration
 languages Dhall, CUE and Jsonnet also implements full lazy evaluation. So are
@@ -656,6 +662,9 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \section{Union \& intersection}
 \label{sec:union-inter}
 \info{What are they, what are they used for.}
+\todo{Since nickel uses | for contract application, I'd move unions
+to some other symbol.
+I think the best option is to move to $\cap / \cup$}
 
 \subsection*{Unions}
 Unions are fundamental building blocks of programs. A union holds a value whose
