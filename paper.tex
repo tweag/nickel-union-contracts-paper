@@ -768,7 +768,7 @@ Intersections are less prevalent. An intersection is a value that belongs to
 two types at the same time. A simple example is a number literal \nickel{1}
 which could be accepted as both an \nickel{Int} and a \nickel{Float} without
 having to perform conversions (Figure~\ref{fig:intersection-subytping-ex}). In
-this example, the intersection \nickel{Int & Float} can be used as a subtype of
+this example, the intersection \nickel{Int @& Float} can be used as a subtype of
 both \nickel{Int} and \nickel{Float}.
 
 \label{fig:intersection-subytping-ex}
@@ -990,7 +990,7 @@ This idea is still quite reasonable, for instance, when executing
 that gets checked is the argument of \nickel{Str -> Str} over the function parameter, so
 something like \nickel{1 | Str}.
 Of course, this fails, but before raising a violation, this contract could
-check if the other side of the intersection (\nickel{Number -> Number}) has
+check if the other side of the intersection (\nickel{Num -> Num}) has
 also tried to raise negative blame on the same parameter ()\nickel{1}), since
 it hasn't, the contract would return normally, and would mark itself as failed.
 
@@ -1005,7 +1005,7 @@ x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 On the other hand, if you were to do something like
 \nickel{g true}, that would fail also negatively the contract
 \nickel{Str -> Str} and, when checking if \nickel{true}
-is a correct parameter for \nickel{Number -> Number} it would check
+is a correct parameter for \nickel{Num -> Num} it would check
 if the other side of the intersection has failed, and since it
 has, a violation would be raised and the whole program would
 correctly fail.
@@ -1103,7 +1103,7 @@ equivalent.
 
 It is worth noting, that intersection types do have this property,
 since subtyping would allow to correctly type check a term like
-\nickel{g 1} as both \nickel{Number -> Number} as well as
+\nickel{g 1} as both \nickel{Num -> Num} as well as
 \nickel{Bool -> Num}, and then deducing that \nickel{g 1}
 can be given the type \nickel{Num -> Num @& Bool -> Num}.
 
@@ -1220,7 +1220,7 @@ For instance, in the program presented on Figure \ref{fig:inter-flat-contracts},
 when using the value \nickel{(fun x => x) | Str -> Str)}
 inside the execution of contract \nickel{C}, and applying it to \nickel{0},
 the contract runtime would check the context of execution and it would
-deduce that contract \nickel{Str -> Str does not apply in this case,
+deduce that contract \nickel{Str -> Str} does not apply in this case,
 skipping it.
 
 We see two problems here, a minor one is the fact that the two
@@ -1305,14 +1305,14 @@ the value put on $\square$ (through \nickel{f}) to a non \nickel{Num} (\nickel{t
 In a similar way, it is not a valid \nickel{Bool -> Bool} context either.
 Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
 shown on Figure \ref{fig:wmw-semantics}, it is not a valid
-\nickel{(Num -> Num) & (Bool -> Bool)} context.
+\nickel{Num -> Num @& Bool -> Bool} context.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (*@$\square$@*) in
 (f 3, f true) 
 \end{lstlisting}
-\caption{Invalid \nickel{(Num -> Num) & (Bool -> Bool)} context,
+\caption{Invalid \nickel{Num -> Num @& Bool -> Bool} context,
 combining contexts from Figure \ref{fig:valid-contexts}}
 \label{fig:invalid-context}
 \end{figure}
