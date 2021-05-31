@@ -72,11 +72,6 @@
       in
     },
     keywords=[3]{
-      Num,
-      Bool,
-      Str,
-      List,
-      Dyn,
       forall,
     },
     keywordsprefix=\#,
@@ -98,6 +93,8 @@
     literate=
         *{->}{$\rightarrow$}1
         {...}{\ldots}1
+        {@&}{$\cap$}1
+        {@|}{$\cup$}1
         {=>}{$\Rightarrow$}1
         {>=}{$\geq$}1
         {<=}{$\leq$}1
@@ -242,15 +239,21 @@ We will use the syntax of Nickel to write most examples throughout this paper.
 Syntactically, Nickel looks like a simple ML language with records. \nickel{let
 id = value in exp} is used to bind a value to an identifier in an expression.
 Functions are declared using the \nickel{fun arg1 ... argn => body} syntax. List
-are written as \nickel{[x1, ..., xn]} and records as \nickel{\{ field1 = value1,
-..., fieldn = valuen \}}. Some examples uses constructions that are not
-currently available in Nickel for illustration purpose: in particular, we will
-use \nickel{A & B} (resp.  \nickel{A | B}) for the intersection (resp. union) of
-contracts (or types) \nickel{A} and \nickel{B}. Finally, we will write
-\nickel{exp @ C}\footnote{The current Nickel implementation actually uses the
-syntax \nickel{exp | C} for contract application, but we rather keep \nickel{|}
-for unions here}  for the application of a contract \nickel{C} to the expression
-\nickel{exp}.
+are written as \nickel{[x1, ..., xn]} and records as \nickel{\{field1 = value1,
+..., fieldn = valuen\}}. The application of a contract \nickel{C} to the
+expression \nickel{exp} is written \nickel{exp | C}\footnote{The current
+    implementation requires a \nickel{#} character in front of custom contracts,
+    whose application would rather be \nickel{exp | #C}, but it is irrelevant
+and subject to change in the future.}. We will sometimes attach
+contracts directly to an identifier instead of the corresponding bound
+expression, that is: \nickel{let id | C = value in exp} is syntactic sugar for
+\nickel{let id = (value | C) in exp}.
+
+Some examples resort to constructions that are not currently available in Nickel
+for illustration purpose: we will use \nickel{A @& B} (resp. \nickel{A @| B})
+for the intersection (resp. union) of contracts (or types) \nickel{A} and
+\nickel{B}. \nickel{@|} and \nickel{@&} bind more loosely than arrows, meaning
+that \nickel{A -> B @& C -> D} is to be parsed as \nickel{(A -> B) @& (C -> D)}.
 
 \subsection*{Correct programs \& valid data}
 
@@ -302,8 +305,8 @@ principled approach to run-time assertion checking called contracts. As opposed
 to plain assertions, contracts can be composed naturally into more complex ones.
 Nickel features such a contract system. For example, contracts nicely support
 higher-order functions. If the user has written an \nickel{Even} contract for
-numbers, they can use it right away to form a function contract \nickel{#Even ->
-#Int} contract, as illustrated in Figure~\ref{fig:contract-higher-order}. This
+numbers, they can use it right away to form a function contract \nickel{Even ->
+Int} contract, as illustrated in Figure~\ref{fig:contract-higher-order}. This
 contract will check at each call that the argument is an even number
 (pre-condition) and that the return value is a integer (post-condition). The
 \nickel{#} character distinguishes contracts in Nickel. Contracts also introduce
@@ -319,7 +322,7 @@ let Even = contracts.fromPred (fun val =>
 let Int = contracts.fromPred (fun val =>
   builtins.isNum val
   && val % 1 == 0) in
-{divBy2 | #Even -> #Int = fun x => x/2}
+{divBy2 | Even -> Int = fun x => x/2}
 \end{lstlisting}
   \end{center}
 \caption{Higher-order contract}
@@ -351,11 +354,11 @@ let Port = contracts.fromPred (fun value =>
   builtins.isNum value && value % 1 == 0
   && value >= 0 && value <= 65353) in
 let Configuration = {
-  host | #Host,
-  port | #Port,
+  host | Host,
+  port | Port,
 } in
 {host = "nixos.org", port = 80}
-| #Configuration
+| Configuration
 \end{lstlisting}
   \end{center}
 \caption{Contract composition}
@@ -379,7 +382,7 @@ stressing the following points:
         contract systems (as the one of~\cite{RootCauseOfBlame}, that will be
         extensively discussed later in the paper) do not feature user-defined
         contracts.  Rather, a fixed set of built-in contracts such as
-        \nickel{Number} or \nickel{String} are provided, very much like base
+        \nickel{Num} or \nickel{Str} are provided, very much like base
         types. The absence of user-defined contracts is understandable when
         using contracts as a dynamic typing discipline for correctness. But a
         system without user-defined contracts is limited in the same way as
@@ -447,7 +450,7 @@ returns an \nickel{Int} when applied to an \nickel{Even}.
 % \begin{figure}[h]
 % \begin{center}
 % \begin{lstlisting}[language=nickel]
-% let f = (fun n => n * 2) @ (Integer -> even)
+% let f = fun n => n * 2 @ (Integer -> even)
 % \end{lstlisting}
 %   \end{center}
 % \caption{A function wrapped with a contract stating that it always returns
@@ -612,28 +615,37 @@ semantics of programs with respect to specific substitutions. Inlining requires
 that one can replace the application of a function by its body, which is
 basically $\beta$-reduction: as long as the arguments are evaluated following
 the language's strategy, it is a valid transformation. On the other hand,
-CSE-like transformations require an expansion property of the form
+a CSE-like transformation on a term $M$ requires an expansion property of the form
 
-$$M[N] \simeq let~x~=~N~in~M[x]$$
+\begin{equation}\label{eq:cbn-expansion}
+M[x/N] \simeq let~x~=~N~in~M
+\end{equation}
 
-This equation clearly fails in a call-by-value language with side effects:
+Here, $M[x/N]$ is the substitution of $x$ for $N$ in the term $M$.
+\ref{eq:cbn-expansion} has an evident call-by-name flavour, and consequently
+fails in general for a call-by-value language with side effects.  Indeed, define
+the following function $f$:
 
 \begin{lstlisting}[language=Nickel]
-let f x = print "hi";(x+1) in (f 1,f 1)
-(*@ $\not \simeq$ @*) let f x = print "hi";(x+1) in
-(*@ \phantom{$\not \simeq$} @*) let y = f 1 in (y,y)
+let f x = print "hi";(x+1) in 
+\end{lstlisting}
+
+Then:
+
+\begin{lstlisting}[language=Nickel]
+(f 1,f 1) (*@ $\not \simeq$ @*) let y = f 1 in (y,y)
 \end{lstlisting}
 
 In the example above, the first term prints \nickel{"hi"} two times while the
-second term prints it only once. However, this property does hold for
+second term prints it only once. However, \ref{eq:cbn-expansion} does hold for
 \emph{pure} terms, that are terms without side-effects. In a pure language, or a
 language with effect tracking like Haskell\todo{Cite a different language, or
 remove citation}, pure terms can be safely identified for applying
 optimizations.
 
-Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of unions and
-intersections can make this equivalence \todo{name it} unsound \emph{even in a
-pure setting}, making the optimization of
+Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of
+unions and intersections can make \ref{eq:cbn-expansion} \resolved{it} unsound
+\emph{even in a pure setting}, making the optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 
 \unsure{Should we tease already here that unions and intersections break this
@@ -690,14 +702,14 @@ they are not working}
 \label{fig:union-adt-ex}
 \begin{lstlisting}[title={Tree-like data structure}]
 type BinaryTree =
-Integer | (BinaryTree, BinaryTree)
+Integer @| (BinaryTree, BinaryTree)
 \end{lstlisting}
 
 
 In addition to internal program representations, unions are also useful to model
 external data:
 \begin{itemize}
-    \item To represent nullable values(\ref{fig:union-nullable-ex}).
+    \item To represent nullable values (\ref{fig:union-nullable-ex}).
     \item For plain enumerations (\ref{fig:union-enum-ex}).
     \item To support different representations of the same data
         (\ref{fig:union-alt-ex}).
@@ -706,18 +718,18 @@ All of which are common in configurations.
 
 \label{fig:union-nullable-ex}
 \begin{lstlisting}[title={Nullable values}]
-optionalValue : String | Null
+optionalValue : Str @| Null
 \end{lstlisting}
 
 \label{fig:union-enum-ex}
 \begin{lstlisting}[title={Plain enumeration}]
-protocol : `Http | `Ftp | `Sftp
+protocol : `Http @| `Ftp @| `Sftp
 \end{lstlisting}
 
 \label{fig:union-alt-ex}
 \begin{lstlisting}[title={Alternative representations}]
-person : {name : String, age : Int}
-  | {name : String, dateOfBirth : String}
+person : {name : Str, age : Int}
+  @| {name : Str, dateOfBirth : Str}
 \end{lstlisting}
 
 In statically typed languages, and more specifically in functional programming
@@ -761,7 +773,7 @@ both \nickel{Int} and \nickel{Float}.
 
 \label{fig:intersection-subytping-ex}
 \begin{lstlisting}[title={Value subtyping}]
-1 : Int & Float
+1 : Int @& Float
 \end{lstlisting}
 
 Intersections of higher-order types corresponding to overloading
@@ -769,7 +781,7 @@ Intersections of higher-order types corresponding to overloading
 
 \label{fig:intersection-overloading-ex}
 \begin{lstlisting}[title={Overloading}]
-incr: (Int -> Int) & (Float -> Float) =
+incr: (Int -> Int) @& (Float -> Float) =
   fun x => x + 1
 \end{lstlisting}
 
@@ -777,7 +789,7 @@ They can also be used to combine constraints (such as traits or interfaces), as
 done in Scala 3 (Figure~\ref{fig:intersection-mixins-ex}).
 
 \label{fig:intersection-mixins-ex}
-\begin{lstlisting}[title={Structural mixins}]
+\begin{lstlisting}[language=Scala,title={Structural mixins}]
 Comparator: {cmp: T -> T -> Bool}
 Shower: {show: T -> String}
 
@@ -790,8 +802,8 @@ featuring unions, a union in a negative positions is a form of intersection
 
 \label{fig:intersection-dual}
 \begin{lstlisting}[title={Intersection as the dual of unions}]
-f : (Num | String) -> Bool
-(*@ $\simeq$ @*) f : (Num -> Bool) & (String -> Bool)
+f : (Num @| Str) -> Bool
+(*@ $\simeq$ @*) f : (Num -> Bool) @& (Str -> Bool)
 \end{lstlisting}
 
 \todo{Either here or the next section, show examples of unintuitive behaviour
@@ -846,7 +858,8 @@ one (\nickel{-2}).
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let f = (fun x => x - 7) @ Positive -> Positive in
+let f | Positive -> Positive
+      = fun x => x - 7 in
 (f 10) + (f 5)
 \end{lstlisting}
 \caption{Wrong positive to positive function}
@@ -872,7 +885,9 @@ value for the union of those contracts.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let f = (fun x => x - 7) @ (Positive -> Positive) | (Positive -> NonPositive) in
+let f | (Positive -> Positive)
+        @| (Positive -> NonPositive)
+      = fun x => x - 7 in
 (f 10) + (f 5)
 \end{lstlisting}
 \caption{Still wrong positive to positive or positive to non-positive function}
@@ -902,23 +917,24 @@ the common subexpression \nickel{f 1} has been eliminated.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Inlined]
-let f = (fun x y => if y then x else "False") @ Number -> (Boolean -> Number) | (Boolean -> String) in
-(f 1 true, f 1 false)
+let f | Num -> (Bool -> Num @| Bool -> Str)
+      = fun x y => if y then x else "False"
+in (f 1 true, f 1 false)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Common Subexpression Eliminated]
-let f = (fun x y => if y then x else "False") @ Number -> (Boolean -> Number) | (Boolean -> String) in
-let g x = f 1 x in
+let f = (fun x y => if y then x else "False") | Num -> (Bool -> Num @| Bool -> Str) in
+let g = f 1 in
 (g true, g false)
 \end{lstlisting}
 \caption{Equivalent programs, with inlining or CSE applied}
 \label{fig:optimized-programs}
 \end{figure}
 
-Unexpectedly, these two programs behave very differently, the first one will return
-\nickel{(1, "False")}, without failing.
-While the second one will fail, since the single application of \nickel{f 1},
-applied to both \nickel{true} and \nickel{false} will be able to find the error
-on the union contract (\nickel{(Boolean -> Number) | (Boolean -> String)}).
+Unexpectedly, these two programs behave very differently, the first one will
+return \nickel{(1, "False")}, without failing.  While the second one will fail,
+since the single application of \nickel{f 1}, applied to both \nickel{true} and
+\nickel{false} will be able to find the error on the union contract
+\nickel{(Bool -> Num) @| (Bool -> Str)}.
 
 A valid argument against this point would be stating that further work should be done
 on optimizers, so to not modify these tricky cases, even if this is true,
@@ -927,7 +943,7 @@ code snippet at Figure \ref{fig:optimized-programs} to the second one changes
 the behaviour of a program, we argue that union contracts not only go against the
 implementation of languages, but also against their usability.
 
-Summing it up, wrapping a value with a union of higer order contracts means that
+Summing it up, wrapping a value with a union of higher order contracts means that
 that value now has a state, that may get modified silently at every use site.
 Both reviewed papers suffer from this defect since it is the semantics
 of unions that interact badly with code manipulation operations,
@@ -953,12 +969,11 @@ that would fail.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Implementation]
-x @ A & B
-(*@ $\simeq$ @*)
-(x @ A) @ B
+x | A @& B (*@ $\simeq$ @*) (x | A) | B
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Problem]
-let g = (fun x => x) @ (Number -> Number) & (String -> String) in
+let g | Num -> Num @& Str -> Str
+      = fun x => x in
 g 1
 \end{lstlisting}
 \caption{Implementations of intersection contracts: first iteration}
@@ -972,8 +987,8 @@ side of the contract has failed as well, as shown in Figure
 represented by a label \nickel{l}.
 This idea is still quite reasonable, for instance, when executing
 \nickel{g 1}, from Figure \ref{fig:inter-contracts}, the first contract
-that gets checked is the argument of \nickel{String -> String} over the function parameter, so
-something like \nickel{1 @ String}.
+that gets checked is the argument of \nickel{Str -> Str} over the function parameter, so
+something like \nickel{1 | Str}.
 Of course, this fails, but before raising a violation, this contract could
 check if the other side of the intersection (\nickel{Number -> Number}) has
 also tried to raise negative blame on the same parameter ()\nickel{1}), since
@@ -981,9 +996,7 @@ it hasn't, the contract would return normally, and would mark itself as failed.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Implementation]
-x @ A & B
-(*@ $\simeq$ @*)
-(x @ A[l]) @ B[l]
+x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 \end{lstlisting}
 \caption{Implementations of intersection contracts: second iteration}
 \label{fig:inter-contracts-2}
@@ -991,7 +1004,7 @@ x @ A & B
 
 On the other hand, if you were to do something like
 \nickel{g true}, that would fail also negatively the contract
-\nickel{String -> String} and, when checking if \nickel{true}
+\nickel{Str -> Str} and, when checking if \nickel{true}
 is a correct parameter for \nickel{Number -> Number} it would check
 if the other side of the intersection has failed, and since it
 has, a violation would be raised and the whole program would
@@ -1001,19 +1014,20 @@ This idea, which is an oversimplification of the ideas
 presented by Williams, Morris, and Wadler, seems to be spot on.
 However, it presents a major problem, it's not compatible with flat contracts,
 as presented in Section \ref{sec:flat-contracts}.
-Consider the example presented on Figure \ref{fig:inter-flat-contracts},
-if the implementation discussed previously were to be used, we may end up with
-something like this \nickel{((fun x => x) @ (String -> String)[l]) @ C[l]}, where
+Consider the example presented on Figure \ref{fig:inter-flat-contracts}, if the
+implementation discussed previously were to be used, we may end up with
+something like this \nickel{((fun x => x) | (Str -> Str)[l]) | C[l]}, where
 \nickel{l} represents the shared state.
-At this point, the intuitive thing to do is to check contract \nickel{C}, by checking
-if \nickel{((fun x => x) @ (String -> String)[l]) 0 == 0}.
-This will fail, since applying \nickel{0} to a \nickel{String -> String} contract
+At this point, the intuitive thing to do is to check the contract \nickel{C}, by
+checking if \nickel{((fun x => x) | (Str -> Str)[l]) 0 == 0}.  This will fail,
+since applying a function wrapped in \nickel{Str -> Str} contract to \nickel{0}
 fails negatively.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let C = fun f => (f 0) == 0 in
-let g = (fun x => x) @ (String -> String) & C
+let g | (String -> String) @& C
+      = (fun x => x) 
 \end{lstlisting}
 \caption{Intersection and flat contracts}
 \label{fig:inter-flat-contracts}
@@ -1060,7 +1074,7 @@ These expectations are not really met by how unions and intersections
 contracts are supposed to work.
 For example, consider the Nickel code shown on Figure
 \ref{fig:intersection-distrbution}, at first sight, this code should
-complete execution succesfully, returning \nickel{(1, 1)},
+complete execution successfully, returning \nickel{(1, 1)},
 however, under both the Keil and Thiemann, as well as the
 Williams, Morris, and Wadler works, this program will fail, with a violation
 of the contract imposed to \nickel{g}.
@@ -1068,7 +1082,8 @@ of the contract imposed to \nickel{g}.
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = fun x y => x in
-let g = f @ (Number -> Number -> Number) & (Number -> Boolean -> Number) in
+let g = f | (Num -> Num -> Num)
+            @& (Num -> Bool -> Num) in
 let h = g 1 in
 (h 1, h true)
 \end{lstlisting}
@@ -1076,24 +1091,21 @@ let h = g 1 in
 \label{fig:intersection-distrbution}
 \end{figure}
 
-The reason this happens is that
-there is a fundamental property of how intersection
-contracts behave: the choice of which branch to choose is made exactly
-when the intersection is opened up, and not delayed as much as possible,
-as one would like.
-This means, that the contract presented on Figure \ref{fig:intersection-distrbution},
-\nickel{(Number -> Number -> Number) & (Number -> Boolean -> Number)},
-will not behave the same way that
-\nickel{(Number -> (Number -> Number) & (Boolean -> Number)},
-when, with an intuitive view of how intersections should behave,
-these two expressions should be logically equivalent.
+The reason this happens is that there is a fundamental property of how
+intersection contracts behave: the choice of which branch to choose is made
+exactly when the intersection is opened up, and not delayed as much as possible,
+as one would like.  This means, that the contract presented on Figure
+\ref{fig:intersection-distrbution}, \nickel{Num -> Num -> Num @& Num
+-> Bool -> Num}, will not behave the same way that \nickel{Num ->
+(Num -> Num @& Bool -> Num)}, when, with an intuitive view of how
+intersections should behave, these two expressions should be logically
+equivalent.
 
 It is worth noting, that intersection types do have this property,
 since subtyping would allow to correctly type check a term like
 \nickel{g 1} as both \nickel{Number -> Number} as well as
-\nickel{Boolean -> Number}, and then deducing that \nickel{g 1}
-can be given the type \nickel{(Number -> Number) & (Boolean -> Number)}.
-
+\nickel{Bool -> Num}, and then deducing that \nickel{g 1}
+can be given the type \nickel{Num -> Num @& Bool -> Num}.
 
 \newpage
 
@@ -1133,10 +1145,10 @@ code snippet on the same figure.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Original]
-x @ A & (B | C)
+x | A @& (B @| C)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Transformed]
-x @ (A & B) | (A & C)
+x | (A @& B) | (A @& C)
 \end{lstlisting}
 \caption{Contract transformation performed by the Keil and
 Thiemann work}
@@ -1150,7 +1162,7 @@ of Williams, Morris, and Wadler (see Section~\ref{sec:will-morr-wadl}):
 and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
 special cases can hinder composition.''\cite{RootCauseOfBlame}.
 \info{(Yann) Does
-it also make it less efficient? If $(A \& B)$ fails because of $B$, their
+it also make it less efficient? If $(A \cap B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
 And it also could harm performance, or at least complicate an implementation,
 since some sharing mechanism should be used to avoid checking the same contract,
@@ -1175,20 +1187,20 @@ won't get blamed while executing the other branch, and vice versa.
 As an example, consider the programs shown on Figure
 \ref{fig:kt-non-deterministic}, if the Original program
 gets executed, it will spawn two instances of said program,
-one with the first branch of the intersection (\nickel{3 @ Number}),
-and the other one with the second branch (\nickel{3 @ Positive}),
+one with the first branch of the intersection (\nickel{3 | Num}),
+and the other one with the second branch (\nickel{3 | Positive}),
 and these will get joined once they reach an equal point, in this case
 it will be \nickel{3}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Original]
-3 @ Number & Positive
+3 | Num @& Positive
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=First Program]
-3 @ Number
+3 | Num
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Second Program]
-3 @ Positive
+3 | Positive
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Joined Program]
 3
@@ -1196,7 +1208,6 @@ it will be \nickel{3}.
 \caption{Non deterministic intersection contract opening}
 \label{fig:kt-non-deterministic}
 \end{figure}
-
 
 The second set of rules is deterministic, and it is intended
 to be simpler to implement.
@@ -1206,10 +1217,10 @@ a given contract.
 \footnote{You can check more on this topic on Section 5.1 of
 \cite{KeilThiemannUnionIntersection}}
 For instance, in the program presented on Figure \ref{fig:inter-flat-contracts},
-when using the value \nickel{(fun x => x) @ (String -> String)}
+when using the value \nickel{(fun x => x) | Str -> Str)}
 inside the execution of contract \nickel{C}, and applying it to \nickel{0},
 the contract runtime would check the context of execution and it would
-deduce that contract \nickel{String -> String} does not apply in this case,
+deduce that contract \nickel{Str -> Str does not apply in this case,
 skipping it.
 
 We see two problems here, a minor one is the fact that the two
@@ -1269,17 +1280,17 @@ wrapped with $A$, or a value wrapped with $B$.
 
 Altough this is true, it's a weaker statement of what we'd like to have,
 consider the two contexts presented on Figure \ref{fig:valid-contexts},
-the first one is a valid context for a \nickel{Number -> Number} function,
+the first one is a valid context for a \nickel{Num -> Num} function,
 that is, you could replace the $\square$ by some function wrapped in a
-\nickel{Number -> Number} contract, and the context will not violate it.
+\nickel{Num -> Num} contract, and the context will not violate it.
 Similarly, the second context from the same figure is a valid
-\nickel{Boolean -> Boolean} context.
+\nickel{Bool -> Bool} context.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=\nickel{Number -> Number} context]
+\begin{lstlisting}[language=nickel, title=\nickel{Num -> Num} context]
 (*@$\square$@*) 3
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=\nickel{Boolean -> Boolean} context]
+\begin{lstlisting}[language=nickel, title=\nickel{Bool -> Bool} context]
 (*@$\square$@*) true
 \end{lstlisting}
 \caption{Two different contexts in Nickel}
@@ -1289,19 +1300,19 @@ Similarly, the second context from the same figure is a valid
 Next, we can combine these two contexts into one, that essentially
 has one single missing value, that will be used independently in both contexts
 from Figure \ref{fig:valid-contexts}, as shown on Figure \ref{fig:invalid-context}.
-This context is not a valid \nickel{Number -> Number} context, since it will apply
-the value put on $\square$ (through \nickel{f}) to a non \nickel{Number} (\nickel{true}).
-In a similar way, it is not a valid \nickel{Boolean -> Boolean} context either.
+This context is not a valid \nickel{Num -> Num} context, since it will apply
+the value put on $\square$ (through \nickel{f}) to a non \nickel{Num} (\nickel{true}).
+In a similar way, it is not a valid \nickel{Bool -> Bool} context either.
 Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
 shown on Figure \ref{fig:wmw-semantics}, it is not a valid
-\nickel{(Number -> Number) & (Boolean -> Boolean)} context.
+\nickel{(Num -> Num) & (Bool -> Bool)} context.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (*@$\square$@*) in
 (f 3, f true) 
 \end{lstlisting}
-\caption{Invalid \nickel{(Number -> Number) & (Boolean -> Boolean)} context,
+\caption{Invalid \nickel{(Num -> Num) & (Bool -> Bool)} context,
 combining contexts from Figure \ref{fig:valid-contexts}}
 \label{fig:invalid-context}
 \end{figure}
