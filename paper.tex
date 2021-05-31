@@ -246,7 +246,11 @@ are written as \nickel{[x1, ..., xn]} and records as \nickel{\{ field1 = value1,
 ..., fieldn = valuen \}}. Some examples uses constructions that are not
 currently available in Nickel for illustration purpose: in particular, we will
 use \nickel{A & B} (resp.  \nickel{A | B}) for the intersection (resp. union) of
-contracts (or types) \nickel{A} and \nickel{B}.
+contracts (or types) \nickel{A} and \nickel{B}. Finally, we will write
+\nickel{exp @ C}\footnote{The current Nickel implementation actually uses the
+syntax \nickel{exp | C} for contract application, but we rather keep \nickel{|}
+for unions here}  for the application of a contract \nickel{C} to the expression
+\nickel{exp}.
 
 \subsection*{Correct programs \& valid data}
 
@@ -383,20 +387,26 @@ stressing the following points:
 \end{itemize}
 
 \subsection*{Structure of this paper}
-This paper is structured as follows, Section \ref{sec:intro} introduces
-this paper; Section \ref{sec:feat-lang} outlines various features
-of programming languages that may interact badly with union and intersection
-contracts.
-Section \ref{sec:union-inter} gives a primer on Unions and Intersections,
-enough to understand this work.
+Section~\ref{sec:intro} introduced the perspective of designing a configuration
+language. We presented the concept of contracts and detailed why contracts are
+particularly fitted for a configuration language, and more generally for data
+validation or program correctness in a dynamically typed language. The rest of
+the paper is structured as follows:
+\begin{itemize}
+    \item Section~\ref{sec:feat-lang} outlines various common features of
+        programming languages that may interact in a bad way with union and
+        intersection contracts.
+    \item Section~\ref{sec:union-inter} introduces unions and intersections and
+        lists the possible motivations for adding them to a language.
+    \item Section~\ref{sec:issues-sem} studies intrinsic difficulties one may
+        encounter when trying to implement union and intersection contracts in
+        practice.
+    \item Section~\ref{sec:issues-literature} presents the shortcomings found in
+        existing attempts to solve said difficulties.
+    \item Section~\ref{sec:related-work} provides some related work.
+\end{itemize}
 
-Section \ref{sec:issues-sem} shows what difficulties or issues, proper of
-unions and intersections, one may
-encounter when trying to develop a union and intersection contracts.
-Section \ref{sec:issues-literature} presents issues and shortcomings found
-in existing attempts to solve this problem.
-Section \ref{sec:related-work} provides some related work, and Section
-\ref{sec:conclusion} concludes.
+Section~\ref{sec:conclusion} concludes the paper.
 
 \newpage
 
