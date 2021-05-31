@@ -1498,9 +1498,9 @@ contracts in a lazy language, they behave in a way that is reminiscent of
 side-effects. These behaviors were, for most of them, already known: we do not
 claim their discovery. However, as language implementers, we have made an actual
 attempt at including them in a concrete language. We exposed what, in our
-opinion, are the most salient flaws and their consequences. Even in a pure
-language, union and intersection contracts break the equivalence between
-call-by-name and call-by-value, and consequently can prevent CSE-like
+opinion, are the most important barriers and their impact on the rest of the
+language. Even in a pure setting, union and intersection contracts break the
+equivalence between call-by-name and call-by-value, and can consequently prevent
 optimizations. There are discrepancies between the expected and actual semantics
 that make some behaviors unintuitive. Their implementation is a non-trivial
 change that contaminates the evaluation of all other contracts, and the
@@ -1511,10 +1511,9 @@ contracts are fundamentally broken, that they can not be implemented correctly,
 or that they do not bear any value (quite the contrary). They may still make
 sense to have in a language, and some apparent difficulties in the
 implementation could be lifted some day. But as often, there are gaps between
-the theoretical framework, a proof-of-concept, a prototype, and the integration
-in an actual language. We hope that our attempt may serve as a cautionary tale,
-that for union and intersection contracts, these gaps are sometimes large in
-places.
+the theoretical foundation, a proof-of-concept, a prototype, and the integration
+in an actual language. We hope that our attempt may serve as a cautionary tale:
+for union and intersection contracts, these gaps might be quite large in places.
 
 \bibliography{nickel}
 
