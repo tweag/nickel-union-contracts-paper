@@ -390,7 +390,7 @@ including the faulty call to \nickel{catHost}.
 let catHosts | Str -> Str = fun last =>
 \end{lstlisting}
 
-\begin{lstlisting}[title={Error message with contract},frame=none,numbers=none]
+\begin{lstlisting}[title={Error message with contract},frame=none,numbers=none, basicstyle=\footnotesize\ttfamily]
 error: Blame error: contract broken by the caller.
   |  Str -> Str
   |  --- expected type of the argument [(*@{\ldots}@*)]
@@ -399,7 +399,7 @@ error: Blame error: contract broken by the caller.
   |                ^^^^^^^^^^ bound here
 [(*@{\ldots}@*)]
 6 | catHosts (makeHost "google")
-  | ---------------------------- (2) calling <func>
+  | --------------------------- (2) calling <func>
 \end{lstlisting}
   \end{center}
 \caption{Error reporting with contract}
