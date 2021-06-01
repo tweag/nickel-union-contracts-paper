@@ -153,6 +153,9 @@
   % stringstyle=\color{blue-marguerite}, % style of strings
 }
 
+\lstset{
+  escapeinside={(*@}{@*)} % escape sequence to insert latex
+}
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
 \newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
 
@@ -308,14 +311,13 @@ higher-order functions. If the user has written an \nickel{Even} contract for
 numbers, they can use it right away to form a function contract \nickel{Even ->
 Int} contract, as illustrated in Figure~\ref{fig:contract-higher-order}. This
 contract will check at each call that the argument is an even number
-(pre-condition) and that the return value is a integer (post-condition). The
-\nickel{#} character distinguishes contracts in Nickel. Contracts also introduce
-the notion of blame which is crucial to good error reporting in presence of
-higher-order contracts and other composed contracts.
+(pre-condition) and that the return value is a integer (post-condition).
+Contracts also introduce the notion of blame which is crucial to good error
+reporting in presence of higher-order contracts and other composed contracts.
 
-\begin{figure}
+\begin{figure}[h]
   \begin{center}
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let Even = contracts.fromPred (fun val =>
   builtins.isNum val
   && val % 2 == 0) in
@@ -329,11 +331,88 @@ let Int = contracts.fromPred (fun val =>
 \label{fig:contract-higher-order}
 \end{figure}
 
-In our opinion, one of the main appeals of Nickel is this ability to write a
-simple validation function for, say, a port number, and have it immediately
-available to construct other contracts by writing simple type-like expressions.
-Another example is given in Figure~\ref{fig:contract-composition}. The first
-line defines a port contract from a predicate and use it in the definition of a
+In a dynamic language, even more so in a lazy one (see the paragraph on Lazyness
+in Section~\ref{sec:feat-lang}), error messages may point to a location far
+removed from the offending code. Contracts help by making assumptions on the
+values passed at component boundaries explicit (components can be functions,
+modules, classes, and so on, depending on language).
+
+Figure~\ref{fig:contract-reporting-wo} and Figure~\ref{fig:contract-reporting-w}
+give an example of a situation where adding a simple contract annotation
+\nickel{Str -> Str} to a function greatly improves the error message . In the
+original program of Figure~\ref{fig:contract-reporting-wo}, the
+\nickel{catHosts} function takes a string argument, append it to a list that is
+then folded. However, the programmer forgot one parameter when calling to
+\nickel{makeHost}, thus passing a partially applied function instead of a string
+to \nickel{catHosts}. Because this argument is put in a list and folded, the
+error is raised later on and points to inside the code of \nickel{catHosts} and
+\nickel{makeHost}, which may be totally unknown to the caller.
+
+\begin{figure}[h]
+  \begin{center}
+\begin{lstlisting}[language=nickel,title={Source program}]
+let catHosts = fun last =>
+  let hosts = ["foo.com", "bar.org"] in
+  lists.fold (fun val acc => val ++ "," ++ acc) hosts last in
+
+let makeHost = fun server ext => server ++ "." ++ ext in
+
+catHosts (makeHost "google")
+\end{lstlisting}
+
+\begin{lstlisting}[title={Error message},frame=none,numbers=none]
+error: Type error
+3 | [(*@{\ldots}@*)] "," ++ acc) hosts last in
+  |            ^^^
+  | This expression has type Fun,
+  | but Str was expected
+4 |
+5 | let mkHost = fun server ext => [(*@{\ldots}@*)] in
+  |              -----------------------
+  |              evaluated to this
+  = ++, 2nd argument
+\end{lstlisting}
+  \end{center}
+\caption{Error reporting without contract}
+\label{fig:contract-reporting-wo}
+\end{figure}
+
+By adding a simple annotation to \nickel{catHosts} in
+Figure~\ref{fig:contract-reporting-w}, the interpreter fails before even
+entering the body of catHosts and is able to deliver a clearer message: the
+first parameter of \nickel{catHosts} should be a string but the user provided
+the body of the function \nickel{makeHost}. A stack trace is also shown,
+including the faulty call to \nickel{catHost}.
+
+\begin{figure}[h]
+  \begin{center}
+\begin{lstlisting}[language=nickel,title={Added contract}]
+let catHosts | Str -> Str = fun last =>
+\end{lstlisting}
+
+\begin{lstlisting}[title={Error message with contract},frame=none,numbers=none]
+error: Blame error: contract broken by the caller.
+  |  Str -> Str
+  |  --- expected type of the argument [(*@{\ldots}@*)]
+[(*@{\ldots}@*)]
+1 | let catHosts | Str -> Str = fun last =>
+  |                ^^^^^^^^^^ bound here
+[(*@{\ldots}@*)]
+6 | catHosts (makeHost "google")
+  | ---------------------------- (2) calling <func>
+\end{lstlisting}
+  \end{center}
+\caption{Error reporting with contract}
+\label{fig:contract-reporting-w}
+\end{figure}
+
+The examples of Figure~\ref{fig:contract-reporting-wo} and
+Figure~\ref{fig:contract-reporting-w} are about correctness. For validation, one
+of the main appeals of Nickel in our opinion is the ability to write a simple
+validation function for, say, a port number, and have it immediately available
+to construct other contracts by writing simple type-like expressions.  Another
+example is given in Figure~\ref{fig:contract-composition}. The first line
+defines a port contract from a predicate and use it in the definition of a
 larger \lstinline+Configuration+ record contract. The \lstinline+Configuration+
 contract checks that a value is a record with the following shape: it must have
 a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
@@ -343,11 +422,11 @@ looking for in the previous section. Not only it plays the role of a schema, but
 it also \emph{looks} like one, as opposed to the corresponding plain validation
 function. The \lstinline+|+ operator entails that a value respects a contract,
 akin to \lstinline+:+ for types. We assume that a \lstinline+Host+ contract has
-been defined in a similar way. \unsure{What's missing in this section is an
-    example of how contracts differ from standard dynamic type checking on some
+been defined in a similar way. \resolved{What's missing in this section is an
+example of how contracts differ from standard dynamic type checking on some
 function. Namely, the quality of error messages.}
 
-\begin{figure}
+\begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
 let Port = contracts.fromPred (fun value =>
