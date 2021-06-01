@@ -343,7 +343,7 @@ give an example of a situation where adding a simple contract annotation
 original program of Figure~\ref{fig:contract-reporting-wo}, the
 \nickel{catHosts} function takes a string argument, append it to a list that is
 then folded. However, the programmer forgot one parameter when calling to
-\nickel{makeHost}, thus passing a partially applied function instead of a string
+\hbox{\nickel{makeHost},} thus passing a partially applied function instead of a string
 to \nickel{catHosts}. Because this argument is put in a list and folded, the
 error is raised later on and points to inside the code of \nickel{catHosts} and
 \nickel{makeHost}, which may be totally unknown to the caller.
