@@ -208,24 +208,59 @@ to represent and type unions.
 theory problematic in practice. In particular non-orthogonal with the
 rest of the features of your language.}
 
-Build systems, package managers, operating systems, cloud infrastructure,
-continuous integration and web services\resolved{Also continuous integration}
-are examples of modern complex software systems which require an extensive and
-non-trivial configuration. To handle this complexity, the declarative approach
-has become more and more prominent: instead of applying a sequence of
-transformations to a system in order to reach a desired state, this state is
-described as static textual data. Some tool is then in charge of applying the
-necessary transformations. This approach makes the configuration persistent,
-reproducible, versionable and subject to static analysis. Text-based
-configurations are thus led to play an important role in critical aspects of
-software engineering, including security, availability, and maintainability.
+A configuration language is a language concerned with describing the
+configuration of an application. In traditional configuration
+languages, such as YAML, TOML, or JSON, the configuration is fully,
+and explicitly, spelt out.
 
-However, static text-based configurations show their limits beyond a certain
-size and complexity. Data cannot be transformed, combined, shared, nor validated
-(without resorting to separate schemas and tools).  This lack of expressivity
-results at best in boilerplate and duplication of information, but it can also
-make data invalid or inconsistent.  Correctly configuring a modern system is hard
-and failures may have substantial negative consequences.
+However, with the advent of DevOps, configurations have been extended
+to describe the entire state of a computer, or even a fleet of
+computers. For instance, with Kubernetes you need to configure a large
+fleet of (possibly replicated) docker containers. To describe this
+sort of configurations, you really want to be able to re-use and
+abstract parts of the configuration, like traditional programming
+languages do. To meet this need, languages such as Cue~\cite{?},
+Dhall~\cite{?}, Jsonnet~\cite{?}, or Nickel~\cite{NickelRepo}, where
+configurations are generated rather than spelt out, were created.
+
+Another example is continuous integration systems: it's fairly typical
+to need a matrix of job, wherein the same tests are run on different
+infrastructures, or with different versions of a compiler. Traditional
+configuration would have you write the same steps for each
+infrastructure. It's much better to write the steps once, and
+instantiate them for each infrastructure. Continuous integration
+systems typically do this using a templating system layered on top of
+YAML. Each of the configuration-generating languages above allow such
+job-matrix definition natively.
+
+\subsection*{Nickel}
+
+In this article, we will use the Nickel language~\cite{NickelRepo} as
+illustration and motivation. At its core, Nickel is the JSON data
+model, that is dictionaries (written \nickel{\{field1 = value1, ...,
+  fieldn = valuen\}}) and arrays (\nickel{[x1, ..., xn]}), augmented
+with functions (\nickel{fun arg1 ... argn => body}) and
+let-definitions (\nickel{let id = value in exp}).\unsure{Arnaud: this
+  paragraph looks kind of bad, maybe it'll be better to put each
+  syntax entry in an enumeration, we will see if there is still room
+  for this}
+
+A Nickel configuration is then evaluated to an explicit configuration,
+\emph{e.g.}  in JSON, which can then be consumed by an
+application. Therefore a design constraint of Nickel is any Nickel
+data must have a straightforward interpretation in JSON.
+
+\subsection*{Contracts}
+
+A useful feature of a configuration language is to provide facilities
+for schema validation. That is, help answer questions like: does our
+configuration have all the required fields? does this field indeed
+contains a URL?
+
+These are an inherently dynamic question, as they are all questions
+about the evaluated configuration.
+
+\unsure{Arnaud: What's below this point in the introduction is being reworked}
 
 This is why the authors have been developing the Nickel
 language\cite{NickelRepo}. Nickel is a configuration programming language,
@@ -1597,4 +1632,5 @@ for union and intersection contracts, these gaps might be quite large in places.
 \bibliography{nickel}
 \end{document}
 
-% LocalWords:  Felleisen
+% LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall
+% LocalWords:  Kubernetes DevOps natively
