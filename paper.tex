@@ -1012,7 +1012,7 @@ intersections are fundamentally hard}.
 % In this section, we present intuitively the main challenges that arise
 % when attempting to develop a runtime check system for unions and intersections.
 
-\subsection*{Union contracts are hard to break}
+\subsection*{Union contracts as an effect}
 
 In a pure language with standard contracts, the failure of a function contract
 can always be blamed on a single call. Figure~\ref{fig:pos-to-pos} shows a
@@ -1024,13 +1024,13 @@ single and independent witness of the violation of the contract. The user can be
 pointed to one location in practice.
 
 There is an intuitive justification for this fact. Apart from the error
-reporting part (which is crucial in practice!), the current contract system of
-Nickel can be implemented purely as a library, just given a \nickel{fail}
-primitive to abort the execution. In particular, applying a function contract to
-\nickel{f} replaces it with a guarding function \nickel{fWrapped} that performs
-the required checks. Thus, in a pure setting, the failure of \nickel{fWrapped 5}
-must be independant of its environment, and in particular of the call
-\nickel{fWrapped 10}.
+reporting part (but this is the crucial in practice!), the current contract
+system of Nickel can be implemented purely as a library, just given a
+\nickel{fail} primitive to abort the execution. In particular, applying a
+function contract to \nickel{f} replaces it with a guarding function
+\nickel{fWrapped} that performs the required checks. Thus, in a pure setting,
+the failure of \nickel{fWrapped 5} must be independant of its environment, and
+in particular of the call \nickel{fWrapped 10}.
 
 % When programming with dynamic checks it is assumed that lack of
 % failure does not mean that the program works perfectly.
@@ -1053,7 +1053,7 @@ let f | Positive -> Positive
       = fun x => x - 7 in
 (f 10) + (f 5)
 \end{lstlisting}
-\caption{Wrong positive to positive function}
+\caption{Simple contract violation}
 \label{fig:pos-to-pos}
 \end{figure}
 
@@ -1079,52 +1079,48 @@ let f | (Positive -> Positive)
       = fun x => x - 7 in
 (f 10) + (f 5)
 \end{lstlisting}
-\caption{Still wrong positive to positive or positive to non-positive function}
+\caption{Union contract violation}
 \label{fig:wrong-union-function}
 \end{figure}
 
-In a system with union and intersection, this contract would fail, because
-\nickel{f 10} is a witness of \nickel{f} failing \nickel{Positive -> NonPositive},
-and \nickel{f 5} is a witness of \nickel{f} failing \nickel{Positive -> Positive}.
-But, as opposed to the previous example, removing one call or the other will make the program pass!
+In a system with unions, this contract would fail, because \nickel{f 10}
+(returns \nickel{3}) is a witness of \nickel{f} failing the contract
+\nickel{Positive -> NonPositive}, and \nickel{f 5} (returns \nickel{-2}) is a
+witness of \nickel{f} failing \nickel{Positive -> Positive}.  But, as opposed to
+the previous example, removing one call or the other will make the program pass!
 Indeed, the first call only fails the \nickel{Positive -> NonPositive} part of
-the union,
-while the second one only fails the \nickel{Positive -> NonPositive} part. Both
-are needed to prove the violation of the full contract.
+the union, while the second one only fails the \nickel{Positive -> NonPositive}
+part. Both are needed to prove the violation of the full contract.
 
 Even in a pure setting, unions introduce a form of effect at a distance: the
-result of \nickel{f 5} is not local anymore as it depends on the previous
-execution of other calls to \nickel{f}. With unions,
-equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations} does not
-hold, and the candidate example of
-Figure~\ref{fig:optimizations-let-floating-ex} cannot be optimized in general.
+result of \nickel{f 5} is not local anymore, as it now depends on the previous
+execution of other calls to \nickel{f}. Unions contracts break the
+equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations}, and the
+candidate example of Figure~\ref{fig:optimizations-let-floating-ex} cannot be
+optimized in general.
 
-Figure~\ref{fig:optimized-programs} below shows another example of the same
-fact. A seemingly valid optimization ends up with a program that behave
-differently from the original one.
+Figure~\ref{fig:optimized-programs} illustrates this point further. It comprises
+an original program, and one where the common subexpression \nickel{f 1} have
+been eliminated. These two programs behave very differently:
+\begin{itemize}
+    \item The original version returns \nickel{(1, "False")} without failing.
+    \item The optimized version fails with a contract violation.
+\end{itemize}
 
-\unsure{WARNING: what is below is being reworked by Yann}
+since the single application of \nickel{f 1}, applied to both \nickel{true} and
+\nickel{false} will be able to find the error on the union contract
+\nickel{(Bool -> Num) @| (Bool -> Str)}.
 
-This seemingly simple consequence generates major issues when considered in real
-life languages.
-For example, remember the different mechanisms for code manipulation presented
-in Section \ref{sec:optimizations}, inlining and commmon subexpression elimination,
-both of these rely on the fact that substituting a pure function call by its body,
-or joining equal pure expressions and sharing their result, is a semantically valid
-transformation.
-However, consider the examples presented at Figure \ref{fig:optimized-programs},
-the first one is an inlined version of the second one (where function
-\nickel{g} has been inlined); while the second is similar to the first, but
-the common subexpression \nickel{f 1} has been eliminated.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Inlined]
+\begin{lstlisting}[language=nickel, title=Original]
 let f | Num -> (Bool -> Num @| Bool -> Str)
       = fun x y => if y then x else "False"
 in (f 1 true, f 1 false)
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Common Subexpression Eliminated]
-let f = (fun x y => if y then x else "False") | Num -> (Bool -> Num @| Bool -> Str) in
+\begin{lstlisting}[language=nickel, title=Optimized]
+let f | Num -> (Bool -> Num @| Bool -> Str)
+      = fun x y => if y then x else "False"
 let g = f 1 in
 (g true, g false)
 \end{lstlisting}
@@ -1132,11 +1128,15 @@ let g = f 1 in
 \label{fig:optimized-programs}
 \end{figure}
 
-Unexpectedly, these two programs behave very differently, the first one will
-return \nickel{(1, "False")}, without failing.  While the second one will fail,
-since the single application of \nickel{f 1}, applied to both \nickel{true} and
-\nickel{false} will be able to find the error on the union contract
-\nickel{(Bool -> Num) @| (Bool -> Str)}.
+\unsure{WARNING: what is below is being reworked by Yann}
+
+To sum up, union contracts introduce a form of effect at a distance. This
+impacts both the programmer and the compiler or interpreter:
+\begin{itemize}
+    \item As for any side-effect, this breaks local reasoning.
+    \item It prevents optimizations.
+\end{itemize}
+\todo{WIP}
 
 A valid argument against this point would be stating that further work should be done
 on optimizers, so to not modify these tricky cases, even if this is true,
