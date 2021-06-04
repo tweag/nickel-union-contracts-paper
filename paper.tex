@@ -208,6 +208,34 @@ to represent and type unions.
 theory problematic in practice. In particular non-orthogonal with the
 rest of the features of your language.}
 
+Union types, meaning a type \nickel{A @| B} containing values which
+belong either to a type \nickel{A} or \nickel{B}, are a popular tool
+when adding a static types to a dynamic language. In particular, both
+TypeScript~\cite{TypeScriptUnions} and MyPy~\cite{MyPyOptional}, use
+union typed to model the frequent practice to use the value
+\lstinline{null} (\lstinline{None} in Python) to represent an absent
+optional value. This is why the gradual typing literature, concerned
+with formalising the interplay between static and dynamic type
+systems, has been quite interested in union
+types~\cite{RootCauseOfBlame,KeilThiemannUnionIntersection}.
+
+On the other hand, unions are not a common feature of static type
+systems, mostly because they are quite difficult to verify
+statically. So unions are really only worth it in gradually typed
+language where they formalise existing dynamically typed patterns. On
+the other hand, surely, for dynamic tests, unions are really easy: it
+is simply the boolean disjunctions of two tests.
+
+Unfortunately, as we document in this article, as soon as you extend
+dynamic checks to \emph{contracts}~\cite{FindlerFelleisenHOContracts},
+unions become actually pretty difficult, and threaten desirable
+properties of your language.
+
+\subsection*{Configuration languages}
+
+To motivate contracts and the problem caused by unions, let's make a
+detour through configuration languages.
+%
 A configuration language is a language concerned with describing the
 configuration of an application. In traditional configuration
 languages, such as YAML, TOML, or JSON, the configuration is fully,
@@ -224,10 +252,11 @@ Dhall~\cite{?}, Jsonnet~\cite{?}, or Nickel~\cite{NickelRepo}, where
 configurations are generated rather than spelt out, were created.
 
 Another example is continuous integration systems: it's fairly typical
-to need a matrix of job, wherein the same tests are run on different
+to need a matrix of jobs, wherein the same tests are run on different
 infrastructures, or with different versions of a compiler. Traditional
-configuration would have you write the same steps for each
-infrastructure. It's much better to write the steps once, and
+configuration would have you copy the same steps for each
+infrastructure. This is tedious, hard to maintain, and error
+prone. It's much better, instead, to write the steps once, and
 instantiate them for each infrastructure. Continuous integration
 systems typically do this using a templating system layered on top of
 YAML. Each of the configuration-generating languages above allow such
