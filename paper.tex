@@ -401,82 +401,8 @@ error: Blame error: contract broken by the caller.
   \caption{Contracts improve error messages}
 \end{figure*}
 
-\rule{3cm}{3pt}
-
-\unsure{Arnaud: What's below this point in the introduction is being reworked}
-
-\subsection*{Correct programs \& valid data}
-
-With respect to
-validation, traditional types are too limited. Validation commonly involves
-checking requirements such as being a valid port number or a valid URL which
-are, while not technically impossible, really hard to check statically.
-
-\subsection*{Contracts}
-
-The examples of Figure~\ref{fig:contract-reporting-wo} and
-Figure~\ref{fig:contract-reporting-w} are about correctness. For validation, one
-of the main appeals of Nickel in our opinion is the ability to write a simple
-validation function for, say, a port number, and have it immediately available
-to construct other contracts by writing simple type-like expressions.  Another
-example is given in Figure~\ref{fig:contract-composition}. The first line
-defines a port contract from a predicate and use it in the definition of a
-larger \lstinline+Configuration+ record contract. The \lstinline+Configuration+
-contract checks that a value is a record with the following shape: it must have
-a \lstinline+port+ field obeying the \lstinline+Port+ contract, and a
-\lstinline+host+ field obeying a \lstinline+Host+ contract. It plays the role of
-a \emph{schema} used to validate the final data, which is exactly what we were
-looking for in the previous section. Not only it plays the role of a schema, but
-it also \emph{looks} like one, as opposed to the corresponding plain validation
-function. The \lstinline+|+ operator entails that a value respects a contract,
-akin to \lstinline+:+ for types. We assume that a \lstinline+Host+ contract has
-been defined in a similar way. \resolved{What's missing in this section is an
-example of how contracts differ from standard dynamic type checking on some
-function. Namely, the quality of error messages.}
-
-\begin{figure}[h]
-  \begin{center}
-\begin{lstlisting}[language=nickel]
-let Port = contracts.fromPred (fun value =>
-  builtins.isNum value && value % 1 == 0
-  && value >= 0 && value <= 65353) in
-let Configuration = {
-  host | Host,
-  port | Port,
-} in
-{host = "nixos.org", port = 80}
-| Configuration
-\end{lstlisting}
-  \end{center}
-\caption{Contract composition}
-\label{fig:contract-composition}
-\end{figure}
-
-Contracts have another perk: they correspond to the type casts of gradual
-typing, a discipline for mixing static and dynamic typing in the same language.
-As such, they are a precious ingredient for handling the interaction between 
-statically typed and dynamically typed code. While we focused on the writing of
-configuration, Nickel is a proper programming language that is also designed to
-write generic and reusable library code. There, the typing trade-off is
-different, and static typing is more adapted. Nickel has a gradual type system,
-which is yet another argument for having contracts. Let us end this section by
-stressing the following points:
-\begin{itemize}
-    \item \textbf{Even in a purely dynamically typed language, contracts are an
-        appealing feature for validation and correctness}. The gradual typing
-        part enters the general picture but is out of the scope of this paper.
-    \item \textbf{User-defined contracts are essential for validation}. Some
-        contract systems (as the one of~\cite{RootCauseOfBlame}, that will be
-        extensively discussed later in the paper) do not feature user-defined
-        contracts.  Rather, a fixed set of built-in contracts such as
-        \nickel{Num} or \nickel{Str} are provided, very much like base
-        types. The absence of user-defined contracts is understandable when
-        using contracts as a dynamic typing discipline for correctness. But a
-        system without user-defined contracts is limited in the same way as
-        static typing with respect to validation.
-\end{itemize}
-
 \subsection*{Structure of this paper}
+\unsure{Make this section into a contributions section?}
 Section~\ref{sec:intro} introduced the perspective of designing a configuration
 language. We presented the concept of contracts and detailed why contracts are
 particularly fitted for a configuration language, and more generally for data
@@ -516,8 +442,13 @@ In this section we briefly introduce some aspects of real world
 programming languages that will cause trouble while interacting
 with union and intersection dynamic checks.
 
-\subsection*{User defined contracts}
+\subsection*{User-defined contracts}
 \label{sec:flat-contracts}
+\unsure{Make sure that this point is made in the user-defined
+  contracts section: With respect to
+validation, traditional types are too limited. Validation commonly involves
+checking requirements such as being a valid port number or a valid URL which
+are, while not technically impossible, really hard to check statically.}
 
 User defined contracts, sometimes called flat contracts, are a particular
 kind of contract that behaves similar to an assertion, and whose
