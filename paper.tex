@@ -543,18 +543,17 @@ In this section we briefly introduce some aspects of real world
 programming languages that will cause trouble while interacting
 with union and intersection dynamic checks.
 
-\subsection*{Flat contracts}
+\subsection*{User defined contracts}
 \label{sec:flat-contracts}
 
-\unsure{Should we define contracts prior to this?}
-User defined contracts, also called flat contracts, are a particular
+User defined contracts, sometimes called flat contracts, are a particular
 kind of contract that behaves similar to an assertion, and whose
-main point is to apply some arbitrary predicate (as arbitrary as the
+main utility is to apply some arbitrary predicate (as arbitrary as the
 host language allows it) to a value; if the predicate evaluates to
 true, the contract passes, otherwise it fails.
 
 For instance, the contract \nickel{Even} shown on Figure
-\ref{fig:contract-higher-order} is a flat contract, defined
+\ref{fig:contract-higher-order} is a user defined contract, defined
 by taking the value that needs to be checked, and validating
 that is both a number and that the remainder of dividing it by 2
 is 0.
@@ -573,9 +572,9 @@ returns an \nickel{Int} when applied to an \nickel{Even}.
 % \end{figure}
 
 
-Or even more interesting, we could come up with a contract that checks that a function
+Even more interesting, we could come up with a contract that checks that a function
 maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true}
-by applying the function and checking its results,
+by applying the function exhaustively and checking its results,
 and then use it as a contract for the \nickel{not} function, as can be seen on Figure
 \ref{fig:checked-not}.
 
@@ -606,7 +605,7 @@ functions and as invariants on classes\cite{EiffelDesignByContract}.
 % written with flat contracts, that are
 % dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
-Finally, the Racket programming language also has a system to work with
+The Racket programming language also has a system to work with
 contracts, powerful enough to define flat contracts
 \footnote{And a gradual typing system
 built on top of that, but that goes beyond the scope of this
@@ -616,7 +615,7 @@ to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
 
-Even if flat contracts may seem like too permissive, the ability to make
+Even if user defined contracts may seem like too permissive, the ability to make
 non trivial checks on values (that is, to validate their output) is expected
 by programmers on dynamic languages, where testing and runtime
 assertions are extremely useful tools for safe programming, and
@@ -758,7 +757,7 @@ remove citation}, pure terms can be safely identified for applying
 optimizations.
 
 Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of
-unions and intersections can make \ref{eq:cbn-expansion} \resolved{it} unsound
+unions and intersections can make \ref{eq:cbn-expansion} unsound
 \emph{even in a pure setting}, making the optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 
@@ -798,7 +797,7 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \section{Union \& intersection}
 \label{sec:union-inter}
 \info{What are they, what are they used for.}
-\todo{Since nickel uses | for contract application, I'd move unions
+\resolved{Since nickel uses | for contract application, I'd move unions
 to some other symbol.
 I think the best option is to move to $\cap / \cup$}
 
@@ -861,7 +860,7 @@ unions\resolved{If you can observe with typeof, then it's pretty much a tagged
 union, though the tag is implicit} has already been an idiom in dynamically
 typed language for a long time. Being able to type and handle these unions is an
 important aspect of the migration to a gradual type system. Indeed, a lot of
-\unsure{This is the first time discussing gradual type systems, maybe it should
+\resolved{This is the first time discussing gradual type systems, maybe it should
 be introduced earlier, in particular how they relate to contracts
 (I think is mentioned on the appendix)}
 gradually typed languages either existed originally as dynamically typed
@@ -1067,7 +1066,7 @@ implementor, as well as the language user, since it adds non trivial
 side effects to your code.
 
 
-\subsection*{Flat contracts do not intersect}
+\subsection*{User defined contracts do not intersect}
 \label{sec:flat-and-inter}
 
 Stop for a second and think how you could implement an intersection
@@ -1126,7 +1125,7 @@ correctly fail.
 
 This idea, which is an oversimplification of the ideas
 presented by Williams, Morris, and Wadler, seems to be spot on.
-However, it presents a major problem, it's not compatible with flat contracts,
+However, it presents a major problem, it's not compatible with user defined contracts,
 as presented in Section \ref{sec:flat-contracts}.
 Consider the example presented on Figure \ref{fig:inter-flat-contracts}, if the
 implementation discussed previously were to be used, we may end up with
@@ -1143,7 +1142,7 @@ let C = fun f => (f 0) == 0 in
 let g | (String -> String) @& C
       = (fun x => x) 
 \end{lstlisting}
-\caption{Intersection and flat contracts}
+\caption{Intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
 \end{figure}
 
@@ -1287,12 +1286,12 @@ section is too abstract give concrete code and explain what goes
 wrong. It's fine to give code in Nickel syntax}
 
 Another difficult issue Keil and Thiemann were able to solve, is the
-fact that flat contracts and intersection do not usually play nice
+fact that user defined contracts and intersection do not usually play nice
 together, as shown on Section \ref{sec:flat-and-inter}.
 They provide two different sets of rules for their calculus,
 the first one is non deterministic, and its purpose is to provide
 semantics that are simple to understand.
-With these rules, the interaction between flat contracts and
+With these rules, the interaction between user defined contracts and
 intersections becomes much simpler, since they are able to check
 both sides of an intersection on separate threads.
 This allows them to be sure that contracts from one branch of the intersection
@@ -1364,7 +1363,7 @@ whatever)}
 \label{sec:will-morr-wadl}
 \unsure{Subsection title?}
 
-Williams, Morris, and Wadler, take a different approach on flat contracts,
+Williams, Morris, and Wadler, take a different approach on user defined contracts,
 they are completely forbidden in their system, explicitly to not encounter
 the previously mentioned issue.
 This restriction goes against what is usually expected from dynamic checks:
