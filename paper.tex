@@ -555,9 +555,8 @@ and then use it as a contract for the \nickel{not} function, as can be seen on F
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
-let Port = contracts.fromPred (fun value =>
-  builtins.isNum value && value % 1 == 0
-  && value >= 0 && value <= 65353) in
+let Port = contracts.fromPred (fun p =>
+  num.isInt p && 0 <= p && p <= 65353) in
 80 | Port
 \end{lstlisting}
 \end{center}
