@@ -224,7 +224,7 @@ systems, mostly because they are quite difficult to verify
 statically. So unions are really only worth it in gradually typed
 language where they formalise existing dynamically typed patterns. On
 the other hand, surely, for dynamic tests, unions are really easy: it
-is simply the boolean disjunctions of two tests.
+is simply the Boolean disjunctions of two tests.
 
 Unfortunately, as we document in this article, as soon as you extend
 dynamic checks to \emph{contracts}~\cite{FindlerFelleisenHOContracts},
@@ -286,8 +286,44 @@ for schema validation. That is, help answer questions like: does our
 configuration have all the required fields? does this field indeed
 contains a URL?
 
-These are an inherently dynamic question, as they are all questions
-about the evaluated configuration.
+These are inherently dynamic questions, as they are all questions
+about the evaluated configuration. To this effect, Nickel lets us
+annotate any expression with a dynamic schema check: \nickel{exp |
+  C}. There is also syntactic sugar to annotate definitions:
+\nickel{let id | C = value in exp} stands for \nickel{let id = (value
+  | C) in exp}.
+
+Let us pause for a moment and consider the following: it is Nickel's
+ambition to be able to manipulate configurations like Nixpkgs. With
+over 50\,000 packages, is one of the largest repository of software
+packages in existence~\cite{repology}. Concretely, Nixpkgs is a
+dictionary mapping packages to build recipes. That is, a massive,
+over-50\,000-key-value-pair wide dictionary. It is absolutely out of the
+question to evaluate the entirety of this dictionary every time one
+needs to install 10 new packages: this would result in a painfully
+slow experience.
+
+To be able to support such large dictionaries, Nickel's dictionaries
+are \emph{lazy}, that is, the values are only evaluated when
+explicitly required. For instance, when writing
+\hbox{\nickel{nixpkgs.hello},} only the \nickel{hello} package gets
+evaluated.
+
+But let's consider now writing something like \nickel{nixpkgs |
+  packages}, to guarantee that all the packages conform to the desired
+schema. If this were a simple Boolean test, it would have to evaluate
+all 50\,000 package to check their validity, hence breaking the
+laziness of dictionaries. Do we have to choose between laziness and
+schema validation? Fortunately, we don't! Enter
+\emph{contracts}~\cite{FindlerFelleisenHOContracts}: dynamic check
+which can be partially delayed, yet errors can be reported
+accurately. Contracts can respect laziness of dictionaries, and they
+can be use to add schema validation to functions as well (in fact
+functions were their original motivations).
+
+The is no Boolean function which can check that a value has type
+
+\rule{3cm}{3pt}
 
 \unsure{Arnaud: What's below this point in the introduction is being reworked}
 
@@ -301,26 +337,6 @@ Nix package manager, used to describe one of the biggest sets of packaged
 software in existence\cite{repology}.  Nickel targets build systems, cloud
 deployment tools (Kubernetes, Terraform or NixOps), or anything requiring a
 non-trivial configuration.
-
-We will use the syntax of Nickel to write most examples throughout this paper.
-Syntactically, Nickel looks like a simple ML language with records. \nickel{let
-id = value in exp} is used to bind a value to an identifier in an expression.
-Functions are declared using the \nickel{fun arg1 ... argn => body} syntax. List
-are written as \nickel{[x1, ..., xn]} and records as \nickel{\{field1 = value1,
-..., fieldn = valuen\}}. The application of a contract \nickel{C} to the
-expression \nickel{exp} is written \nickel{exp | C}\footnote{The current
-    implementation requires a \nickel{#} character in front of custom contracts,
-    whose application would rather be \nickel{exp | #C}, but it is irrelevant
-and subject to change in the future.}. We will sometimes attach
-contracts directly to an identifier instead of the corresponding bound
-expression, that is: \nickel{let id | C = value in exp} is syntactic sugar for
-\nickel{let id = (value | C) in exp}.
-
-Some examples resort to constructions that are not currently available in Nickel
-for illustration purpose: we will use \nickel{A @& B} (resp. \nickel{A @| B})
-for the intersection (resp. union) of contracts (or types) \nickel{A} and
-\nickel{B}. \nickel{@|} and \nickel{@&} bind more loosely than arrows, meaning
-that \nickel{A -> B @& C -> D} is to be parsed as \nickel{(A -> B) @& (C -> D)}.
 
 \subsection*{Correct programs \& valid data}
 
@@ -1704,5 +1720,6 @@ for union and intersection contracts, these gaps might be quite large in places.
 \bibliography{nickel}
 \end{document}
 
-% LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall
-% LocalWords:  Kubernetes DevOps natively
+% LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall MyPy
+% LocalWords:  Kubernetes DevOps natively nixpkgs disjunctions
+% LocalWords:  TypeScript
