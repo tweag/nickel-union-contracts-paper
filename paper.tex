@@ -906,14 +906,14 @@ And union has to be treated as any one of the options}
 \info{What goes wrong or difficult when trying to implement union and
   intersection literally}
 
-Static typing is about enforcing that some property always holds for a
-potentially unknown value, no matter the execution part. A dynamic check, on the
-other hand, just need to verify a property for a specific and known value, which
-is usually much easier. For example, dependent function types are complex and
-mostly implemented in proof assistants (although they are slowly making their
-way in some mainstream languages), whereas the corresponding dependent function
-contracts can be implemented in a few line of code (as is done in
-Racket~\cite{}).
+Static typing is about enforcing that some property about a (potentially
+unknown) value always holds, no matter the execution path. A dynamic check, on
+the other hand, just need to verify a property for a specific and known value,
+which is usually much easier. For example, dependent function types are complex
+and mostly implemented in proof assistants (although they are slowly making
+their way in some mainstream languages), whereas the corresponding dependent
+function contracts can be implemented in a few line of code (they are
+implemented in e.g. Racket~\cite{}).
 
 The gist of the present paper is to bring evidence that in the case of union and
 intersection, the dynamic checking part is complex as well: \emph{unions and
@@ -941,25 +941,25 @@ intersections are fundamentally hard}.
 % In this section, we present intuitively the main challenges that arise
 % when attempting to develop a runtime check system for unions and intersections.
 
-\subsection*{Union contracts as an effect}
+\subsection*{Union contracts as a side-effect}
 
-In a pure language with standard contracts, the failure of a function contract
-can always be blamed on a single call. Figure~\ref{fig:pos-to-pos} shows a
-function with a simple contract attached that ensures that both the argument and
-the result of \nickel{f} are positive numbers. \nickel{f} is called twice, and
-the second call violates the requirement on the codomain, leading to blame
-\nickel{f}. The first call to \nickel{f} does not matter, and \nickel{5} is a
-single and independent witness of the violation of the contract. The user can be
-pointed to one location in practice.
+In Nickel, the failure of a function contract can always be traced back to a
+single call. For example, take the function \nickel{f} with a simple contract
+attached of Figure~\ref{fig:pos-to-pos}. The program fails with a contract error
+blaming \nickel{f}. Indeed, the second call \nickel{f 5} fails because the
+return value violates the \nickel{Positive} contract. The first call to
+\nickel{f} does not matter, and \nickel{f 5} is a single and independent witness
+of the violation of the contract. The user can be pointed to one location in
+practice.
 
-There is an intuitive justification for this fact. Apart from the error
-reporting part (but this is the crucial in practice!), the current contract
-system of Nickel can be implemented purely as a library, just given a
-\nickel{fail} primitive to abort the execution. In particular, applying a
-function contract to \nickel{f} replaces it with a guarding function
-\nickel{fWrapped} that performs the required checks. Thus, in a pure setting,
-the failure of \nickel{fWrapped 5} must be independant of its environment, and
-in particular of the call \nickel{fWrapped 10}.
+This single witness property can be justified as follows. Apart from the error
+reporting part (although this is the crucial bit in practice!), the current
+contract system of Nickel can be implemented purely as a library, requiring only
+a \nickel{fail} primitive to abort the execution. In practice, applying a
+function contract to \nickel{f} replaces it with a \nickel{f'} that additionally
+performs the required checks. Thus, since the core language is pure (the
+presence of \nickel{fail} isn't relevant here), the failure of \nickel{f' 5}
+must be independent of its environment and of any previous call to \nickel{f'}.
 
 % When programming with dynamic checks it is assumed that lack of
 % failure does not mean that the program works perfectly.
@@ -996,10 +996,10 @@ let f | Positive -> Positive
 % come up with a minimal example that breaks the contract.
 % However, when unions get introduced, this property is lost.
 
-Union contracts are a different matter. Consider the program presented in
-Figure \ref{fig:wrong-union-function}. \nickel{f} is again violating the
-contract, as it neither maps positive numbers to positive numbers nor positive
-numbers to negative numbers.
+Union contracts are different. Consider the program presented in
+Figure~\ref{fig:wrong-union-function}. The same \nickel{f} is now given a union
+contract. \nickel{f} is violating this contract once again, as it neither maps
+positive numbers to positive numbers nor positive numbers to negative numbers.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1012,34 +1012,40 @@ let f | (Positive -> Positive)
 \label{fig:wrong-union-function}
 \end{figure}
 
-In a system with unions, this contract would fail, because \nickel{f 10}
-(returns \nickel{3}) is a witness of \nickel{f} failing the contract
-\nickel{Positive -> NonPositive}, and \nickel{f 5} (returns \nickel{-2}) is a
-witness of \nickel{f} failing \nickel{Positive -> Positive}.  But, as opposed to
-the previous example, removing one call or the other will make the program pass!
-Indeed, the first call only fails the \nickel{Positive -> NonPositive} part of
-the union, while the second one only fails the \nickel{Positive -> NonPositive}
-part. Both are needed to prove the violation of the full contract.
+This program must fail, because \nickel{f 10} is a witness of \nickel{f} failing
+the contract \nickel{Positive -> NonPositive}, and \nickel{f 5} is a witness of
+\nickel{f} failing \nickel{Positive -> Positive}.  But, as opposed to
+Figure~\ref{fig:pos-to-pos}, removing only one the call makes the program
+succeed! Indeed, the first call only fails the \nickel{Positive -> NonPositive}
+part of the union, while the second one only fails the \nickel{Positive ->
+NonPositive} part. In this particular example, there can't be a single call that
+is a witness of the violation of the contract: a minimum of two are needed.
 
-Even in a pure setting, unions introduce a form of effect at a distance: the
-result of \nickel{f 5} is not local anymore, as it now depends on the previous
-execution of other calls to \nickel{f}. Unions contracts break the
-equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations}, and the
-candidate example of Figure~\ref{fig:optimizations-let-floating-ex} cannot be
+This behavior indicates that union contracts introduce side-effects. The result
+of \nickel{f 5} now depends on the previous execution and more generally on any
+prior call to \nickel{f}. This behavior of union contracts break the
+equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations}. The
+candidate example of Figure~\ref{fig:optimizations-let-floating-ex} can't be
 optimized in general.
 
-Figure~\ref{fig:optimized-programs} illustrates this point further. It comprises
-an original program, and one where the common subexpression \nickel{f 1} have
-been eliminated. These two programs behave very differently:
+Figure~\ref{fig:optimized-programs} illustrates this point further. There is an
+original program, and an optimized version the common subexpression \nickel{f 1}
+has been eliminated. While equivalent in a pure language without contracts,
+these two programs behave differently here:
+
 \begin{itemize}
     \item The original version returns \nickel{(1, "False")} without failing.
     \item The optimized version fails with a contract violation.
 \end{itemize}
 
-since the single application of \nickel{f 1}, applied to both \nickel{true} and
-\nickel{false} will be able to find the error on the union contract
-\nickel{(Bool -> Num) @| (Bool -> Str)}.
-
+In the original version, each partial application \nickel{f 1} gives rise to a
+fresh instance of the contract \nickel{Bool -> Num @| Bool -> Str}. These
+instances are independent, and can pick a different component of the union to
+satisfy. Although \nickel{f} doesn't actually respect the contract, these calls
+are not enough to prove so. In the optimized version, \nickel{g} is endowed with
+a single contract, that must pick one of the two components of the union. There,
+the two calls refers to the same union contracts, and shows that \nickel{f}
+violate its initial contract. 
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Original]
@@ -1057,45 +1063,55 @@ let g = f 1 in
 \label{fig:optimized-programs}
 \end{figure}
 
-\unsure{WARNING: what is below is being reworked by Yann}
-
-To sum up, union contracts introduce a form of effect at a distance. This
-impacts both the programmer and the compiler or interpreter:
+To sum up, the addition of union contracts introduce side-effects in a pure
+language. Side-effects have well-known pitfalls: 
 \begin{itemize}
-    \item As for any side-effect, this breaks local reasoning.
-    \item It prevents optimizations.
+    \item For the programmer, they are hard to reason about. They prevent local
+        reasoning. In our previous examples, removing or adding a function call
+        somewhere can toggle a failure in a call at a totally different
+        location.
+    \item For the interpreter (or compiler), they inhibit many optimizations and
+        program transformations.
 \end{itemize}
-\todo{WIP}
-
-A valid argument against this point would be stating that further work should be done
-on optimizers, so to not modify these tricky cases, even if this is true,
-programmers also modify their code on a daily basis, and if moving from the first
-code snippet at Figure \ref{fig:optimized-programs} to the second one changes
-the behaviour of a program, we argue that union contracts not only go against the
-implementation of languages, but also against their usability.
-
-Summing it up, wrapping a value with a union of higher order contracts means that
-that value now has a state, that may get modified silently at every use site.
-Both reviewed papers suffer from this defect since it is the semantics
-of unions that interact badly with code manipulation operations,
-not a particular implementation.
-This addition of global state complicates both the work of the language
-implementor, as well as the language user, since it adds non trivial
-side effects to your code.
 
 
-\subsection*{User defined contracts do not intersect}
+% A valid argument against this point would be stating that further work should be done
+% on optimizers, so to not modify these tricky cases, even if this is true,
+% programmers also modify their code on a daily basis, and if moving from the first
+% code snippet at Figure \ref{fig:optimized-programs} to the second one changes
+% the behaviour of a program, we argue that union contracts not only go against the
+% implementation of languages, but also against their usability.
+%
+% Summing it up, wrapping a value with a union of higher order contracts means that
+% that value now has a state, that may get modified silently at every use site.
+% Both reviewed papers suffer from this defect since it is the semantics
+% of unions that interact badly with code manipulation operations,
+% not a particular implementation.
+% This addition of global state complicates both the work of the language
+% implementor, as well as the language user, since it adds non trivial
+% side effects to your code.
+
+
+\subsection*{Intersection of user-defined contracts}
 \label{sec:flat-and-inter}
 
-Stop for a second and think how you could implement an intersection
-contract. The first thought you may have is "just apply
-both contracts", as shown on the Implementation snippet
-from Figure \ref{fig:inter-contracts}.
-Of course, if it were that simple we wouldn't be writing this paper.
-This idea starts to show problems when you first combine it with
-higher order contracts, since it would mean not complying with
-at least one of these contracts negatively would entail breaking the
-whole thing, as shown on the second example on the same Figure,
+A natural - but naive - implementation of intersection contracts could be the
+following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
+and \nickel{B} sequentially. This intuition works for simple contracts: surely
+checking that \nickel{x | Natural @& Odd} amounts to check that \nickel{x |
+Natural} and \nickel{x | Odd}. Unfortunately, this doesn't scale to higher-order
+contracts.
+
+\unsure{WARNING: what is below is being reworked by Yann}
+
+works for a lot of simple contracts: Stop for
+a second and think how you could implement an intersection contract. The first
+thought you may have is "just apply both contracts", as shown on the
+Implementation snippet from Figure \ref{fig:inter-contracts}.  Of course, if it
+were that simple we wouldn't be writing this paper.  This idea starts to show
+problems when you first combine it with higher order contracts, since it would
+mean not complying with at least one of these contracts negatively would entail
+breaking the whole thing, as shown on the second example on the same Figure,
 that would fail.
 
 \begin{figure}[h]
