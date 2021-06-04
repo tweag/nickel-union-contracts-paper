@@ -932,44 +932,75 @@ And union has to be treated as any one of the options}
 \info{What goes wrong or difficult when trying to implement union and
   intersection literally}
 
-\unsure{WARNING: what is below is being reworked by Yann}
+Static typing is about enforcing that some property always holds for a
+potentially unknown value, no matter the execution part. A dynamic check, on the
+other hand, just need to verify a property for a specific and known value, which
+is usually much easier. For example, dependent function types are complex and
+mostly implemented in proof assistants (although they are slowly making their
+way in some mainstream languages), whereas the corresponding dependent function
+contracts can be implemented in a few line of code (as is done in
+Racket~\cite{}).
 
-Type systems featuring intersection types are hard in a fundamental way,
-from their discovery, they've been studied as a form to characterize
-lambda-calculus terms normalizability; which means that typechecking a
-term on a system with intersection types is undecidable,
-similar to how the halting problem is undecidable\todo{reference}.
+The gist of the present paper is to bring evidence that in the case of union and
+intersection, the dynamic checking part is complex as well: \emph{unions and
+intersections are fundamentally hard}.
 
-Usually, when thinking about programming languages, there's an intuition
-that static checks (like typechecking) are more difficult and less powerful
-than dynamic checks (like testing).
-For instance, it is very easy to check if,
-in a given execution of a program, a variable holds an integer value; while it
-may become more challenging to check if a variable will always hold an integer value,
-no matter the particular execution.
-
-As we intend to show on this paper, unions and intersections are not only
-statically hard to check, but they are also dynamically hard:
-\emph{they are fundamentally hard}.
-In this section, we present intuitively the main challenges that arise
-when attempting to develop a runtime check system for unions and intersections.
+% Teo's version
+% Implementing a static type system is not an easy task.
+% Type systems featuring intersection types are hard in a fundamental way,
+% from their discovery, they've been studied as a form to characterize
+% lambda-calculus terms normalizability; which means that typechecking a
+% term on a system with intersection types is undecidable,
+% similar to how the halting problem is undecidable\todo{reference}.
+%
+% Usually, when thinking about programming languages, there's an intuition
+% that static checks (like typechecking) are more difficult and less powerful
+% than dynamic checks (like testing).
+% For instance, it is very easy to check if,
+% in a given execution of a program, a variable holds an integer value; while it
+% may become more challenging to check if a variable will always hold an integer value,
+% no matter the particular execution.
+%
+% As we intend to show on this paper, unions and intersections are not only
+% statically hard to check, but they are also dynamically hard:
+% \emph{they are fundamentally hard}.
+% In this section, we present intuitively the main challenges that arise
+% when attempting to develop a runtime check system for unions and intersections.
 
 \subsection*{Union contracts are hard to break}
 
-When programming with dynamic checks it is assumed that lack of
-failure does not mean that the program works perfectly.
+In a pure language with standard contracts, the failure of a function contract
+can always be blamed on a single call. Figure~\ref{fig:pos-to-pos} shows a
+function with a simple contract attached that ensures that both the argument and
+the result of \nickel{f} are positive numbers. \nickel{f} is called twice, and
+the second call violates the requirement on the codomain, leading to blame
+\nickel{f}. The first call to \nickel{f} does not matter, and \nickel{5} is a
+single and independent witness of the violation of the contract. The user can be
+pointed to one location in practice.
 
-For instance, imagine having a function wrapped in a contract
-that checks that it maps positive numbers to positive numbers,
-and using it in different ways,
-like the program on Figure \ref{fig:pos-to-pos}.
-Clearly, there is an error on this program, but if the first call
-to \nickel{f} that gets executed is \nickel{f 10}, the error will not
-be found at that point, and the first operand of the addition would be
-evaluated to \nickel{3}.
-If, later on, \nickel{f 5} gets executed, the contract would get violated,
-since \nickel{f} gets called with a positive value, but returns a negative
-one (\nickel{-2}).
+There is an intuitive justification for this fact. Apart from the error
+reporting part (which is crucial in practice!), the current contract system of
+Nickel can be implemented purely as a library, just given a \nickel{fail}
+primitive to abort the execution. In particular, applying a function contract to
+\nickel{f} replaces it with a guarding function \nickel{fWrapped} that performs
+the required checks. Thus, in a pure setting, the failure of \nickel{fWrapped 5}
+must be independant of its environment, and in particular of the call
+\nickel{fWrapped 10}.
+
+% When programming with dynamic checks it is assumed that lack of
+% failure does not mean that the program works perfectly.
+%
+% For instance, imagine having a function wrapped in a contract
+% that checks that it maps positive numbers to positive numbers,
+% and using it in different ways,
+% like the program on Figure \ref{fig:pos-to-pos}.
+% Clearly, there is an error on this program, but if the first call
+% to \nickel{f} that gets executed is \nickel{f 10}, the error will not
+% be found at that point, and the first operand of the addition would be
+% evaluated to \nickel{3}.
+% If, later on, \nickel{f 5} gets executed, the contract would get violated,
+% since \nickel{f} gets called with a positive value, but returns a negative
+% one (\nickel{-2}).
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -981,22 +1012,20 @@ let f | Positive -> Positive
 \label{fig:pos-to-pos}
 \end{figure}
 
-Even if the program performed two different applications of \nickel{f}
-before finding the contract violation, the first one is not actually
-needed, and executing only \nickel{f 5} is enough to find the problem.
+% Even if the program performed two different applications of \nickel{f}
+% before finding the contract violation, the first one is not actually
+% needed, and executing only \nickel{f 5} is enough to find the problem.
+%
+% Having a witness of size 1 for every contract failure is a really nice to have property
+% since it means, for example, that every time that a contract is violated,
+% the stack trace is enough to understand how it was violated, and to potentially
+% come up with a minimal example that breaks the contract.
+% However, when unions get introduced, this property is lost.
 
-Having a witness of size 1 for every contract failure is a really nice to have property
-since it means, for example, that every time that a contract is violated,
-the stack trace is enough to understand how it was violated, and to potentially
-come up with a minimal example that breaks the contract.
-However, when unions get introduced, this property is lost.
-
-Consider now the program presented in Figure \ref{fig:wrong-union-function},
-this program (and in particular, \nickel{f}'s contract) still presents a problem,
-since \nickel{fun x => x - 7} does not map positive numbers to positive numbers,
-nor does it map positive numbers to non-positive numbers, so it won't be a valid
-value for the union of those contracts.
-
+Union contracts are a different matter. Consider the program presented in
+Figure \ref{fig:wrong-union-function}. \nickel{f} is again violating the
+contract, as it neither maps positive numbers to positive numbers nor positive
+numbers to negative numbers.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1009,14 +1038,27 @@ let f | (Positive -> Positive)
 \label{fig:wrong-union-function}
 \end{figure}
 
-As before, the program presents enough function calls to find that issue
-and violate the contract,
-since \nickel{f 10} is a witness of \nickel{f} failing \nickel{Positive -> NonPositive},
+In a system with union and intersection, this contract would fail, because
+\nickel{f 10} is a witness of \nickel{f} failing \nickel{Positive -> NonPositive},
 and \nickel{f 5} is a witness of \nickel{f} failing \nickel{Positive -> Positive}.
-But, what makes this case completely different from the one presented before, is that
-both function calls are needed, and, what is more, there is not a way to
-use the wrapped value \nickel{f} only once that would find a violation to its contract;
-at least two are needed.
+But, as opposed to the previous example, removing one call or the other will make the program pass!
+Indeed, the first call only fails the \nickel{Positive -> NonPositive} part of
+the union,
+while the second one only fails the \nickel{Positive -> NonPositive} part. Both
+are needed to prove the violation of the full contract.
+
+Even in a pure setting, unions introduce a form of effect at a distance: the
+result of \nickel{f 5} is not local anymore as it depends on the previous
+execution of other calls to \nickel{f}. With unions,
+equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations} does not
+hold, and the candidate example of
+Figure~\ref{fig:optimizations-let-floating-ex} cannot be optimized in general.
+
+Figure~\ref{fig:optimized-programs} below shows another example of the same
+fact. A seemingly valid optimization ends up with a program that behave
+differently from the original one.
+
+\unsure{WARNING: what is below is being reworked by Yann}
 
 This seemingly simple consequence generates major issues when considered in real
 life languages.
