@@ -549,19 +549,20 @@ Even more interesting, we could come up with a contract that checks that a funct
 maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true}
 by applying the function exhaustively and checking its results,
 and then use it as a contract for the \nickel{not} function, as can be seen on Figure
-\ref{fig:checked-not}.
+\ref{fig:port-contract}.\unsure{These few paragraphs are out of date,
+  even more so since Arnaud changed the flat contract example}
 
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
-let NotC = contracts.fromPred (
-  fun f => builtins.isFun f && (f true == false) && (f false == true)
-) in
-let checkedNot = not | #NotC
+let Port = contracts.fromPred (fun value =>
+  builtins.isNum value && value % 1 == 0
+  && value >= 0 && value <= 65353) in
+80 | Port
 \end{lstlisting}
 \end{center}
-\caption{A contract that checks the not function behaves as expected}
-\label{fig:checked-not}
+\caption{A contract for valid ports}
+\label{fig:port-contract}
 \end{figure}
 
 This type of contracts are present on many different languages,
