@@ -130,6 +130,22 @@
   sensitive=true,
 }
 
+% Copied from https://tex.stackexchange.com/questions/89574/language-option-supported-in-listings
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  % keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  % stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
 \lstset{
   language={nickel},
   basicstyle=\small\ttfamily, % Global Code Style
@@ -160,6 +176,8 @@
 }
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
 \newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
+\newcommand{\haskell}[1]{\lstinline[language=Haskell]{#1}}
+\newcommand{\typescript}[1]{\lstinline[language=JavaScript]{#1}}
 
 \bibliographystyle{ACM-Reference-Format}
 
@@ -701,131 +719,277 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \label{sec:union-inter}
 \info{What are they, what are they used for.}
 
+% Goals:
+% Introduce unions and inter
+% Why are they useful?
+% How are they used
+% How de they relate with one another
+
 \subsection*{Unions}
-Unions are fundamental building blocks of programs. A union holds a value whose
-shape is known to be in a fixed set of alternatives: for example, a value that
-can be either a boolean or a string. They correspond logically to disjunctions.
-Used in combination with products, they can represent arbitrary tree-like
-structures, allowing to model a large class of data
-(\ref{fig:union-adt-ex}).
+Unions ($\cup$) are a fundamental building block of programs.
+A union holds a value whose
+shape is known to be in a fixed set of alterniteves, without exposing
+which of those alternatives the value belongs to.
+For example, a value that could be either a Number or a String can be
+modelled using unions as \nickel{Num @| String}.
+They correspond logically to disjunctions.
+
+Statically typed languages, and more specifically functional programming
+languages, provide a similar abstraction, sums
+(also called tagged unions, or discriminated unions), which
+also allow to model a value whose shape conforms to a fixed set of
+alternatives, but requiring an explicit mark (or tag) that differentiates
+to which of these alternatives it belongs to.
+For example, consider the Haskell code presented on Figure 
+\ref{fig:safediv-haskell}, it's a safe division that will
+check if the dividend is 0, and if it is, return an
+error message.
+Since the function can return two different types, a sum
+(\haskell{Either}) is used, and on each
+of the if branches an explicit tag has to be used (either
+\haskell{Left} or \haskell{Right}).
+
+\begin{figure}[h]
+\begin{lstlisting}[language=Haskell]
+safeDiv :: Int -> Int -> Either String Int
+safeDiv x y = 
+  if y == 0 then 
+    Left "Division by 0 is forbidden" 
+  else
+    Right (div x y)
+\end{lstlisting}
+\caption{Safe division implemented in Haskell}
+\label{fig:safediv-haskell}
+\end{figure}
+
+This incurred verbosity certainly facilitates the work of static checks,
+like typechecking, but dynamically typed languages permit much more flexibility,
+and programmers don't usually expect to tag their values.
+That is why, as mentioned on the Introduction, when designing
+type systems for dynamically typed languages, unions become of particular
+interest.
+See the implementation of a safe division function on TypeScript
+(Figure \ref{fig:safediv-ts}).
+Neither of the if branches has to tag their return value, and the return
+type of the function is modelled using unions, \typescript{string | number}.
 
 
 \begin{figure}[h]
-\begin{lstlisting}[title={Tree-like data structure}]
-type BinaryTree =
-Integer @| (BinaryTree, BinaryTree)
+\begin{lstlisting}[language=JavaScript]
+function safeDiv(x: number, y: number): string | number {
+  if (y == 0) {
+      return "Division by 0 is forbidden"
+  } else {
+      return x/y
+  }
+}
 \end{lstlisting}
-\caption{A binary tree data type using unions}
-\label{fig:union-adt-ex}
+\caption{Safe division implemented in TypeScript}
+\label{fig:safediv-ts}
 \end{figure}
 
+% \begin{figure}[h]
+% \begin{lstlisting}[title={Tree-like data structure}]
+% type BinaryTree =
+% Integer @| (BinaryTree, BinaryTree)
+% \end{lstlisting}
+% \caption{A binary tree data type using unions}
+% \label{fig:union-adt-ex}
+% \end{figure}
 
-In addition to internal program representations, unions are also useful to model
-external data (\ref{fig:unions-use-cases}):
+Unions are not only useful to model the outcome of alternative
+branches of computations, but they can be used to
+formalize very common patterns of data types:
 \begin{itemize}
-    \item To represent nullable values.
-    \item For plain enumerations.
+    \item To represent nullable, or optional, values.
+\begin{lstlisting}[language=nickel]
+optionalValue : Str @| Null
+\end{lstlisting}
+      
+    \item For plain enumerations of literals.
+\begin{lstlisting}[language=nickel]
+protocol : "Http" @| "Ftp" @| "Sftp"
+\end{lstlisting}
+
     \item To support different representations of the same data.
+\begin{lstlisting}[language=nickel]
+person : {name : Str, age : Int}
+  @| {name : Str, dateOfBirth : Date}
+\end{lstlisting}
+  
 \end{itemize}
 All of which are common in configurations.
 
+% \begin{figure}[h]
+% % \label{fig:union-nullable-ex}
+% \begin{lstlisting}[title={Nullable values}]
+% optionalValue : Str @| Null
+% \end{lstlisting}
+
+% % \label{fig:union-enum-ex}
+% \begin{lstlisting}[title={Plain enumeration}]
+% protocol : `Http | `Ftp | `Sftp
+% \end{lstlisting}
+
+% % \label{fig:union-alt-ex}
+% \begin{lstlisting}[title={Alternative representations}]
+% person : {name : Str, age : Int}
+%   @| {name : Str, dateOfBirth : Str}
+% \end{lstlisting}
+% \caption{Various use cases of unions}
+% \label{fig:unions-use-cases}
+% \end{figure}
+
+% In statically typed languages, and more specifically in functional programming
+% languages, sums (also called tagged unions, or discriminated unions) are usually
+% preferred, as constructors for algebraic datatypes. [references]. Sums are unions' cousin where the alternatives are
+% syntactically separated by an associated discriminating label. Well-known
+% programming languages with first-class tagged unions include Haskell, OCaml,
+% Rust, Scala, PureScript, Elm, Swift and many more.
+
+% On the other hand, in dynamically typed languages, it is customary to directly
+% store different kinds of data in one variable without further ceremony. The
+% runtime system needs to attach type tags to values anyway, which can usually be
+% observed using functions like JavaScript's \verb+typeof+. Using such bare
+% unions\resolved{If you can observe with typeof, then it's pretty much a tagged
+% union, though the tag is implicit} has already been an idiom in dynamically
+% typed language for a long time. Being able to type and handle these unions is an
+% important aspect of the migration to a gradual type system. Indeed, a lot of
+% \resolved{This is the first time discussing gradual type systems, maybe it should
+% be introduced earlier, in particular how they relate to contracts
+% (I think is mentioned on the appendix)}
+% gradually typed languages either existed originally as dynamically typed
+% language or aim at backward compatibility with a dynamically typed base
+% language. This is why despite the presence of a static type system, gradually
+% typed languages tend to favor bare unions types which is the typed counterpart
+% of this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
+
+Nickel has no pre-existing untyped language that we have to
+support, so we are freer of our choice.
+However, Nickel is a configuration language, whose contract and type system
+is intended to encode data schemas encountered in the wild. Since these schemas do not use
+tags to differentiate different kinds of values, there is a strong incentive to support untagged unions at the
+type level, or at least, at the contract level.
+
+We have shown how values of a union are built, is worth mentioning
+how they are used.
+For instance, consider the TypeScript function on Figure \ref{fig:addElem},
+we want it to insert an element to a list that is either an
+\typescript{Array<string>} or an \typescript{Array<number>},
+what value could we fill \typescript{...} with for this to typecheck?
+Since we don't know what's the shape of \typescript{list},
+we can't know whether to push a \typescript{string} or a
+\typescript{number}.
+That is, when using a union, we have to treat it as if it where any one
+of the alternatives, in the case of the example, we should provide
+it with a value that is both a \typescript{string} and a \typescript{number}.
+
 \begin{figure}[h]
-% \label{fig:union-nullable-ex}
-\begin{lstlisting}[title={Nullable values}]
-optionalValue : Str @| Null
+\begin{lstlisting}[language=JavaScript]
+function addElem(list: Array<string> | Array<number>) {
+  list.push(...)
+}
 \end{lstlisting}
-
-% \label{fig:union-enum-ex}
-\begin{lstlisting}[title={Plain enumeration}]
-protocol : `Http | `Ftp | `Sftp
-\end{lstlisting}
-
-% \label{fig:union-alt-ex}
-\begin{lstlisting}[title={Alternative representations}]
-person : {name : Str, age : Int}
-  @| {name : Str, dateOfBirth : Str}
-\end{lstlisting}
-\caption{Various use cases of unions}
-\label{fig:unions-use-cases}
+\caption{Adding an element to a union of two arrays}
+\label{fig:addElem}
 \end{figure}
 
-In statically typed languages, and more specifically in functional programming
-languages, sums (also called tagged unions, or discriminated unions) are usually
-preferred, as constructors for algebraic datatypes. [references]. Sums are unions' cousin where the alternatives are
-syntactically separated by an associated discriminating label. Well-known
-programming languages with first-class tagged unions include Haskell, OCaml,
-Rust, Scala, PureScript, Elm, Swift and many more.
 
-On the other hand, in dynamically typed languages, it is customary to directly
-store different kinds of data in one variable without further ceremony. The
-runtime system needs to attach type tags to values anyway, which can usually be
-observed using functions like JavaScript's \verb+typeof+. Using such bare
-unions\resolved{If you can observe with typeof, then it's pretty much a tagged
-union, though the tag is implicit} has already been an idiom in dynamically
-typed language for a long time. Being able to type and handle these unions is an
-important aspect of the migration to a gradual type system. Indeed, a lot of
-\resolved{This is the first time discussing gradual type systems, maybe it should
-be introduced earlier, in particular how they relate to contracts
-(I think is mentioned on the appendix)}
-gradually typed languages either existed originally as dynamically typed
-language or aim at backward compatibility with a dynamically typed base
-language. This is why despite the presence of a static type system, gradually
-typed languages tend to favor bare unions types which is the typed counterpart
-of this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
-
-In the case of Nickel, there is no pre-existing untyped language that we have to
-support, so we are freer of our choice. However, Nickel is a configuration
-language, whose contract and type system is intended to encode data schemas encountered in the wild. Since these schemas do use
-untagged unions, there is a strong incentive to support untagged unions at the
-type level, or at least, at the contract level.
 
 \subsection*{Intersections}
 
-Intersections are less prevalent. An intersection is a value that belongs to
-two types at the same time. A simple example is a number literal \nickel{1}
+Intersections ($\cap$) are less prevalent. An intersection is a value that belongs to
+two types at the same time. An example is a number literal \nickel{1}
 which could be accepted as both an \nickel{Int} and a \nickel{Float} without
-having to perform conversions (Figure~\ref{fig:intersection-subytping-ex}). In
-this example, the intersection \nickel{Int @& Float} can be used as a subtype of
-both \nickel{Int} and \nickel{Float}.
+having to perform conversions.
+In that case, a value of type \nickel{Int @& Float} can be used as a value of
+both type \nickel{Int} and \nickel{Float}.
 
-\label{fig:intersection-subytping-ex}
-\begin{lstlisting}[title={Value subtyping}]
-1 : Int @& Float
+% \label{fig:intersection-subytping-ex}
+% \begin{lstlisting}[title={Value subtyping}]
+% 1 : Int @& Float
+% \end{lstlisting}
+
+The real usability of intersections shows up when intersecting
+functions, since it can be used to encode overloading.
+For instance, take a look at Figure
+\ref{fig:intersection-overloading-ex}, where the function
+\nickel{duplicate} works both as a function to duplicate
+arrays, as well as a function to duplicate strings.
+This is particular useful when using unions, since it's a
+good way to express that a function can deal with different
+shapes of data.
+For instance, on the same figure, you can use \nickel{duplicate}
+over some value with type \nickel{[String] @| String}, and know
+that it will work correctly.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let duplicate | ([String] -> [String]) @& (String -> String) =
+  fun x => x ++ x in
+let text | [String] @| String = ... in
+duplicate text
 \end{lstlisting}
-
-Intersections of higher-order types corresponding to overloading
-(Figure~\ref{fig:intersection-overloading-ex}).
-
+\caption{Duplicating an array of Strings or a String}
 \label{fig:intersection-overloading-ex}
-\begin{lstlisting}[title={Overloading}]
-incr: (Int -> Int) @& (Float -> Float) =
-  fun x => x + 1
+\end{figure}
+
+
+% \label{fig:intersection-overloading-ex}
+% \begin{lstlisting}[title={Overloading}]
+% incr: (Int -> Int) @& (Float -> Float) =
+%   fun x => x + 1
+% \end{lstlisting}
+
+They can also be used to combine records \unsure{Better
+naming}. For instance, in Figure \ref{fig:intersection-record}
+two types are defined \nickel{Animal} and \nickel{Pet}, and
+a variable that is compatible with both types is declared, with
+type \nickel{Animal @& Pet}.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let Animal = { species: Str, race: Str } in
+let Pet = { owner: Str, name: Str } in
+let myDog | Animal & Pet = 
+  { species = "Canis Lupus",
+    race = "Australian Cattle Dog",
+    owner = "Anonymous Author",
+    name = "Juno" }
 \end{lstlisting}
+\caption{An animal that is also a pet}
+\label{fig:intersection-record}
+\end{figure}
 
-They can also be used to combine constraints (such as traits or interfaces), as
-done in Scala 3 (Figure~\ref{fig:intersection-mixins-ex}).
+% They can also be used to combine constraints (such as traits or interfaces),as
+% done in Scala 3 (Figure~\ref{fig:intersection-mixins-ex}).
 
-\label{fig:intersection-mixins-ex}
-\begin{lstlisting}[language=Scala,title={Structural mixins}]
-Comparator: {cmp: T -> T -> Bool}
-Shower: {show: T -> String}
+% \label{fig:intersection-mixins-ex}
+% \begin{lstlisting}[language=Scala,title={Structural mixins}]
+% Comparator: {cmp: T -> T -> Bool}
+% Shower: {show: T -> String}
 
-showSmaller : (dict: Comparator & Shower) -> T -> T -> String
-\end{lstlisting}
+% showSmaller : (dict: Comparator & Shower) -> T -> T -> String
+% \end{lstlisting}
 
-Finally, intersection naturally show up as the dual of unions. Thus, in a system
+Finally, intersection naturally show up as the dual of unions.
+Thus, in a system
 featuring unions, a union in a negative positions is a form of intersection
 (Figure~\ref{fig:intersection-dual}).
 
-\label{fig:intersection-dual}
-\begin{lstlisting}[title={Intersection as the dual of unions}]
+\begin{figure}[h]
+\begin{lstlisting}[language = nickel]
 f : (Num @| Str) -> Bool
 (*@ $\simeq$ @*) f : (Num -> Bool) @& (Str -> Bool)
 \end{lstlisting}
+\caption{Intersection as the dual of unions}
+\label{fig:intersection-dual}
+\end{figure}
 
-\todo{Either here or the next section, show examples of unintuitive behaviour
+\resolved{Either here or the next section, show examples of unintuitive behaviour
 of U and I. For example, I is not jos composition of contracts.
-And union has to be treated as any one of the options}
+And union has to be treated as any one of the options.
+Kindo of resolved for unions}
 % Things to settle: how to motivate them, how to compare them to ADTs. Purely
 % dynamic approach, or typed approach too?
 
