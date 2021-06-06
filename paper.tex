@@ -214,7 +214,7 @@ Union types, meaning a type \nickel{A @| B} containing values which
 belong either to a type \nickel{A} or \nickel{B}, are a popular tool
 when adding a static types to a dynamic language. In particular, both
 TypeScript~\cite{TypeScriptUnions} and MyPy~\cite{MyPyOptional}, use
-union typed to model the frequent practice to use the value
+union types to model the frequent practice to use the value
 \lstinline{null} (\lstinline{None} in Python) to represent an absent
 optional value. This is why the gradual typing literature, concerned
 with formalising the interplay between static and dynamic type
@@ -249,8 +249,8 @@ computers. For instance, with Kubernetes you need to configure a large
 fleet of (possibly replicated) docker containers. To describe this
 sort of configurations, you really want to be able to re-use and
 abstract parts of the configuration, like traditional programming
-languages do. To meet this need, languages such as Cue~\cite{?},
-Dhall~\cite{?}, Jsonnet~\cite{?}, or Nickel~\cite{NickelRepo}, where
+languages do. To meet this need, languages such as Cue~\cite{cueLang},
+Dhall~\cite{dhallLang}, Jsonnet~\cite{jsonnetLang}, or Nickel~\cite{NickelRepo}, where
 configurations are generated rather than spelt out, were created.
 
 Another example is continuous integration systems: it's fairly typical
@@ -293,7 +293,7 @@ about the evaluated configuration. To this effect, Nickel lets us
 annotate any expression with a dynamic schema check: \nickel{exp |
   C}. There is also syntactic sugar to annotate definitions:
 \nickel{let id | C = value in exp} stands for \nickel{let id = (value
-  | C) in exp}.\unsure{This point used to be made, to we want to
+  | C) in exp}.\unsure{This point used to be made, do we want to
   reinsert it? However, Nickel programs are of a special kind: they are usually
 simple, terminating programs that run on fixed inputs. Correctness errors will
 show up at evaluation anyway, or will not matter (dead code).}
@@ -343,7 +343,7 @@ messages. Compare Figure~\ref{fig:contract-reporting-wo} and
 Figure~\ref{fig:contract-reporting-w}: in
 Figure~\ref{fig:contract-reporting-wo} an error is reported inside the
 \nickel{catHosts} function, but \nickel{catHosts} is, in fact,
-correct, as is made clear by Figure~\ref{fig:contract-reporting-wo},
+correct, as is made clear by Figure~\ref{fig:contract-reporting-w},
 where \nickel{catHosts} is decorated with the \nickel{Str -> Str}
 contract, and correctly reports that the caller failed to call
 \nickel{catHosts} with a string argument.
@@ -700,9 +700,6 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \section{Union \& intersection}
 \label{sec:union-inter}
 \info{What are they, what are they used for.}
-\resolved{Since nickel uses | for contract application, I'd move unions
-to some other symbol.
-I think the best option is to move to $\cap / \cup$}
 
 \subsection*{Unions}
 Unions are fundamental building blocks of programs. A union holds a value whose
@@ -713,40 +710,44 @@ structures, allowing to model a large class of data
 (\ref{fig:union-adt-ex}).
 
 
-\change{These next few labels need to be inside figures,
-they are not working}
-\label{fig:union-adt-ex}
+\begin{figure}[h]
 \begin{lstlisting}[title={Tree-like data structure}]
 type BinaryTree =
 Integer @| (BinaryTree, BinaryTree)
 \end{lstlisting}
+\caption{A binary tree data type using unions}
+\label{fig:union-adt-ex}
+\end{figure}
 
 
 In addition to internal program representations, unions are also useful to model
-external data:
+external data (\ref{fig:unions-use-cases}):
 \begin{itemize}
-    \item To represent nullable values (\ref{fig:union-nullable-ex}).
-    \item For plain enumerations (\ref{fig:union-enum-ex}).
-    \item To support different representations of the same data
-        (\ref{fig:union-alt-ex}).
+    \item To represent nullable values.
+    \item For plain enumerations.
+    \item To support different representations of the same data.
 \end{itemize}
 All of which are common in configurations.
 
-\label{fig:union-nullable-ex}
+\begin{figure}[h]
+% \label{fig:union-nullable-ex}
 \begin{lstlisting}[title={Nullable values}]
 optionalValue : Str @| Null
 \end{lstlisting}
 
-\label{fig:union-enum-ex}
+% \label{fig:union-enum-ex}
 \begin{lstlisting}[title={Plain enumeration}]
-protocol : `Http @| `Ftp @| `Sftp
+protocol : `Http | `Ftp | `Sftp
 \end{lstlisting}
 
-\label{fig:union-alt-ex}
+% \label{fig:union-alt-ex}
 \begin{lstlisting}[title={Alternative representations}]
 person : {name : Str, age : Int}
   @| {name : Str, dateOfBirth : Str}
 \end{lstlisting}
+\caption{Various use cases of unions}
+\label{fig:unions-use-cases}
+\end{figure}
 
 In statically typed languages, and more specifically in functional programming
 languages, sums (also called tagged unions, or discriminated unions) are usually
@@ -1025,7 +1026,7 @@ language. Side-effects have well-known pitfalls:
 \label{sec:flat-and-inter}
 
 A natural - but naive - implementation of intersection contracts could be the
-following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
+following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
 and \nickel{B} sequentially. This intuition works for simple contracts: surely
 checking that \nickel{x | Natural @& Odd} amounts to check that \nickel{x |
 Natural} and \nickel{x | Odd}. Unfortunately, this doesn't scale to higher-order
@@ -1563,7 +1564,7 @@ what contract combinators to provide among a number of possibilities: there is
 the standard package including higher-order function contracts, record contracts
 and list contracts.  Then, one could add polymorphic
 contacts~\cite{BlameForAll}, dependent function
-contracts~\ref{DependentContracts}, and so on. For validation purpose, union and
+contracts~\cite{DependentContracts}, and so on. For validation purpose, union and
 intersection contracts are really appealing. Unions have a intuitive
 interpretation as modeling alternatives and thus appear implicitly or explicitly
 in a lot of data structures.
