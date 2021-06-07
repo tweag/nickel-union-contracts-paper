@@ -1002,16 +1002,16 @@ Kindo of resolved for unions}
 
 Static typing is about enforcing that some property about a (potentially
 unknown) value always holds, no matter the execution path. A dynamic check, on
-the other hand, just need to verify a property for a specific and known value,
+the other hand, just needs to verify a property for a specific and known value,
 which is usually much easier. For example, dependent function types are complex
 and mostly implemented in proof assistants (although they are slowly making
 their way in some mainstream languages), whereas the corresponding dependent
-function contracts can be implemented in a few line of code (they are
-implemented in e.g. Racket~\cite{}).
+function contracts can be implemented in a straightforward way (they are
+supported in e.g. Racket~\cite{}).
 
-The gist of the present paper is to bring evidence that in the case of union and
-intersection, the dynamic checking part is complex as well: \emph{unions and
-intersections are fundamentally hard}.
+The gist of the present paper is to bring evidence that in the case of unions
+and intersections, the dynamic checking part is complex as well: \emph{unions
+and intersections are fundamentally hard}.
 
 % Teo's version
 % Implementing a static type system is not an easy task.
@@ -1039,20 +1039,19 @@ intersections are fundamentally hard}.
 
 In Nickel, the failure of a function contract can always be traced back to a
 single call. For example, take the function \nickel{f} with a simple contract
-attached of Figure~\ref{fig:pos-to-pos}. The program fails with a contract error
-blaming \nickel{f}. Indeed, the second call \nickel{f 5} fails because the
-return value violates the \nickel{Positive} contract. The first call to
-\nickel{f} does not matter, and \nickel{f 5} is a single and independent witness
-of the violation of the contract. The user can be pointed to one location in
-practice.
+attached of Figure~\ref{fig:pos-to-pos}. The whole program fails with a contract
+error blaming \nickel{f} because the return value of the second call \nickel{f 5}
+violates the \nickel{Positive} contract. The first call to \nickel{f} does
+not matter, and \nickel{f 5} is a single and independent witness of the contract
+violation. The user is pointed to this one location in practice.
 
 This single witness property can be justified as follows. Apart from the error
 reporting part (although this is the crucial bit in practice!), the current
 contract system of Nickel can be implemented purely as a library, requiring only
 a \nickel{fail} primitive to abort the execution. In practice, applying a
-function contract to \nickel{f} replaces it with a \nickel{f'} that additionally
-performs the required checks. Thus, since the core language is pure (the
-presence of \nickel{fail} isn't relevant here), the failure of \nickel{f' 5}
+function contract to \nickel{f} replaces it with a \nickel{f'} that performs the
+additional checks. Thus, since the core language is pure (forgetting the
+presence of \nickel{fail}, which isn't relevant), the failure of \nickel{f' 5}
 must be independent of its environment and of any previous call to \nickel{f'}.
 
 % When programming with dynamic checks it is assumed that lack of
@@ -1108,24 +1107,25 @@ let f | (Positive -> Positive)
 
 This program must fail, because \nickel{f 10} is a witness of \nickel{f} failing
 the contract \nickel{Positive -> NonPositive}, and \nickel{f 5} is a witness of
-\nickel{f} failing \nickel{Positive -> Positive}.  But, as opposed to
-Figure~\ref{fig:pos-to-pos}, removing only one the call makes the program
-succeed! Indeed, the first call only fails the \nickel{Positive -> NonPositive}
-part of the union, while the second one only fails the \nickel{Positive ->
-NonPositive} part. In this particular example, there can't be a single call that
-is a witness of the violation of the contract: a minimum of two are needed.
+\nickel{f} failing \nickel{Positive -> Positive}.  But, as opposed to the
+example from Figure~\ref{fig:pos-to-pos}, removing only one of the calls makes the
+program succeed! Indeed, each call only unveils the violation of one component
+of the union. In this example, a single call to \nickel{f} that would be the
+witness of the violation of the whole contract doesn't even exist: a minimum of
+two are always needed.
 
 This behavior indicates that union contracts introduce side-effects. The result
-of \nickel{f 5} now depends on the previous execution and more generally on any
-prior call to \nickel{f}. This behavior of union contracts break the
-equation~\ref{eq:cbn-expansion} of Section~\ref{sec:optimizations}. The
-candidate example of Figure~\ref{fig:optimizations-let-floating-ex} can't be
-optimized in general.
+of \nickel{f 5} now depends on the previous execution and more specifically on
+any prior call to \nickel{f}. This behavior of union contracts break the
+property~\ref{eq:cbn-expansion} introduced in Section~\ref{sec:optimizations},
+that is required to perform CSE-like optimizations in all generality. The
+candidate example of Figure~\ref{fig:optimizations-let-floating-ex} in
+Section~\ref{sec:optimizations} can't be optimized in general.
 
-Figure~\ref{fig:optimized-programs} illustrates this point further. There is an
-original program, and an optimized version the common subexpression \nickel{f 1}
-has been eliminated. While equivalent in a pure language without contracts,
-these two programs behave differently here:
+Figure~\ref{fig:optimized-programs} illustrates this point further. It contains
+an original program and an optimized version where the common subexpression
+\nickel{f 1} has been eliminated. While equivalent in a pure language without
+contracts, these two programs behave differently because of unions: 
 
 \begin{itemize}
     \item The original version returns \nickel{(1, "False")} without failing.
@@ -1138,7 +1138,7 @@ instances are independent, and can pick a different component of the union to
 satisfy. Although \nickel{f} doesn't actually respect the contract, these calls
 are not enough to prove so. In the optimized version, \nickel{g} is endowed with
 a single contract, that must pick one of the two components of the union. There,
-the two calls refers to the same union contracts, and shows that \nickel{f}
+the two calls refer to the same union contract, and shows that \nickel{f} does
 violate its initial contract.
 
 \begin{figure}[h]
@@ -1164,7 +1164,7 @@ language. Side-effects have well-known pitfalls:
         reasoning. In our previous examples, removing or adding a function call
         somewhere can toggle a failure in a call at a totally different
         location.
-    \item For the interpreter (or compiler), they inhibit many optimizations and
+    \item For the interpreter (or compiler), side-effects inhibit many optimizations and
         program transformations.
 \end{itemize}
 
@@ -1186,102 +1186,174 @@ language. Side-effects have well-known pitfalls:
 % side effects to your code.
 
 
-\subsection*{Intersection of user-defined contracts}
+\subsection*{Intersection with user-defined contracts}
 \label{sec:flat-and-inter}
 
 A natural - but naive - implementation of intersection contracts could be the
 following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
-and \nickel{B} sequentially. This intuition works for simple contracts: surely
-checking that \nickel{x | Natural @& Odd} amounts to check that \nickel{x |
-Natural} and \nickel{x | Odd}. Unfortunately, this doesn't scale to higher-order
-contracts.
+and \nickel{B} sequentially:
 
-\unsure{WARNING: what is below is being reworked by Yann}
+\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Naive
+decomposition}]
+M | A @& B (*@ $\simeq$ @*) (M | A) | B
+\end{lstlisting}
 
-works for a lot of simple contracts: Stop for
-a second and think how you could implement an intersection contract. The first
-thought you may have is "just apply both contracts", as shown on the
-Implementation snippet from Figure \ref{fig:inter-contracts}.  Of course, if it
-were that simple we wouldn't be writing this paper.  This idea starts to show
-problems when you first combine it with higher order contracts, since it would
-mean not complying with at least one of these contracts negatively would entail
-breaking the whole thing, as shown on the second example on the same Figure,
-that would fail.
+This intuition works for simple contracts: checking that \nickel{x | Natural @&
+Odd} amounts to check that \nickel{x | Natural} and \nickel{x | Odd}.
+Unfortunately, this doesn't scale to higher-order contracts.
+Figure~\ref{fig:inter-contracts} illustrates the use of an intersection to model
+a simple overloading of the identity function. If we were to apply the naive
+equivalence above, the argument \nickel{1} would fail the \nickel{Str -> Str}
+contract. The naive decomposition actually implies
+
+\begin{lstlisting}[language=nickel,frame=none,numbers=none]
+(A -> B) @& (C -> D) (*@ $\simeq$ @*) (A @& C) -> (B @& D)
+\end{lstlisting}
+
+This isn't the correct semantics for overloading. With this implementation, our
+contract for identity from Figure~\ref{fig:inter-contracts} would always
+fail because no argument satisfies \nickel{Num @& Str}.
+
+% Stop for a second and think how you could implement an intersection contract.
+% The first thought you may have is "just apply both contracts", as shown on the
+% Implementation snippet from Figure \ref{fig:inter-contracts}.  Of course, if
+% it were that simple we wouldn't be writing this paper.  This idea starts to
+% show problems when you first combine it with higher order contracts, since it
+% would mean not complying with at least one of these contracts negatively would
+% entail breaking the whole thing, as shown on the second example on the same
+% Figure, that would fail.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Implementation]
-x | A @& B (*@ $\simeq$ @*) (x | A) | B
-\end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Problem]
+% \begin{lstlisting}[language=nickel, title=Implementation]
+% x | A @& B (*@ $\simeq$ @*) (x | A) | B
+% \end{lstlisting}
+\begin{lstlisting}[language=nickel]
 let g | Num -> Num @& Str -> Str
       = fun x => x in
 g 1
 \end{lstlisting}
-\caption{Implementations of intersection contracts: first iteration}
+\caption{In}
 \label{fig:inter-contracts}
 \end{figure}
 
-Not all hope is lost, we could pass some extra shared state
-to each one of the sub contracts and let them only fail if the other
-side of the contract has failed as well, as shown in Figure
-\ref{fig:inter-contracts-2}, where the shared state is
-represented by a label \nickel{l}.
-This idea is still quite reasonable, for instance, when executing
-\nickel{g 1}, from Figure \ref{fig:inter-contracts}, the first contract
-that gets checked is the argument of \nickel{Str -> Str} over the function parameter, so
-something like \nickel{1 | Str}.
-Of course, this fails, but before raising a violation, this contract could
-check if the other side of the intersection (\nickel{Num -> Num}) has
-also tried to raise negative blame on the same parameter ()\nickel{1}), since
-it hasn't, the contract would return normally, and would mark itself as failed.
+In an higher-order intersection contract, blame is raised when:
+\begin{description}
+    \item[Negative blame] The argument fails \emph{both} components.
+    \item[Positive blame] The function fails \emph{one} component that the
+        argument previously satisfied.
+\end{description}
 
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Implementation]
+% Not all hope is lost, we could pass some extra shared state
+% to each one of the sub contracts and let them only fail if the other
+% side of the contract has failed as well, as shown in Figure
+% \ref{fig:inter-contracts-2}, where the shared state is
+% represented by a label \nickel{l}.
+% This idea is still quite reasonable, for instance, when executing
+% \nickel{g 1}, from Figure \ref{fig:inter-contracts}, the first contract
+% that gets checked is the argument of \nickel{Str -> Str} over the function parameter, so
+% something like \nickel{1 | Str}.
+% Of course, this fails, but before raising a violation, this contract could
+% check if the other side of the intersection (\nickel{Num -> Num}) has
+% also tried to raise negative blame on the same parameter ()\nickel{1}), since
+% it hasn't, the contract would return normally, and would mark itself as failed.
+
+% On the other hand, if you were to do something like
+% \nickel{g true}, that would fail also negatively the contract
+% \nickel{Str -> Str} and, when checking if \nickel{true}
+% is a correct parameter for \nickel{Num -> Num} it would check
+% if the other side of the intersection has failed, and since it
+% has, a violation would be raised and the whole program would
+% correctly fail.
+%
+% This idea, which is an oversimplification of the ideas
+% presented by Williams, Morris, and Wadler, seems to be spot on.
+
+To fix the naive implementation, the interpreter can share state between the
+sub-contracts, in order to decide if blame must be raised or not when a
+sub-contract fails:
+
+\begin{lstlisting}[language=nickel,frame=none,numbers=none]
 x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 \end{lstlisting}
-\caption{Implementations of intersection contracts: second iteration}
-\label{fig:inter-contracts-2}
-\end{figure}
 
-On the other hand, if you were to do something like
-\nickel{g true}, that would fail also negatively the contract
-\nickel{Str -> Str} and, when checking if \nickel{true}
-is a correct parameter for \nickel{Num -> Num} it would check
-if the other side of the intersection has failed, and since it
-has, a violation would be raised and the whole program would
-correctly fail.
+Shared state is represented by the label \nickel{l}. This is in essence the
+approach proposed by Williams, Morris, and Wadler in~\cite{RootCauseOfBlame}.
 
-This idea, which is an oversimplification of the ideas
-presented by Williams, Morris, and Wadler, seems to be spot on.
-However, it presents a major problem, it's not compatible with user defined contracts,
-as presented in Section \ref{sec:flat-contracts}.
-Consider the example presented on Figure \ref{fig:inter-flat-contracts}, if the
-implementation discussed previously were to be used, we may end up with
-something like this \nickel{((fun x => x) | (Str -> Str)[l]) | C[l]}, where
-\nickel{l} represents the shared state.
-At this point, the intuitive thing to do is to check the contract \nickel{C}, by
-checking if \nickel{((fun x => x) | (Str -> Str)[l]) 0 == 0}.  This will fail,
-since applying a function wrapped in \nickel{Str -> Str} contract to \nickel{0}
-fails negatively.
+% \begin{figure}[h]
+% \begin{lstlisting}[language=nickel, title=Implementation]
+% x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
+% \end{lstlisting}
+% \caption{Implementations of intersection contracts: second iteration}
+% \label{fig:inter-contracts-2}
+% \end{figure}
+
+
+% However, it presents a major problem, it's not compatible with user defined contracts,
+% as presented in Section \ref{sec:flat-contracts}.
+% Consider the example presented on Figure \ref{fig:inter-flat-contracts}, if the
+% implementation discussed previously were to be used, we may end up with
+% something like this \nickel{((fun x => x) | (Str -> Str)[l]) | C[l]}, where
+% \nickel{l} represents the shared state.
+% At this point, the intuitive thing to do is to check the contract \nickel{C}, by
+% checking if \nickel{((fun x => x) | (Str -> Str)[l]) 0 == 0}.  This will fail,
+% since applying a function wrapped in \nickel{Str -> Str} contract to \nickel{0}
+% fails negatively.
+
+However, their approach has a major drawback: it is not straightforwardly
+compatible with user-defined contracts (introduced in Section
+\ref{sec:flat-contracts}). The issue is similar to our initial issue with higher-order
+contracts and the naive decomposition: user-defined contracts may apply
+functions and thus make a sub-contract of the intersection fail, but this
+failure shouldn't always result in raising blame. An example is given on Figure
+\ref{fig:inter-flat-contracts}. Decomposing using the shared state approach, we
+end up with:
+
+\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Stateful
+decomposition}]
+((fun x => x) | (Str -> Str)[l]) | C[l]
+\end{lstlisting}
+
+where \nickel{l} represents the shared state.  At this point,
+applying the \nickel{C} contract results in evaluating:
+
+\begin{lstlisting}[language=nickel,frame=none,numbers=none]
+((fun x => x) | (Str -> Str)[l]) 0 == 0.
+\end{lstlisting}
+
+Applying a function wrapped in a \nickel{Str -> Str} contract to \nickel{0}
+fails negatively. This is not the expected behavior, since the identity function
+does respect semantically both contracts. As opposed to built-in higher-order
+contracts, user-defined contracts are black-box from the interpreter's point of
+view, and it is thus not obvious how to extend the shared state approach to
+handle user-defined contracts. The authors of~\cite{RootCauseOfBlame}
+acknowledge this fact: they decide to simply drop user-defined contracts
+altogether.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let C = fun f => (f 0) == 0 in
+let C = fun f => f 0 == 0 in
 let g | (String -> String) @& C
-      = (fun x => x)
+      = fun x => x
 \end{lstlisting}
 \caption{Intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
 \end{figure}
 
-But this should not have happened, since in the program of Figure \ref{fig:inter-flat-contracts}
-\nickel{g} is never applied to \nickel{0}, in fact, it is never applied
-to anything.
-Checking if \nickel{C} has already failed, and marking \nickel{String -> String} as
-failed negatively on \nickel{l} is not enough, the contract \nickel{String -> String}
-should not have been used inside the evaluation of \nickel{C}, which
-adds an extra layer of complexity: contracts should be guarded, and execution
-depends on the shape of the surrounding evaluation context.
+Once again, intersection contracts introduce side-effects in the picture. What's
+more, these side-effects interact with user-defined contracts in a non-trivial
+way, while they are an important feature for validation.
+\unsure{(Yann) Should we talk about thiemann here, who do support user-defined
+contracts?}
+% But this should not have happened, since in the program of Figure
+% \ref{fig:inter-flat-contracts} \nickel{g} is never applied to \nickel{0}, in
+% fact, it is never applied to anything.  Checking if \nickel{C} has already
+% failed, and marking \nickel{String -> String} as failed negatively on \nickel{l}
+% is not enough, the contract \nickel{String -> String} should not have been used
+% inside the evaluation of \nickel{C}, which adds an extra layer of complexity:
+% contracts should be guarded, and execution depends on the shape of the
+% surrounding evaluation context.
+
+\unsure{WARNING: what is below is being reworked by Yann}
 
 \subsection*{Union and intersection are not a silver bullet}
 
