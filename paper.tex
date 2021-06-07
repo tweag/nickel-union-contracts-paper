@@ -661,7 +661,7 @@ fails in general for a call-by-value language with side effects.  Indeed, define
 the following function $f$:
 
 \begin{lstlisting}[language=Nickel]
-let f x = print "hi";(x+1) in 
+let f x = print "hi";(x+1) in
 \end{lstlisting}
 
 Then:
@@ -740,7 +740,7 @@ languages, provide a similar abstraction, sums
 also allow to model a value whose shape conforms to a fixed set of
 alternatives, but requiring an explicit mark (or tag) that differentiates
 to which of these alternatives it belongs to.
-For example, consider the Haskell code presented on Figure 
+For example, consider the Haskell code presented on Figure
 \ref{fig:safediv-haskell}, it's a safe division that will
 check if the dividend is 0, and if it is, return an
 error message.
@@ -752,9 +752,9 @@ of the if branches an explicit tag has to be used (either
 \begin{figure}[h]
 \begin{lstlisting}[language=Haskell]
 safeDiv :: Int -> Int -> Either String Int
-safeDiv x y = 
-  if y == 0 then 
-    Left "Division by 0 is forbidden" 
+safeDiv x y =
+  if y == 0 then
+    Left "Division by 0 is forbidden"
   else
     Right (div x y)
 \end{lstlisting}
@@ -805,7 +805,7 @@ formalize very common patterns of data types:
 \begin{lstlisting}[language=nickel]
 optionalValue : Str @| Null
 \end{lstlisting}
-      
+
     \item For plain enumerations of literals.
 \begin{lstlisting}[language=nickel]
 protocol : "Http" @| "Ftp" @| "Sftp"
@@ -816,7 +816,7 @@ protocol : "Http" @| "Ftp" @| "Sftp"
 person : {name : Str, age : Int}
   @| {name : Str, dateOfBirth : Date}
 \end{lstlisting}
-  
+
 \end{itemize}
 All of which are common in configurations.
 
@@ -951,7 +951,7 @@ type \nickel{Animal @& Pet}.
 \begin{lstlisting}[language=nickel]
 let Animal = { species: Str, race: Str } in
 let Pet = { owner: Str, name: Str } in
-let myDog | Animal & Pet = 
+let myDog | Animal & Pet =
   { species = "Canis Lupus",
     race = "Australian Cattle Dog",
     owner = "Anonymous Author",
@@ -1139,7 +1139,7 @@ satisfy. Although \nickel{f} doesn't actually respect the contract, these calls
 are not enough to prove so. In the optimized version, \nickel{g} is endowed with
 a single contract, that must pick one of the two components of the union. There,
 the two calls refers to the same union contracts, and shows that \nickel{f}
-violate its initial contract. 
+violate its initial contract.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=Original]
@@ -1158,7 +1158,7 @@ let g = f 1 in
 \end{figure}
 
 To sum up, the addition of union contracts introduce side-effects in a pure
-language. Side-effects have well-known pitfalls: 
+language. Side-effects have well-known pitfalls:
 \begin{itemize}
     \item For the programmer, they are hard to reason about. They prevent local
         reasoning. In our previous examples, removing or adding a function call
@@ -1268,7 +1268,7 @@ fails negatively.
 \begin{lstlisting}[language=nickel]
 let C = fun f => (f 0) == 0 in
 let g | (String -> String) @& C
-      = (fun x => x) 
+      = (fun x => x)
 \end{lstlisting}
 \caption{Intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
@@ -1303,7 +1303,7 @@ instantly.
 result = 42 if flag else "Disabled"
 ...
 assert (
-  (not flag) 
+  (not flag)
   or isinstance(result, int)
 )
 \end{lstlisting}
@@ -1551,7 +1551,7 @@ shown on Figure \ref{fig:wmw-semantics}, it is not a valid
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (*@$\square$@*) in
-(f 3, f true) 
+(f 3, f true)
 \end{lstlisting}
 \caption{Invalid \nickel{Num -> Num @& Bool -> Bool} context,
 combining contexts from Figure \ref{fig:valid-contexts}}
