@@ -1079,7 +1079,7 @@ let f | Num -> (Bool -> Num @| Bool -> Str)
 in (f 1 true, f 1 false)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Optimized]
-let f | Num -> (Bool -> Num @| Bool -> MStr)
+let f | Num -> (Bool -> Num @| Bool -> Str)
       = fun x y => if y then x else "False"
 let g = f 1 in
 (g true, g false)
@@ -1167,8 +1167,8 @@ no argument can satisfy \nickel{Num @& Str}.
 
 In an higher-order intersection contract, blame is raised when:
 \begin{description}
-    \item[Negative blame] The argument fails \emph{both} components.
-    \item[Positive blame] The function fails \emph{one} component that the
+    \item[Faulty caller] The argument fails \emph{both} components.
+    \item[Faulty implementation] The function fails \emph{one} component that the
         argument previously satisfied.
 \end{description}
 
@@ -1260,7 +1260,8 @@ altogether.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let C = fun f => f 0 == 0 in
+let C = contracts.fromPred (fun f =>
+  f 0 == 0) in
 let g | (String -> String) @& C
       = fun x => x
 \end{lstlisting}
