@@ -505,11 +505,15 @@ like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
 
 
-\subsection*{Code manipulation (optimizations)}
+\subsection*{Purity}
 \label{sec:optimizations}
 \info{Present inlining and CSE as two major code
 optimizations.
 Purity and immutability as two important factors.}
+
+\unsure{I (Arnaud) changed the title of this subsection. Maybe it's
+  not the best one, but if it is, then we ought to reorder the section
+  a little bit to fit the modified narrative.}
 
 The performance of modern programs heavily relies on the optimizations performed
 by the compiler or the interpreter. Even more so for functional languages, whose
@@ -577,7 +581,6 @@ let elemAtOrLast = fun index list =>
 
 Beyond CSE, optimizations such as loop-invariant code motion or
 let-floating~\cite{letFloating} apply the same principle of extracting out an invariant
-\unsure{Was this the inteded citation?}
 expression to avoid its recomputation respectively across loop iterations and
 function calls.
 
@@ -643,38 +646,6 @@ unions and intersections can make \ref{eq:cbn-expansion} unsound
 \emph{even in a pure setting}, making the optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 
-\unsure{Should we tease already here that unions and intersections break this
-even for pure terms?}
-
-\subsection*{Lazyness}
-\todo{Lazyness does not appear on sec 4, if we don't put somethign there, I'd remove it}
-Evaluation strategies relates to the evaluation of the expression bound to
-identifiers. Expressions are bound by assignments (e.g. let bindings in
-Nickel), or by function applications (arguments are bound to parameters). We
-will use Figure~\ref{} as a working example.
-
-The eager strategy consists in evaluating right away a bound value before
-storing it in an identifier. If an identifier is not used, this leads to
-unnecessary work: in Figure~\ref{}, the expression \nickel{fibonacci 100} would
-be computed although it is never used. The lazy strategy, on the other hand,
-only evaluates expression if they are needed. In the lazy model, bound
-expressions are stored as in their current unevaluated form, also called a
-\emph{thunk}. Thunks are only evaluated at their first usage, and their value is
-memoized for future usages.
-
-The eager strategy has been chosen in the vast majority of languages: while
-theoretically less efficient, it is simpler to implement and more predictable
-for the programmer. Also, lazy evaluation can occur performance overhead and
-memory leaks in unexpected ways. While eager evaluation is the default, some
-languages however offer a form of lazy evaluation, either as an opt-in option
-(e.g. Ocaml and ReScript), or by default for specific primitives types such as
-list (e.g.  Swift and Perl6). The most notable lazy language is Haskell
-(and its web avatar PureScript). Although rare in general purpose languages,
-lazy evaluation is more widespread in the configuration space: the configuration
-languages Dhall, CUE and Jsonnet also implements full lazy evaluation. So are
-the Nix language, which inspired Nickel, and Nickel itself.
-
-
 
 \section{Union \& intersection}
 \label{sec:union-inter}
@@ -689,7 +660,7 @@ the Nix language, which inspired Nickel, and Nickel itself.
 \subsection*{Unions}
 Unions ($\cup$) are a fundamental building block of programs.
 A union holds a value whose
-shape is known to be in a fixed set of alterniteves, without exposing
+shape is known to be in a fixed set of alternatives, without exposing
 which of those alternatives the value belongs to.
 For example, a value that could be either a Number or a String can be
 modelled using unions as \nickel{Num @| String}.
@@ -902,8 +873,7 @@ duplicate text
 %   fun x => x + 1
 % \end{lstlisting}
 
-They can also be used to combine records \unsure{Better
-naming}. For instance, in Figure \ref{fig:intersection-record}
+They can also be used to combine dictionaries in an object-oriented fashion. For instance, in Figure \ref{fig:intersection-record}
 two types are defined \nickel{Animal} and \nickel{Pet}, and
 a variable that is compatible with both types is declared, with
 type \nickel{Animal @& Pet}.
