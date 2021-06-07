@@ -1191,28 +1191,38 @@ language. Side-effects have well-known pitfalls:
 
 A natural - but naive - implementation of intersection contracts could be the
 following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
-and \nickel{B} sequentially:
+and \nickel{B} sequentially, resulting in the naive decomposition rule of
+Figure~\ref{fig:naiv-impl}.
 
+\begin{figure}[h]
+\label{fig:naive-impl}
 \begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Naive
 decomposition}]
 M | A @& B (*@ $\simeq$ @*) (M | A) | B
 \end{lstlisting}
+\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Exchange law}]
+(A -> B) @& (C -> D) (*@ $\simeq$ @*) (A @& C) -> (B @& D)
+\end{lstlisting}
+\begin{lstlisting}[language=nickel,title={Overloaded identity}]
+let g | Num -> Num @& Str -> Str
+      = fun x => x in
+g 1
+\end{lstlisting}
+\caption{Naive implementation of intersection}
+\end{figure}
 
 This intuition works for simple contracts: checking that \nickel{x | Natural @&
 Odd} amounts to check that \nickel{x | Natural} and \nickel{x | Odd}.
-Unfortunately, this doesn't scale to higher-order contracts.
-Figure~\ref{fig:inter-contracts} illustrates the use of an intersection to model
-a simple overloading of the identity function. If we were to apply the naive
-equivalence above, the argument \nickel{1} would fail the \nickel{Str -> Str}
-contract. The naive decomposition actually implies
-
-\begin{lstlisting}[language=nickel,frame=none,numbers=none]
-(A -> B) @& (C -> D) (*@ $\simeq$ @*) (A @& C) -> (B @& D)
-\end{lstlisting}
-
-This isn't the correct semantics for overloading. With this implementation, our
-contract for identity from Figure~\ref{fig:inter-contracts} would always
-fail because no argument satisfies \nickel{Num @& Str}.
+Unfortunately, this doesn't scale to higher-order contracts.  The overloaded
+identity example of Figure~\ref{fig:naive-impl} illustrates the use of an
+intersection to model a simple overloading of the identity function. If we were
+to apply the naive decomposition, the argument \nickel{1} would fail the
+\nickel{Str -> Str} contract and abort the execution. Perhaps the exchange rule
+given in Figure~\ref{fig:naiv-impl}, which is a direct consequence of the naive
+decomposition, illustrates the issue better. It is clear that this exchange law
+isn't the right semantics for overloading. With this law, the contract for
+overloaded identity of Figure~\ref{fig:naiv-impl} would always fail because
+no argument can satisfy \nickel{Num @& Str}.
 
 % Stop for a second and think how you could implement an intersection contract.
 % The first thought you may have is "just apply both contracts", as shown on the
@@ -1222,19 +1232,6 @@ fail because no argument satisfies \nickel{Num @& Str}.
 % would mean not complying with at least one of these contracts negatively would
 % entail breaking the whole thing, as shown on the second example on the same
 % Figure, that would fail.
-
-\begin{figure}[h]
-% \begin{lstlisting}[language=nickel, title=Implementation]
-% x | A @& B (*@ $\simeq$ @*) (x | A) | B
-% \end{lstlisting}
-\begin{lstlisting}[language=nickel]
-let g | Num -> Num @& Str -> Str
-      = fun x => x in
-g 1
-\end{lstlisting}
-\caption{In}
-\label{fig:inter-contracts}
-\end{figure}
 
 In an higher-order intersection contract, blame is raised when:
 \begin{description}
@@ -1353,44 +1350,64 @@ contracts?}
 % contracts should be guarded, and execution depends on the shape of the
 % surrounding evaluation context.
 
+
+\subsection*{Challenging the semantics}
+
 \unsure{WARNING: what is below is being reworked by Yann}
 
-\subsection*{Union and intersection are not a silver bullet}
+Previous points of this section were about how implementing the expected
+semantics for union and intersection has a profound impact on the language. Let
+us end the section by investigating a different aspect: does the
+semantics correspond to the programmer's intuition?
 
-Before wrapping up this section, we would like to show that maybe, union and intersection
-contracts are not exactly what we would want them to be.
-As stated throughout this work, programmers coming from dynamic languages
-are accustomed to perform safety checks (data validation) with
-great amounts of flexibility and the whole power of their
-language of choice at their disposal.
+But which semantics? We deemed the exchange law of Figure~\ref{fig:naive-impl}
+as clearly wrong with respect to overloading. There is nothing wrong about it
+per se : we could chose a semantics for intersections that validate this rule.
+However, the resulting system wouldn't capture overloading, and is arguably not
+very interesting nor useful. In~\ref{KeilThiemannUnionIntersection}, the authors
+argue for basing the semantics of union and intersection contracts on union and
+intersection type systems, where they have a simple and natural definition from
+which the other properties follow. This approach makes sense, and has been
+continued in future works, and in particular in~\ref{RootCauseOfBlame}.
 
-For instance, a Python programmer may have no problem in checking
-at runtime, that a given variable is an integer if a given flag is
-not set, as shown in Figure \ref{fig:python-assertion};
-while a Haskell programmer might close her eyes and leave the room
-instantly.
+But even this semantics is no panacea. Figure~\ref{fig:intersection-distrbution}
+shows an example that intuitively looks like it should succeeed, returning
+\nickel{(1, 1)}. However, under the semantics used both
+in~\ref{KeilThiemannUnionIntersection} and~\ref{RootCauseOfBlame}, this program
+fails with a contract violation.
 
-\begin{figure}[h]
-\begin{lstlisting}[language=python]
-result = 42 if flag else "Disabled"
-...
-assert (
-  (not flag)
-  or isinstance(result, int)
-)
-\end{lstlisting}
-\caption{Asserting at runtime the type of a variable}
-\label{fig:python-assertion}
-\end{figure}
-
-These expectations are not really met by how unions and intersections
-contracts are supposed to work.
-For example, consider the Nickel code shown on Figure
-\ref{fig:intersection-distrbution}, at first sight, this code should
-complete execution successfully, returning \nickel{(1, 1)},
-however, under both the Keil and Thiemann, as well as the
-Williams, Morris, and Wadler works, this program will fail, with a violation
-of the contract imposed to \nickel{g}.
+% Before wrapping up the section, we would like to show that maybe, union and
+% intersection contracts are not exactly what we would want them to be.  As stated
+% throughout this work, programmers coming from dynamic languages are accustomed
+% to perform safety checks (data validation) with great amounts of flexibility and
+% the whole power of their language of choice at their disposal.
+%
+% For instance, a Python programmer may have no problem in checking at runtime,
+% that a given variable is an integer if a given flag is not set, as shown in
+% Figure \ref{fig:python-assertion}; while a Haskell programmer might close her
+% eyes and leave the room instantly.
+%
+% \begin{figure}[h]
+% \begin{lstlisting}[language=python]
+% result = 42 if flag else "Disabled"
+% ...
+% assert (
+%   (not flag)
+%   or isinstance(result, int)
+% )
+% \end{lstlisting}
+% \caption{Asserting at runtime the type of a variable}
+% \label{fig:python-assertion}
+% \end{figure}
+%
+% These expectations are not really met by how unions and intersections
+% contracts are supposed to work.
+% For example, consider the Nickel code shown on Figure
+% \ref{fig:intersection-distrbution}, at first sight, this code should
+% complete execution successfully, returning \nickel{(1, 1)},
+% however, under both the Keil and Thiemann, as well as the
+% Williams, Morris, and Wadler works, this program will fail, with a violation
+% of the contract imposed to \nickel{g}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1404,22 +1421,34 @@ let h = g 1 in
 \label{fig:intersection-distrbution}
 \end{figure}
 
-The reason this happens is that there is a fundamental property of how
-intersection contracts behave: the choice of which branch to choose is made
-exactly when the intersection is opened up, and not delayed as much as possible,
-as one would like.  This means, that the contract presented on Figure
-\ref{fig:intersection-distrbution}, \nickel{Num -> Num -> Num @& Num
--> Bool -> Num}, will not behave the same way that \nickel{Num ->
-(Num -> Num @& Bool -> Num)}, when, with an intuitive view of how
-intersections should behave, these two expressions should be logically
-equivalent.
+This discrepancy is inherent to the chosen semantics for intersections.  When
+applying a function with an intersection contract, only one fixed component of
+the intersection can be selected for the function.
+one components of the intersection. Not that it must necessarily known right at the
+application, but the result can't be used
+functions, the choice of the component is fixed once for all when the function
+is applied. In Figure~\ref{fig:intersection-distrbution}, the contract for
+\nickel{h} can be either \nickel{Num -> Num} or \nickel{Bool -> Num}, but can't
+be both. This is a manifestation of the following more general fact: the
+distributivity law given in Figure~\ref{fig:distributivity-law} is not valid in
+the semantics, while it is both intuitive and sound.\unsure{What means sound, in
+this context?}
 
-It is worth noting, that intersection types do have this property,
-since subtyping would allow to correctly type check a term like
-\nickel{g 1} as both \nickel{Num -> Num} as well as
-\nickel{Bool -> Num}, and then deducing that \nickel{g 1}
-can be given the type \nickel{Num -> Num @& Bool -> Num}.
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+A -> B @& A -> C (*@ $\simeq$ @*) A -> (B @& C)
+\end{lstlisting}
+\caption{Distributivity law}
+\label{fig:distributivity-law}
+\end{figure}
 
+%
+% It is worth noting, that intersection types do have this property,
+% since subtyping would allow to correctly type check a term like
+% \nickel{g 1} as both \nickel{Num -> Num} as well as
+% \nickel{Bool -> Num}, and then deducing that \nickel{g 1}
+% can be given the type \nickel{Num -> Num @& Bool -> Num}.
+%
 
 
 \section{Issues in concrete restrictions from the literature}
