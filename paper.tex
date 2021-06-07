@@ -419,6 +419,11 @@ error: Blame error: contract broken by the caller.
   \caption{Contracts improve error messages}
 \end{figure*}
 
+Unfortunately, the delayed check of contract, while essential to
+ensuring that schema validation doesn't affect performance (or, indeed,
+is possible at all on functions), make union contracts (and their less
+appreciated sibling, intersection contracts) quite problematic.
+
 \subsection*{Structure of this paper}
 \unsure{Make this section into a contributions section?}
 Section~\ref{sec:intro} introduced the perspective of designing a configuration
@@ -443,68 +448,39 @@ the paper is structured as follows:
 Section~\ref{sec:conclusion} concludes the paper.
 
 
-\section{Features of languages}
+\section{A typology of language features}
 \label{sec:feat-lang}
 \info{Zoology of various features that we will eventually show
   conflict with this or that property or implementation of union and
   intersection. Including user-define contracts.}
 
-Programming language research no longer lives on the abstract world
-of ideal surfaces.
-Every addition needs to be compatible with years of research
-and development, and this is hard.
-Success was unavoidable.
-
-In this section we briefly introduce some aspects of real world
-programming languages that will cause trouble while interacting
-with union and intersection dynamic checks.
+Union contracts are not only difficult to implement, their
+unrestricted presence is incompatible with potentially desirable
+properties of the language. In this section we present some of these
+properties; we will show how these properties interact with union
+contracts in Sections~\ref{sec:issues-sem}
+and~\ref{sec:issues-literature}.
 
 \subsection*{User-defined contracts}
 \label{sec:flat-contracts}
-\unsure{Make sure that this point is made in the user-defined
-  contracts section: With respect to
-validation, traditional types are too limited. Validation commonly involves
-checking requirements such as being a valid port number or a valid URL which
-are, while not technically impossible, really hard to check statically.}
 
-User defined contracts, sometimes called flat contracts, are a particular
-kind of contract that behaves similar to an assertion, and whose
-main utility is to apply some arbitrary predicate (as arbitrary as the
-host language allows it) to a value; if the predicate evaluates to
-true, the contract passes, otherwise it fails.
+A strength of dynamic checking is that we can easily check properties which
+are impractical to check statically. For instance that a string
+represents a well-formed URL, or a number is a valid port.
 
-For instance, the contract \nickel{Even} shown on Figure
-\ref{fig:contract-higher-order} is a user defined contract, defined
-by taking the value that needs to be checked, and validating
-that is both a number and that the remainder of dividing it by 2
-is 0.
-And then, as seen on the same figure, we can use it to check that a function always
-returns an \nickel{Int} when applied to an \nickel{Even}.
+This same property is desirable of contracts as well, otherwise we
+lose an important benefits of dynamic checking. Preferably, we want to
+be able to extend the universe of contracts with user-defined
+predicates (sometimes called flat contracts).
 
-% \begin{figure}[h]
-% \begin{center}
-% \begin{lstlisting}[language=nickel]
-% let f = fun n => n * 2 @ (Integer -> even)
-% \end{lstlisting}
-%   \end{center}
-% \caption{A function wrapped with a contract stating that it always returns
-% an even number}
-% \label{fig:num-to-even}
-% \end{figure}
-
-
-Even more interesting, we could come up with a contract that checks that a function
-maps \nickel{true} to \nickel{false} and \nickel{false} to \nickel{true}
-by applying the function exhaustively and checking its results,
-and then use it as a contract for the \nickel{not} function, as can be seen on Figure
-\ref{fig:port-contract}.\unsure{These few paragraphs are out of date,
-  even more so since Arnaud changed the flat contract example}
+For instance, Figure~\ref{fig:port-contract} shows the definition of a
+contract for valid ports in Nickel syntax.
 
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel]
 let Port = contracts.fromPred (fun p =>
-  num.isInt p && 0 <= p && p <= 65353) in
+  num.isInt p && 0 <= p && p <= 65535) in
 80 | Port
 \end{lstlisting}
 \end{center}
@@ -512,36 +488,21 @@ let Port = contracts.fromPred (fun p =>
 \label{fig:port-contract}
 \end{figure}
 
+User-defined contracts can be combined with other contracts normally,
+for instance \nickel{Int -> Port} is a contract verified by functions
+which, given an integer returns a valid port.
+
 This type of contracts are present on many different languages,
 for instance, the Eiffel programming language\cite{meyer1987eiffel}, the precursor
 of the Design by Contract ideals, allows to assert
 these kinds of expression as pre- and post-conditions on
 functions and as invariants on classes\cite{EiffelDesignByContract}.
-\resolved{I (Arnaud) believe Eiffel has this feature as well,
-  doesn't it? (Teo) You're right},
-
-% A somewhat newer language, the D programming
-% language, allows, among other things, to have invariants on
-% classes
-% written with flat contracts, that are
-% dinamically checked at the frontiers of every public method \cite{DLangContracts}.
 
 The Racket programming language also has a system to work with
-contracts, powerful enough to define flat contracts
-\footnote{And a gradual typing system
-built on top of that, but that goes beyond the scope of this
-work.}
-, and
+contracts, powerful enough to define flat contracts, and
 to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
-
-Even if user defined contracts may seem like too permissive, the ability to make
-non trivial checks on values (that is, to validate their output) is expected
-by programmers on dynamic languages, where testing and runtime
-assertions are extremely useful tools for safe programming, and
-programmers are accustomed to express complex predicates
-over values.
 
 
 \subsection*{Code manipulation (optimizations)}
