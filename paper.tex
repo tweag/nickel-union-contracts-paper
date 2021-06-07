@@ -251,7 +251,7 @@ dynamic checks to \emph{contracts}~\cite{FindlerFelleisenHOContracts},
 unions become actually pretty difficult, and threaten desirable
 properties of your language.
 
-\subsection*{Configuration languages}
+\subsection{Configuration languages}
 
 To motivate contracts and the problem caused by unions, let's make a
 detour through configuration languages.
@@ -282,7 +282,7 @@ systems typically do this using a templating system layered on top of
 YAML. Each of the configuration-generating languages above allow such
 job-matrix definition natively.
 
-\subsection*{Nickel}
+\subsection{Nickel}
 
 In this article, we will use the Nickel language~\cite{NickelRepo} as
 illustration and motivation. At its core, Nickel is the JSON data
@@ -299,7 +299,7 @@ A Nickel configuration is then evaluated to an explicit configuration,
 application. Therefore a design constraint of Nickel is any Nickel
 data must have a straightforward interpretation in JSON.
 
-\subsection*{Contracts}
+\subsection{Contracts}
 
 A useful feature of a configuration language is to provide facilities
 for schema validation. That is, help answer questions like: does our
@@ -424,7 +424,7 @@ ensuring that schema validation doesn't affect performance (or, indeed,
 is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
 
-\subsection*{Structure of this paper}
+\subsection{Structure of this paper}
 \unsure{Make this section into a contributions section?}
 Section~\ref{sec:intro} introduced the perspective of designing a configuration
 language. We presented the concept of contracts and detailed why contracts are
@@ -461,7 +461,7 @@ properties; we will show how these properties interact with union
 contracts in Sections~\ref{sec:issues-sem}
 and~\ref{sec:issues-literature}.
 
-\subsection*{User-defined contracts}
+\subsection{User-defined contracts}
 \label{sec:flat-contracts}
 
 A strength of dynamic checking is that we can easily check properties which
@@ -505,7 +505,7 @@ like higher order contracts or a lightweight take on union
 and intersection contracts\cite{RacketContracts}.
 
 
-\subsection*{Purity}
+\subsection{Purity}
 \label{sec:optimizations}
 \info{Present inlining and CSE as two major code
 optimizations.
@@ -657,7 +657,7 @@ Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
 % How are they used
 % How de they relate with one another
 
-\subsection*{Unions}
+\subsection{Unions}
 Unions ($\cup$) are a fundamental building block of programs.
 A union holds a value whose
 shape is known to be in a fixed set of alternatives, without exposing
@@ -828,7 +828,7 @@ function addElem(list: Array<string> | Array<number>) {
 
 
 
-\subsection*{Intersections}
+\subsection{Intersections}
 
 Intersections ($\cap$) are less prevalent. An intersection is a value that belongs to
 two types at the same time. An example is a number literal \nickel{1}
@@ -966,7 +966,7 @@ and intersections are fundamentally hard}.
 % In this section, we present intuitively the main challenges that arise
 % when attempting to develop a runtime check system for unions and intersections.
 
-\subsection*{Union contracts as a side-effect}
+\subsection{Union contracts as a side-effect}
 
 In Nickel, the failure of a function contract can always be traced back to a
 single call. For example, take the function \nickel{f} with a simple contract
@@ -981,8 +981,8 @@ reporting part (although this is the crucial bit in practice!), the current
 contract system of Nickel can be implemented purely as a library, requiring only
 a \nickel{fail} primitive to abort the execution. In practice, applying a
 function contract to \nickel{f} replaces it with a \nickel{f'} that performs the
-additional checks. Thus, since the core language is pure (forgetting the
-presence of \nickel{fail}, which isn't relevant), the failure of \nickel{f' 5}
+additional checks. Thus, since the core language is pure (albeit
+partial, if only because \nickel{fail}), the failure of \nickel{f' 5}
 must be independent of its environment and of any previous call to \nickel{f'}.
 
 % When programming with dynamic checks it is assumed that lack of
@@ -1079,7 +1079,7 @@ let f | Num -> (Bool -> Num @| Bool -> Str)
 in (f 1 true, f 1 false)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel, title=Optimized]
-let f | Num -> (Bool -> Num @| Bool -> Str)
+let f | Num -> (Bool -> Num @| Bool -> MStr)
       = fun x y => if y then x else "False"
 let g = f 1 in
 (g true, g false)
@@ -1088,6 +1088,7 @@ let g = f 1 in
 \label{fig:optimized-programs}
 \end{figure}
 
+\unsure{These arguments should go in the purity section}
 To sum up, the addition of union contracts introduce side-effects in a pure
 language. Side-effects have well-known pitfalls:
 \begin{itemize}
@@ -1117,7 +1118,7 @@ language. Side-effects have well-known pitfalls:
 % side effects to your code.
 
 
-\subsection*{Intersection with user-defined contracts}
+\subsection{Intersection with user-defined contracts}
 \label{sec:flat-and-inter}
 
 A natural - but naive - implementation of intersection contracts could be the
@@ -1282,7 +1283,7 @@ contracts?}
 % surrounding evaluation context.
 
 
-\subsection*{Challenging the semantics}
+\subsection{Challenging the semantics}
 
 
 Previous points of this section were about how implementing the expected
@@ -1396,7 +1397,7 @@ work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
 finally going over some similar contracts available in the Racket
 programming language.
 
-\subsection*{Keil and Thiemann}
+\subsection{Keil and Thiemann}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
 Keil and Thiemann noticed that, since union contracts should share information between
@@ -1518,7 +1519,7 @@ implementation of said feature}
     argument we can make (like it's quadratic in the number of open contracts or
 whatever)}
 
-\subsection*{Williams, Morris, and Wadler}
+\subsection{Williams, Morris, and Wadler}
 \label{sec:will-morr-wadl}
 \unsure{Subsection title?}
 
@@ -1611,7 +1612,7 @@ unions and intersections around dynamic languages.
     concrete types like Number and String and simple contexts like application
     to a dumb argument) is sufficient to make the point}
 
-\subsection*{Racket}
+\subsection{Racket}
 \label{sec:racket}
 
 
@@ -1687,7 +1688,7 @@ the function with the \racket{(-> even? even?)} contract.
   think I've figured out what it means, but it needs more love. Also
   give an example which doesn't work and one that does for or/c.}
 
-\subsubsection*{case->}
+\subsubsection{case->}
 
 Racket does provide an alternative for overloading methods, called the
 \racket{case->} contract, however, this overloading of methods only
