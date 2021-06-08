@@ -1287,12 +1287,12 @@ altogether.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let C = contracts.fromPred (fun f =>
+let c = contracts.frompred (fun f =>
   f 0 == 0) in
-let g | (String -> String) @& C
+let g | (string -> string) @& c
       = fun x => x
 \end{lstlisting}
-\caption{Intersection and user defined contracts}
+\caption{intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
 \end{figure}
 
@@ -1412,122 +1412,183 @@ argument}
 \label{sec:issues-literature}
 \info{The various papers and the tradeoffs they make}
 
-\unsure{WARNING: what is below is being reworked by Yann}
+In this section, we review some shortcomings of existing work on union and
+intersection contracts. We start with the work of Keil and
+Thiemann~\cite{KeilThiemannUnionIntersection} which is the first to propose a
+convincing semantics for union and intersection contracts. We follow with the
+work Williams, Morris, and Wadler~\cite{RootCauseOfBlame} which builds
+upon~\cite{KeilThiemannUnionIntersection} and introduces a simpler, more
+uniform blame resolution.
 
-The existing work that previously researched and implemented
-union and intersection
-as dynamic checks have, in our eyes, different shortcomings
-that makes them suboptimal solutions.
-In this section, we informally present those issues,
-starting with the foundational paper by Keil and Thiemann
-\cite{KeilThiemannUnionIntersection}, then following to a recent
-work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
-finally going over some similar contracts available in the Racket
-programming language.
+% The existing work that previously researched and implemented
+% union and intersection
+% as dynamic checks have, in our eyes, different shortcomings
+% that makes them suboptimal solutions.
+% In this section, we informally present those issues,
+% starting with the foundational paper by Keil and Thiemann
+% \cite{KeilThiemannUnionIntersection}, then following to a recent
+% work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
+% finally going over some similar contracts available in the Racket
+% programming language.
 
 \subsection{Keil and Thiemann}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
-Keil and Thiemann noticed that, since union contracts should share information between
-different application contexts, while intersection contracts should behave
-independently between each application context, the system becomes much
-simpler if every contract gets transformed into a union of intersections
-of other contracts, by using the common De Morgan laws,
-and then eagerly opening up unions, but postponing intersection
-contracts as much as possible.
-\todo{This assumes the difficulty has been previously explained}
 
-For instance, if someone were to wrap a value \nickel{x}
-in a contract as shown on the Original code snippet on Figure
-\ref{fig:kt-contract-transf}, then, before actually executing that
-contract, it would get transformed, and intersections would
-be pushed inside the unions, as can be seen on the Transformed
-code snippet on the same figure.
+In Section~\ref{sec:issues-sem}, we've seen that different calls to a function
+with an union contract must share information: the behavior of one call is
+influenced by the previous ones, as the function must pick one component of the
+union to satisfy across all usages. Conversely, following the semantics of
+overloading, each application of a function with an intersection contract can
+select a different branch and is thus independent from the others. A general
+contract composed of nested unions, intersections and higher-order contracts
+appears to require complex book-keeping in order to correctly raise blame.
+
+An aspect of the approach of~\cite{KeilThiemannUnionIntersection} is to rewrite
+these nested contracts using the De Morgan law of
+Figure~\ref{fig:de-morgan-law}, eagerly opening up unions while postponing
+intersection as much as possible.  \todo{This assumes the difficulty has been
+previously explained} This transformation flattens arbitrarily nested unions and
+intersections to a union of intersections, making blame resolution more
+manageable.\unsure{(Yann) find better (more precise) wording}
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Original]
-x | A @& (B @| C)
+\begin{lstlisting}[frame=none, numbers=none, language=nickel]
+A @& (B @| C) (*@ $\simeq$ @*) (A @& B) @| (A @& C)
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Transformed]
-x | (A @& B) | (A @& C)
-\end{lstlisting}
-\caption{Contract transformation performed by the Keil and
-Thiemann work}
-\label{fig:kt-contract-transf}
+\caption{De Morgan law for contracts}
+\label{fig:de-morgan-law}
 \end{figure}
 
-This straightforward idea makes composing the Keil and Thiemann
-solution with other existing systems more difficult; in the words
-of Williams, Morris, and Wadler (see Section~\ref{sec:will-morr-wadl}):
-``(\ldots) the monitoring semantics for contracts of intersection and union types given by Keil
-and Thiemann are not uniform. (\ldots) If uniformity helps composition, then
-special cases can hinder composition.''\cite{RootCauseOfBlame}.
-\info{(Yann) Does
+To implement this solution, \cite{KeilThiemannUnionIntersection} resorts to
+specific reduction rules for unions and intersections which perform this
+rewriting on the fly. The result is that the reduction rules sometimes feel
+ad-hoc, and make us question the composability and extensibility of the system.
+In the words of Williams, Morris, and Wadler (see
+Section~\ref{sec:will-morr-wadl}): ``(\ldots) the monitoring semantics for
+contracts of intersection and union types given by Keil and Thiemann are not
+uniform. (\ldots) If uniformity helps composition, then special cases can hinder
+composition.'' \cite{RootCauseOfBlame}. Another less important consequence is
+that in Figure~\ref{fig:de-morgan-law}, the contract \nickel{A} is duplicated,
+potentially causing additional work. If \nickel{B} fails, \nickel{A} will be
+re-evaluated in each branch of the right hand side of
+Figure~\ref{fig:de-morgan-law} in the absence of an additional sharing
+mechanism.
+\resolved{(Yann) Does
 it also make it less efficient? If $(A \cap B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
-And it also could harm performance, or at least complicate an implementation,
-since some sharing mechanism should be used to avoid checking the same contract,
-over the same value, multiple times, exemplified by contract \nickel{A} on
-Figure \ref{fig:kt-contract-transf}, that gets duplicated.
 \unsure{Arnaud says: this whole
 section is too abstract give concrete code and explain what goes
 wrong. It's fine to give code in Nickel syntax}
 
-Another difficult issue Keil and Thiemann were able to solve, is the
-fact that user defined contracts and intersection do not usually play nice
-together, as shown on Section \ref{sec:flat-and-inter}.
-They provide two different sets of rules for their calculus,
-the first one is non deterministic, and its purpose is to provide
-semantics that are simple to understand.
-With these rules, the interaction between user defined contracts and
-intersections becomes much simpler, since they are able to check
-both sides of an intersection on separate threads.
-This allows them to be sure that contracts from one branch of the intersection
-won't get blamed while executing the other branch, and vice versa.
+One important advantage of~\cite{KeilThiemannUnionIntersection} is to handle
+user-defined contracts. We explained in Section~\ref{sec:issues-sem} why a
+direct approach for higher-order intersection contracts (as done
+in~\cite{RootCauseOfBlame}) is not trivial to adapt for user-defined contracts.
+\cite{KeilThiemannUnionIntersection} provides two operational semantics of the
+contract system: a non-deterministic one, more intuitive and proof-friendly, and
+a deterministic one for actual implementation. The non-deterministic semantics
+cleanly handle intersections with user-defined contracts: as each component is
+checked in a separate thread, there is no direct interaction.
 
-As an example, consider the programs shown on Figure
-\ref{fig:kt-non-deterministic}, if the Original program
-gets executed, it will spawn two instances of said program,
-one with the first branch of the intersection (\nickel{3 | Num}),
-and the other one with the second branch (\nickel{3 | Positive}),
-and these will get joined once they reach an equal point, in this case
-it will be \nickel{3}.
+Let us recast the problematic example of Figure~\ref{fig:inter-flat-contracts}
+in Figure~\ref{fig:inter-flat-contracts-2}). The execution now splits the
+intersection into two sub-contracts that are checked separately. If one
+component fails, a flag in a global state. In particular, the two threads don't
+interact directly, and don't raise blame by themselves, leading this example run
+as expected.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Original]
-3 | Num @& Positive
+\begin{lstlisting}[language=nickel,title={Original program}]
+let C = contracts.fromPred (fun f =>
+  f 0 == 0) in
+let g | (String -> String) @& C
+      = fun x => x
+in g 0
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=First Program]
-3 | Num
+\begin{lstlisting}[numbers=none,title={First component}]
+g 0 | Str -> Str
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Second Program]
-3 | Positive
+\begin{lstlisting}[numbers=none,title={Second component}]
+g 0 | C
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Joined Program]
-3
-\end{lstlisting}
-\caption{Non deterministic intersection contract opening}
-\label{fig:kt-non-deterministic}
+\caption{Intersection and user defined contracts}
+\label{fig:inter-flat-contracts-2}
 \end{figure}
 
-The second set of rules is deterministic, and it is intended
-to be simpler to implement.
-However, this second set needs to perform operations
-on the evaluation context, to decide whether or not to evaluate
-a given contract.
-\footnote{You can check more on this topic on Section 5.1 of
-\cite{KeilThiemannUnionIntersection}}
-For instance, in the program presented on Figure \ref{fig:inter-flat-contracts},
-when using the value \nickel{(fun x => x) | Str -> Str)}
-inside the execution of contract \nickel{C}, and applying it to \nickel{0},
-the contract runtime would check the context of execution and it would
-deduce that contract \nickel{Str -> Str} does not apply in this case,
-skipping it.
+In return, the complexity is offloaded to a separate procedure that must decide
+when to raise blame. This complexity is salient in the deterministic, sequential
+version\footnote{cf Section 5.1 of \cite{KeilThiemannUnionIntersection}}. There,
+the evaluation procedure has to deal again with the problem of eliding contracts
+that are not \emph{compatible}\footnote{You can check more on this topic on
+Section 5.1 of \cite{KeilThiemannUnionIntersection}} (the ones coming from a
+different branch that shouldn't be applied in the current context). In practice,
+the evaluation procedure maintains a global environment of contracts that is
+extended each time a non-trivial contract (union, intersection or higher-order)
+is opened. Then, any contract application must check the presence of the
+corresponding label in the environment. But the most surprising\todo{(Yann) find
+another word} part is that for contracts attached to a function that is applied,
+the whole \emph{context} (the continuation of the application) must be checked
+for compatibility with respect to each label in the contract
+environment!\todo{(Yann) TBC: find better wording} 
 
-We see two problems here, a minor one is the fact that the two
-different semantics defined for the calculus are really far apart
-one from the other, both on the strategies used for contract resolution,
-as well as on the complexity levels.
+\unsure{WARNING: what is below is being reworked by Yann}
+
+% Another difficult issue Keil and Thiemann were able to solve, is the
+% fact that user defined contracts and intersection do not usually play nice
+% together, as shown on Section \ref{sec:flat-and-inter}.
+% They provide two different sets of rules for their calculus,
+% the first one is non deterministic, and its purpose is to provide
+% semantics that are simple to understand.
+% With these rules, the interaction between user defined contracts and
+% intersections becomes much simpler, since they are able to check
+% both sides of an intersection on separate threads.
+% This allows them to be sure that contracts from one branch of the intersection
+% won't get blamed while executing the other branch, and vice versa.
+%
+% As an example, consider the programs shown on Figure
+% \ref{fig:kt-non-deterministic}, if the Original program
+% gets executed, it will spawn two instances of said program,
+% one with the first branch of the intersection (\nickel{3 | Num}),
+% and the other one with the second branch (\nickel{3 | Positive}),
+% and these will get joined once they reach an equal point, in this case
+% it will be \nickel{3}.
+%
+% \begin{figure}[h]
+% \begin{lstlisting}[language=nickel, title=Original]
+% 3 | Num @& Positive
+% \end{lstlisting}
+% \begin{lstlisting}[language=nickel, title=First Program]
+% 3 | Num
+% \end{lstlisting}
+% \begin{lstlisting}[language=nickel, title=Second Program]
+% 3 | Positive
+% \end{lstlisting}
+% \begin{lstlisting}[language=nickel, title=Joined Program]
+% 3
+% \end{lstlisting}
+% \caption{Non deterministic intersection contract opening}
+% \label{fig:kt-non-deterministic}
+% \end{figure}
+%
+% The second set of rules is deterministic, and it is intended
+% to be simpler to implement.
+% However, this second set needs to perform operations
+% on the evaluation context, to decide whether or not to evaluate
+% a given contract.
+% \footnote{You can check more on this topic on Section 5.1 of
+% \cite{KeilThiemannUnionIntersection}}
+% For instance, in the program presented on Figure \ref{fig:inter-flat-contracts},
+% when using the value \nickel{(fun x => x) | Str -> Str)}
+% inside the execution of contract \nickel{C}, and applying it to \nickel{0},
+% the contract runtime would check the context of execution and it would
+% deduce that contract \nickel{Str -> Str} does not apply in this case,
+% skipping it.
+%
+% We see two problems here, a minor one is the fact that the two
+% different semantics defined for the calculus are really far apart
+% one from the other, both on the strategies used for contract resolution,
+% as well as on the complexity levels.
 \resolved{(Yann) Is it really a
     problem per se? It is common thing to do (a nice declarative system
     for proofs and an algorithmic one for implementation, proved equivalent).
