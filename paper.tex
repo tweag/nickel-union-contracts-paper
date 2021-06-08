@@ -247,6 +247,7 @@ to represent and type unions.
 
 \maketitle
 
+
 \unsure{TODO: CCS classification; Keywords}
 \section{Introduction}
 \label{sec:intro}
@@ -1761,38 +1762,43 @@ to prioritise the highe order ones.
 \label{sec:conclusion}
 
 The design and implementation of programming languages is a challenging task. It
-is a delicate exercise to balance complexity, expressiveness, efficiency and
+is a delicate exercise to balance complexity, expressivity, efficiency, and
 user experience all together. Unfortunately for designers, a language cannot
 usually be reduced to a simple sum of small independent features. They are
 rather composed of a lot of moving parts that interact in unexpected ways. The
 more a language grows, the more any new addition has to be weighted carefully,
 as it has the potential to interact with any of the existing features.
 
-Part of recent developments revolve around mixing static typing and dynamic
-typing via gradual typing, in order to get the best of both worlds. Contracts
-(or casts in the gradual typing terminology) are crucial to this endeavour by
-allowing for a safe interaction between typed and untyped code. But we also made
-a case that contracts are interesting in themselves in a fully dynamically typed
-language (and even in a fully statically typed language).  Contracts are a
-precious idiom for data validation or to check pre- and post-condition that
-would be hard to ensure statically. In spirit, contracts are similar to
-assertions, but they are part of a principled framework, they are composable,
-they have good error reporting and they are integrated as a language feature. In
-particular, contracts natively handles higher-order functions and built-in data
-structures. This makes them an great candidate for integration in the Nickel
-configuration language.
+Part of recent developments revolves around improving safety of
+languages, ideally with little to none effort required by the programmers.
+Contracts are crucial to this endeavour, they are fundamental to
+allow a safe interaction between typed and untyped code in gradually typed languages;
+but they are also interesting in themselves in a fully dynamically typed
+language (and even in a fully statically typed language). Contracts are a
+precious idiom for data validation or to enforce runtime pre- and post-condition that
+would be hard to ensure statically.
 
-This is only the beginning of the story. A language designer then has to choose
-what contract combinators to provide among a number of possibilities: there is
-the standard package including higher-order function contracts, record contracts
-and list contracts.  Then, one could add polymorphic
-contacts~\cite{BlameForAll}, dependent function
-contracts~\cite{DependentContracts}, and so on. For validation purpose, union and
-intersection contracts are really appealing. Unions have a intuitive
-interpretation as modeling alternatives and thus appear implicitly or explicitly
-in a lot of data structures.
+% In spirit, contracts are similar to
+% assertions, but they are part of a principled framework, they are composable,
+% they have good error reporting and they are integrated as a language feature. In
+% particular, contracts natively handles higher-order functions and built-in data
+% structures. This makes them an great candidate for integration in the Nickel
+% configuration language.
 
-Alas, the implementation of union and intersection contracts is not as simple as
+% This is only the beginning of the story. A language designer then has to choose
+% what contract combinators to provide among a number of possibilities: there is
+% the standard package including higher-order function contracts, record contracts
+% and list contracts.  Then, one could add polymorphic
+% contracts~\cite{BlameForAll}, dependent function
+% contracts~\cite{DependentContracts}, and so on. For validation purpose, union and
+% intersection contracts are really appealing. Unions have a intuitive
+% interpretation as modeling alternatives and thus appear implicitly or explicitly
+% in a lot of data structures.
+
+When trying to enforce properties on dynamic languages, unions appear naturally,
+since they allow to express that a variable is in an unknown state, but within
+some bounded set of alternatives.
+Sadly, the implementation of union and intersection contracts is not as simple as
 it first appears. In conjunction with higher-order contracts, or even just basic
 contracts in a lazy language, they behave in a way that is reminiscent of
 side-effects. These behaviors were, for most of them, already known: we do not
