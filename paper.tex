@@ -395,7 +395,8 @@ checks for each call of the function whether
 Like in the case of lazy dictionaries, the checks are delayed.
 Contracts keep track of whether the caller or the implementation is
 at fault for a violation, hence it can report precise error
-messages. Compare Figure~\ref{fig:contract-reporting-wo} and
+messages. Contracts are said to \emph{blame} either the caller or the
+implementation. Compare Figure~\ref{fig:contract-reporting-wo} and
 Figure~\ref{fig:contract-reporting-w}: in
 Figure~\ref{fig:contract-reporting-wo} an error is reported inside the
 \nickel{catHosts} function, but \nickel{catHosts} is, in fact,
