@@ -1379,35 +1379,24 @@ can be given the type \nickel{Num -> Num @& Bool -> Num}.
 \unsure{(Yann) I just reworked the wording, but I'm not totally sold on the
 argument}
 
-\section{Issues in concrete restrictions from the literature}
+\section{Pragmatic trade-offs}
 \label{sec:issues-literature}
-\info{The various papers and the tradeoffs they make}
 
-In this section, we review some shortcomings of existing work on union and
-intersection contracts. We start with the work of Keil and
-Thiemann~\cite{KeilThiemannUnionIntersection} which is the first to propose a
-lean\todo{Not the right word} semantics for union and intersection contracts. We
-follow with the work Williams, Morris, and Wadler~\cite{RootCauseOfBlame} which
-builds upon~\cite{KeilThiemannUnionIntersection} and introduces a simpler, more
-uniform blame resolution.
+Despite the difficulties of Section~\ref{sec:issues-sem}, union and
+intersection contracts are still sought after. In this section we turn
+to existing systems with union and intersection contracts in the
+literature and in implementations.
 
-% The existing work that previously researched and implemented
-% union and intersection
-% as dynamic checks have, in our eyes, different shortcomings
-% that makes them suboptimal solutions.
-% In this section, we informally present those issues,
-% starting with the foundational paper by Keil and Thiemann
-% \cite{KeilThiemannUnionIntersection}, then following to a recent
-% work by Williams, Morris, and Wadler \cite{RootCauseOfBlame}, and
-% finally going over some similar contracts available in the Racket
-% programming language.
+These systems all make trade-offs, sacrificing some features of union
+and intersection contracts to preserve language features. We survey
+and discuss those trade-offs and their implications.
 
 \subsection{Keil and Thiemann}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
 
 In Section~\ref{sec:issues-sem}, we've seen that different calls to a function
-with an union contract must share information: the behavior of one call is
+with a union contract must share information: the behavior of one call is
 influenced by the previous ones, as the function must pick one component of the
 union to satisfy across all usages. Conversely, following the semantics of
 overloading, each application of a function with an intersection contract can
