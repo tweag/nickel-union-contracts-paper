@@ -393,7 +393,7 @@ checks for each call of the function whether
 \end{enumerate}
 
 Like in the case of lazy dictionaries, the checks are delayed.
-Contracts keeps track of whether the caller or the implementation is
+Contracts keep track of whether the caller or the implementation is
 at fault for a violation, hence it can report precise error
 messages. Compare Figure~\ref{fig:contract-reporting-wo} and
 Figure~\ref{fig:contract-reporting-w}: in
@@ -1450,7 +1450,7 @@ must be checked for compatibility with respect to each label of the contract
 environment. Checking for compatibility involves searching the context for
 contract applications.
 
-Keil and Thiemann realizes the tour de force of combining union and intersection
+Keil and Thiemann realize the tour de force of combining union and intersection
 contracts with user-defined contracts. The price to pay, though, is that
 implementing their solution in a reasonable way is far from obvious. Not only
 when starting from the more abstract, non-deterministic formulation, but even
@@ -1807,53 +1807,62 @@ for non higher-order contracts and a limited support for overloading.
 
 \unsure{WARNING: what is below is being reworked by Yann}
 
-\subsection{Gradual typing: a new perspective}
+\subsection{Higher-order contracts}
 
-Castagna et. al \cite{gradualCastagna} present a gradual type system that
-incorporates multiple non-trivial typing constructs, in particular, subtyping,
-unions, recursive types, negation types, and a bottom type.
-Which can easily encode intersection, difference, and top types.
+Enforcing pre- and post-conditions at runtime is a widely established practice.
+In their foundational paper\cite{FindlerFelleisenHOContracts}, Findler and
+Felleisen introduce higher-order contracts, a principled approach to run-time
+assertion checking that nicely supports functions. They introduce the notion of
+blame, which is crucial to good error reporting. It became apparent later that
+their contracts are closely related to the type casts introduced by gradual
+typing, excluding blame: both \cite{FindlerMultiLang} and
+\cite{FelleisenInterLang} see the value of contracts as a safe interface between
+typed and untyped code. In \cite{WellTypedBlamed}, the authors precisely
+introduce a system integrating gradual typing with contracts \textit{à la
+Findler \& Felleisen}. Nickel adopts a similar type system, with both statically
+typed terms, dynamically typed terms, and first-class contracts. Higher-order
+contracts are the basis of the work~\cite{KeilThiemannUnionIntersection}
+and~\ref{RootCauseOfBlame} that this paper studied in detail.
 
-This system, even if related to the ones we studied, adheres to a different
-school of gradual typing, Greenberg would call it the static first
-school\cite{practiceTheoryGrad}.
-In this line of work, the goal is usually to develop a type system that can
-handle a dynamic type to represent the lack of precission on some type.
-The main reasons why we consider this work not comparable with what we attempted
-to solve are:
-\begin{itemize}
-  \item Like Williams et al\cite{RootCauseOfBlame}, it doesn't allow
-        to use user defined contracts.
-  \item Their base calculus needs to have a non-trivial type inference
-        algorithm, that makes the development of a programming language
-        much more cumbersome. For instance, it defines a set-theoretic
-        interpretation of types, and a subtyping relation based on it.
-  \item Contracts are completely handled by the execution engine (in the paper,
-        the rewriting system), and not added as a library with some basic
-        syntactic support.
-\end{itemize}
+\subsection{Unions and intersections in gradual typing}
 
+Castagna et. al \cite{gradualCastagna} introduce a gradual type system based on
+so-called set-theoretic types~\cite{SetTheoreticTypes}.  Set-theoretic types
+feature unions, intersections, negation types together with a notion of
+subtyping. This work adheres to the \emph{static first school} (see
+~\cite{practiceTheoryGrad}) of gradual typing: the reason for gradual types is
+to allow for a less precise type information. It follows that their goals and
+constraints are somehow different, resulting in the absence of first-class
+contracts. As for any gradual type system, they do have to implement casts -
+that are very close to contracts - for unions and intersections, but these casts
+are neither visible nor available to the programmer. Obviously, no contracts
+mean no user-defined contracts as well.
 
+The implementation of casts relies on abstract interpretation, leading to a
+complex specification, whose implementation is straightforward. It is not clear
+either how much these casts rely on static type information to function
+correctly, possibly hampering their transformation to more general standalone
+contracts.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
 The design and implementation of programming languages is a challenging task. It
-is a delicate exercise to balance complexity, expressivity, efficiency, and
-user experience all together. Unfortunately for designers, a language cannot
-usually be reduced to a simple sum of small independent features. They are
-rather composed of a lot of moving parts that interact in unexpected ways. The
-more a language grows, the more any new addition has to be weighted carefully,
-as it has the potential to interact with any of the existing features.
+is a delicate exercise to balance complexity, expressivity, efficiency, and user
+experience all together. Unfortunately for designers, a language cannot usually
+be reduced to a simple sum of small independent features. They are rather
+composed of a lot of moving parts that interact in unexpected ways. The more a
+language grows, the more any new addition has to be weighted carefully, as it
+has the potential to interact with any of the existing features.
 
-Part of recent developments revolves around improving safety of
-languages, ideally with little to none effort required by the programmers.
-Contracts are crucial to this endeavour, they are fundamental to
-allow a safe interaction between typed and untyped code in gradually typed languages;
-but they are also interesting in themselves in a fully dynamically typed
-language (and even in a fully statically typed language). Contracts are a
-precious idiom for data validation or to enforce runtime pre- and post-condition that
-would be hard to ensure statically.
+Part of recent developments revolves around improving safety of languages,
+ideally with little to none effort required by the programmers.  Contracts are
+crucial to this endeavour, they are fundamental to allow a safe interaction
+between typed and untyped code in gradually typed languages; but they are also
+interesting in themselves in a fully dynamically typed language (and even in a
+fully statically typed language). Contracts are a precious idiom for data
+validation or to enforce runtime pre- and post-condition that would be hard to
+ensure statically.
 
 % In spirit, contracts are similar to
 % assertions, but they are part of a principled framework, they are composable,
@@ -1874,20 +1883,19 @@ would be hard to ensure statically.
 
 When trying to enforce properties on dynamic languages, unions appear naturally,
 since they allow to express that a variable is in an unknown state, but within
-some bounded set of alternatives.
-Sadly, the implementation of union and intersection contracts is not as simple as
-it first appears. In conjunction with higher-order contracts, or even just basic
-contracts in a lazy language, they behave in a way that is reminiscent of
-side-effects. These behaviors were, for most of them, already known: we do not
-claim their discovery. However, as language implementers, we have made an actual
-attempt at including them in a concrete language. We exposed what, in our
-opinion, are the most important barriers and their impact on the rest of the
-language. Even in a pure setting, union and intersection contracts break the
-equivalence between call-by-name and call-by-value, and can consequently prevent
-optimizations. There are discrepancies between the expected and actual semantics
-that make some behaviors unintuitive. Their implementation is a non-trivial
-change that contaminates the evaluation of all other contracts, and the
-performance penalty is not obvious to assess.
+some bounded set of alternatives.  Sadly, the implementation of union and
+intersection contracts is not as simple as it first appears. In conjunction with
+higher-order contracts, they introduce side-effects in the language. These
+behaviors were, for most of them, already known: we do not claim their
+discovery. However, as language implementers, we have made an actual attempt at
+including them in a concrete language. We exposed what, in our opinion, are the
+most important barriers and their impact on the rest of the language. Even in a
+pure setting, union and intersection contracts break the equivalence between
+call-by-name and call-by-value, and can consequently prevent optimizations.
+There are discrepancies between the expected and actual semantics that make some
+behaviors unintuitive. Their implementation is a non-trivial change that
+contaminates the evaluation of all other contracts, and the performance penalty
+is not obvious to assess.
 
 To conclude, let us make clear that we do not think union and intersection
 contracts are fundamentally broken, that they can not be implemented correctly,
