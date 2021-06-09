@@ -746,8 +746,8 @@ as a glue between static and dynamic types. Therefore, the question of
 bringing union to contracts is natural, and have indeed been studied
 (\emph{e.g.}~\cite{KeilThiemannUnionIntersection,RootCauseOfBlame}).
 
-Like for static types, a valid value for the contract \nickel{A @| B}
-is a value which is valid either for contract \nickel{A} or for
+Like for static types, value which satisfies the contract \nickel{A @| B}
+is a value which satisfy either contract \nickel{A} or
 contract \nickel{B} (though in Section~\ref{sec:issues-literature} we
 will see that it may be desirable to weaken this definition).
 
@@ -818,8 +818,8 @@ function addElem(list: Array<string> | Array<number>) {
 
 \subsection{Intersections}
 
-An intersection type \nickel{A @& B} validates values which are both
-valid for contract \nickel{A} and contract \nickel{B}.
+An intersection type \nickel{A @& B} is satisfied by values which
+satisfy both contract \nickel{A} and contract \nickel{B}.
 
 Intersection contracts (and types) are probably less prevalent than
 union in practical type systems. However, a function from a union is
@@ -1459,8 +1459,7 @@ former is embodied by the same notion as before: $f \in \llbracket Num \to Str
 important contribution of~\cite{KeilThiemannUnionIntersection}, upon
 which~\cite{RootCauseOfBlame} builds upon, is to extend the notion of contract
 satisfaction to \emph{contexts}, embodying the caller's
-obligations. A context $K$ is a term with a hole to be filled with a term (see
-Figure~\ref{fig:valid-contexts} for examples). Then, $K \in \llbracket Num \to
+obligations. A context $K$ is a term with a hole to be filled with a term (Figure~\ref{fig:valid-contexts} has examples). Then, $K \in \llbracket Num \to
 Str \rrbracket^-$ (the context $K$ satisfies the contract \nickel{Num -> Str})
 if it only applies the hole to arguments satisfying the \nickel{Num} contract.
 
