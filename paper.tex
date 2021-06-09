@@ -146,6 +146,21 @@
   morestring=[b]"
 }
 
+\lstdefinelanguage{Python}{
+  % keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  % keywordstyle=\color{blue}\bfseries,
+  % ndkeywords={class, export, boolean, throw, implements, import, this},
+  % ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  % comment=[l]{//},
+  % morecomment=[s]{/*}{*/},
+  % commentstyle=\color{purple}\ttfamily,
+  % stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
 \lstset{
   language={nickel},
   basicstyle=\small\ttfamily, % Global Code Style
@@ -178,6 +193,7 @@
 \newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
 \newcommand{\haskell}[1]{\lstinline[language=Haskell]{#1}}
 \newcommand{\typescript}[1]{\lstinline[language=JavaScript]{#1}}
+\newcommand{\python}[1]{\lstinline[language=Python]{#1}}
 
 \bibliographystyle{ACM-Reference-Format}
 
@@ -255,7 +271,7 @@ belong either to a type \nickel{A} or \nickel{B}, are a popular tool
 when adding a static types to a dynamic language. In particular, both
 TypeScript~\cite{TypeScriptUnions} and MyPy~\cite{MyPyOptional}, use
 union types to model the frequent practice to use the value
-\lstinline{null} (\lstinline{None} in Python) to represent an absent
+\typescript{null} (\python{None} in Python) to represent an absent
 optional value. This is why the gradual typing literature, concerned
 with formalising the interplay between static and dynamic type
 systems, has been quite interested in union
@@ -672,151 +688,109 @@ explain, in Section~\ref{sec:issues-sem} how they can compromise the
 properties that we described in Section~\ref{sec:feat-lang}.
 
 \subsection{Unions}
-Unions ($\cup$) are a fundamental building block of programs.
-A union holds a value whose
-shape is known to be in a fixed set of alternatives, without exposing
-which of those alternatives the value belongs to.
-For example, a value that could be either a Number or a String can be
-modelled using unions as \nickel{Num @| String}.
-They correspond logically to disjunctions.
 
-Statically typed languages, and more specifically functional programming
-languages, provide a similar abstraction, sums
-(also called tagged unions, or discriminated unions), which
-also allow to model a value whose shape conforms to a fixed set of
-alternatives, but requiring an explicit mark (or tag) that differentiates
-to which of these alternatives it belongs to.
-For example, consider the Haskell code presented on Figure
-\ref{fig:safediv-haskell}, it's a safe division that will
-check if the dividend is 0, and if it is, return an
-error message.
-Since the function can return two different types, a sum
-(\haskell{Either}) is used, and on each
-of the if branches an explicit tag has to be used (either
-\haskell{Left} or \haskell{Right}).
+A union type \nickel{A @| B} is a type of values which are either of
+type \nickel{A} or of type \nickel{B}: literally the union of
+\nickel{A} and \nickel{B}. Union types are popular in gradual typed
+systems such as TypeScript~\cite{TypeScriptUnions} and
+MyPy~\cite{MyPyOptional}.
 
-\begin{figure}[h]
-\begin{lstlisting}[language=Haskell]
-safeDiv :: Int -> Int -> Either String Int
-safeDiv x y =
-  if y == 0 then
-    Left "Division by 0 is forbidden"
-  else
-    Right (div x y)
-\end{lstlisting}
-\caption{Safe division implemented in Haskell}
-\label{fig:safediv-haskell}
+\paragraph{In gradually typed systems}
+
+In these practical gradual type systems the problem is to be able to
+capture, in static types, as many programming patterns as possible
+from the underlying dynamically typed language. One such pattern is
+heterogeneous collections, in JavaScript (for TypeScript) and Python
+(for MyPy), heterogeneous collections, say arrays with values of
+different types, are frequent. For instance, in TypeScript, an array
+which can contain both strings and numbers would have type
+\typescript{Array<string|number>}.
+
+A probably even more common pattern is a variable which can contain
+either a value of type a (say, a number) or the \typescript{null}
+value. So much so, in fact, that MyPy defines a type alias
+\python{Optional[A]} for \python{Union[A,None]} (\python{None} is how
+Python renders the null value).
+
+Yet another application of union types is, rather than capturing a
+pattern from JavaScript or Python, to capture a pattern from
+traditional statically typed language: sum types. In statically typed
+languages, values of sum types are usually thought of as being built
+out of constructors. But neither JavaScript nor Python have such
+constructors. So instead, sums are construed as ``tagged unions'' (or
+discriminated unions), that is, quite literally, the union of two
+types which contain a discriminating tag. See
+Figure~\ref{fig:tagged-union} for an example from the TypeScript
+documentation: there the \typescript{kind} field is the tag, and its
+type in both alternatives is a singleton type which contains only the
+specified string.
+
+\begin{figure}
+  \centering
+  \begin{lstlisting}[language=JavaScript]
+    interface Circle { kind: "circle"; radius: number; }
+
+    interface Square { kind: "square"; sideLength: number; }
+
+    type Shape = Circle | Square;
+  \end{lstlisting}
+
+  \caption{A sum type as a tagged union}
+  \label{fig:tagged-union}
 \end{figure}
 
-This incurred verbosity certainly facilitates the work of static checks,
-like typechecking, but dynamically typed languages permit much more flexibility,
-and programmers don't usually expect to tag their values.
-That is why, as mentioned on the Introduction, when designing
-type systems for dynamically typed languages, unions become of particular
-interest.
-See the implementation of a safe division function on TypeScript
-(Figure \ref{fig:safediv-ts}).
-Neither of the if branches has to tag their return value, and the return
-type of the function is modelled using unions, \typescript{string | number}.
+\paragraph{Union contracts}
 
+In the academic gradual type literature, it is common to use contracts
+as a glue between static and dynamic types. Therefore, the question of
+bringing union to contracts is natural, and have indeed been studied
+(\emph{e.g.}~\cite{KeilThiemannUnionIntersection,RootCauseOfBlame}).
 
-\begin{figure}[h]
-\begin{lstlisting}[language=JavaScript]
-function safeDiv(x: number, y: number): string | number {
-  if (y == 0) {
-      return "Division by 0 is forbidden"
-  } else {
-      return x/y
-  }
-}
-\end{lstlisting}
-\caption{Safe division implemented in TypeScript}
-\label{fig:safediv-ts}
-\end{figure}
+Like for static types, a valid value for the contract \nickel{A @| B}
+is a value which is valid either for contract \nickel{A} or for
+contract \nickel{B} (though in Section~\ref{sec:issues-literature} we
+will see that it may be desirable to weaken this definition).
 
-% \begin{figure}[h]
-% \begin{lstlisting}[title={Tree-like data structure}]
-% type BinaryTree =
-% Integer @| (BinaryTree, BinaryTree)
-% \end{lstlisting}
-% \caption{A binary tree data type using unions}
-% \label{fig:union-adt-ex}
-% \end{figure}
+Nickel is a language built from scratch with contracts, so it may be
+less clear why unions are useful. However, Nickel's ambition is to
+have its data model canonically interpretable in common serialization
+formats, in particular JSON. It means that it is very convenient to
+represent optional value by the \nickel{null} value like in
+JavaScript. It also means that Nickel doesn't have built-in
+constructors: constructors don't have a canonical representation in
+JSON. So it would be quite natural to represent optional contracts and
+sum contracts as unions.
 
-Unions are not only useful to model the outcome of alternative
-branches of computations, but they can be used to
-formalize very common patterns of data types:
-\begin{itemize}
-    \item To represent nullable, or optional, values.
-\begin{lstlisting}[language=nickel]
-optionalValue : Str @| Null
-\end{lstlisting}
-
-    \item For plain enumerations of literals.
-\begin{lstlisting}[language=nickel]
-protocol : "Http" @| "Ftp" @| "Sftp"
-\end{lstlisting}
-
-    \item To support different representations of the same data.
-\begin{lstlisting}[language=nickel]
-person : {name : Str, age : Int}
-  @| {name : Str, dateOfBirth : Date}
-\end{lstlisting}
-
-\end{itemize}
-All of which are common in configurations.
-
-% \begin{figure}[h]
-% % \label{fig:union-nullable-ex}
-% \begin{lstlisting}[title={Nullable values}]
-% optionalValue : Str @| Null
+% Arnaud: I'm not deleting this quite yet because we may want to use
+% these examples, I just didn't manage to make them fit in the flow of
+% the narrative.
+%
+% Unions are not only useful to model the outcome of alternative
+% branches of computations, but they can be used to
+% formalize very common patterns of data types:
+% \begin{itemize}
+%     \item To represent nullable, or optional, values.
+% \begin{lstlisting}[language=nickel]
+% optionalValue | Str @| Null
 % \end{lstlisting}
 
-% % \label{fig:union-enum-ex}
-% \begin{lstlisting}[title={Plain enumeration}]
-% protocol : `Http | `Ftp | `Sftp
+%     \item For plain enumerations of literals.
+% \begin{lstlisting}[language=nickel]
+% protocol | "Http" @| "Ftp" @| "Sftp"
 % \end{lstlisting}
 
-% % \label{fig:union-alt-ex}
-% \begin{lstlisting}[title={Alternative representations}]
-% person : {name : Str, age : Int}
-%   @| {name : Str, dateOfBirth : Str}
+%     \item To support different representations of the same data.
+% \begin{lstlisting}[language=nickel]
+% person | {name : Str, age : Int}
+%   @| {name : Str, dateOfBirth : Date}
 % \end{lstlisting}
-% \caption{Various use cases of unions}
-% \label{fig:unions-use-cases}
-% \end{figure}
 
-% In statically typed languages, and more specifically in functional programming
-% languages, sums (also called tagged unions, or discriminated unions) are usually
-% preferred, as constructors for algebraic datatypes. [references]. Sums are unions' cousin where the alternatives are
-% syntactically separated by an associated discriminating label. Well-known
-% programming languages with first-class tagged unions include Haskell, OCaml,
-% Rust, Scala, PureScript, Elm, Swift and many more.
+% \end{itemize}
+% All of which are common in configurations.
 
-% On the other hand, in dynamically typed languages, it is customary to directly
-% store different kinds of data in one variable without further ceremony. The
-% runtime system needs to attach type tags to values anyway, which can usually be
-% observed using functions like JavaScript's \verb+typeof+. Using such bare
-% unions\resolved{If you can observe with typeof, then it's pretty much a tagged
-% union, though the tag is implicit} has already been an idiom in dynamically
-% typed language for a long time. Being able to type and handle these unions is an
-% important aspect of the migration to a gradual type system. Indeed, a lot of
-% \resolved{This is the first time discussing gradual type systems, maybe it should
-% be introduced earlier, in particular how they relate to contracts
-% (I think is mentioned on the appendix)}
-% gradually typed languages either existed originally as dynamically typed
-% language or aim at backward compatibility with a dynamically typed base
-% language. This is why despite the presence of a static type system, gradually
-% typed languages tend to favor bare unions types which is the typed counterpart
-% of this practice (as e.g in TypeScript \cite{TypeScriptUnions}).
-
-Nickel has no pre-existing untyped language that we have to
-support, so we are freer of our choice.
-However, Nickel is a configuration language, whose contract and type system
-is intended to encode data schemas encountered in the wild. Since these schemas do not use
-tags to differentiate different kinds of values, there is a strong incentive to support untagged unions at the
-type level, or at least, at the contract level.
-
+\unsure{Arnaud: this paragraph is pretty good, on the other hand, there
+is no value which lets me complete the example, so this example falls
+a bit flat.}
 We have shown how values of a union are built, is worth mentioning
 how they are used.
 For instance, consider the TypeScript function on Figure \ref{fig:addElem},
@@ -896,7 +870,7 @@ type \nickel{Animal @& Pet}.
 \begin{lstlisting}[language=nickel]
 let Animal = { species: Str, race: Str } in
 let Pet = { owner: Str, name: Str } in
-let myDog | Animal & Pet =
+let myDog | Animal @& Pet =
   { species = "Canis Lupus",
     race = "Australian Cattle Dog",
     owner = "Anonymous Author",
@@ -1906,4 +1880,4 @@ for union and intersection contracts, these gaps might be quite large in places.
 
 % LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall MyPy
 % LocalWords:  Kubernetes DevOps natively nixpkgs disjunctions
-% LocalWords:  TypeScript
+% LocalWords:  TypeScript serializable serialization
