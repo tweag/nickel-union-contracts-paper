@@ -502,6 +502,11 @@ predicates (sometimes called flat contracts).
 
 For instance, Figure~\ref{fig:port-contract} shows the definition of a
 contract for valid ports in Nickel syntax.
+%
+User-defined contracts can be combined with other contracts normally:
+\nickel{Int -> Port} is a contract verified by functions
+which, given an integer returns a valid port.
+
 
 \begin{figure}[h]
   \begin{center}
@@ -515,13 +520,9 @@ let Port = contracts.fromPred (fun p =>
 \label{fig:port-contract}
 \end{figure}
 
-User-defined contracts can be combined with other contracts normally,
-for instance \nickel{Int -> Port} is a contract verified by functions
-which, given an integer returns a valid port.
-
-This type of contracts are present on many different languages,
+This type of contracts are present in many different languages,
 for instance, the Eiffel programming language\cite{meyer1987eiffel}, the precursor
-of the Design by Contract ideals, allows to assert
+of the Design by Contract philosophy, makes it possible to assert
 these kinds of expression as pre- and post-conditions on
 functions and as invariants on classes\cite{EiffelDesignByContract}.
 
@@ -953,45 +954,15 @@ Kindo of resolved for unions}
 
 
 
-\section{Issues coming from the semantics}
+\section{Incompatibilities}
 \label{sec:issues-sem}
-\info{What goes wrong or difficult when trying to implement union and
-  intersection literally}
 
-Static typing is about enforcing that some property about a (potentially
-unknown) value always holds, no matter the execution path. A dynamic check, on
-the other hand, just needs to verify a property for a specific and known value,
-which is usually much easier. For example, dependent function types are complex
-and mostly implemented in proof assistants (although they are slowly making
-their way in some mainstream languages), whereas the corresponding dependent
-function contracts can be implemented in a straightforward way (they are
-supported in e.g. Racket~\cite{}).
-
-The gist of the present paper is to bring evidence that in the case of unions
-and intersections, the dynamic checking part is complex as well: \emph{unions
-and intersections are fundamentally hard}.
-
-% Teo's version
-% Implementing a static type system is not an easy task.
-% Type systems featuring intersection types are hard in a fundamental way,
-% from their discovery, they've been studied as a form to characterize
-% lambda-calculus terms normalizability; which means that typechecking a
-% term on a system with intersection types is undecidable,
-% similar to how the halting problem is undecidable\todo{reference}.
-%
-% Usually, when thinking about programming languages, there's an intuition
-% that static checks (like typechecking) are more difficult and less powerful
-% than dynamic checks (like testing).
-% For instance, it is very easy to check if,
-% in a given execution of a program, a variable holds an integer value; while it
-% may become more challenging to check if a variable will always hold an integer value,
-% no matter the particular execution.
-%
-% As we intend to show on this paper, unions and intersections are not only
-% statically hard to check, but they are also dynamically hard:
-% \emph{they are fundamentally hard}.
-% In this section, we present intuitively the main challenges that arise
-% when attempting to develop a runtime check system for unions and intersections.
+However appealing union and intersection contracts may be, they happen
+to be fundamentally incompatible with the desirable language
+features from Section~\ref{sec:feat-lang}. At least in there
+full-blown form: in Section~\ref{sec:issues-literature} we will
+discuss pragmatic restrictions of union and intersection contracts to
+recover some or all of the features.
 
 \subsection{Union contracts as a side-effect}
 
