@@ -1415,9 +1415,9 @@ argument}
 In this section, we review some shortcomings of existing work on union and
 intersection contracts. We start with the work of Keil and
 Thiemann~\cite{KeilThiemannUnionIntersection} which is the first to propose a
-convincing semantics for union and intersection contracts. We follow with the
-work Williams, Morris, and Wadler~\cite{RootCauseOfBlame} which builds
-upon~\cite{KeilThiemannUnionIntersection} and introduces a simpler, more
+lean\todo{Not the right word} semantics for union and intersection contracts. We
+follow with the work Williams, Morris, and Wadler~\cite{RootCauseOfBlame} which
+builds upon~\cite{KeilThiemannUnionIntersection} and introduces a simpler, more
 uniform blame resolution.
 
 % The existing work that previously researched and implemented
@@ -1521,16 +1521,22 @@ when to raise blame. This complexity is salient in the deterministic, sequential
 version\footnote{cf Section 5.1 of \cite{KeilThiemannUnionIntersection}}. There,
 the evaluation procedure has to deal again with the problem of eliding contracts
 that are not \emph{compatible}\footnote{You can check more on this topic on
-Section 5.1 of \cite{KeilThiemannUnionIntersection}} (the ones coming from a
-different branch that shouldn't be applied in the current context). In practice,
+Section 5.1 of \cite{KeilThiemannUnionIntersection}} (contracts are incompatible
+if they are coming from a different branch and should be ignored). In practice,
 the evaluation procedure maintains a global environment of contracts that is
 extended each time a non-trivial contract (union, intersection or higher-order)
 is opened. Then, any contract application must check the presence of the
-corresponding label in the environment. But the most surprising\todo{(Yann) find
-another word} part is that for contracts attached to a function that is applied,
-the whole \emph{context} (the continuation of the application) must be checked
-for compatibility with respect to each label in the contract
-environment!\todo{(Yann) TBC: find better wording} 
+corresponding label in the environment. What's more, each time a function with a contract attached is applied,
+the whole \emph{context} (that is, the continuation of the application) must be
+must be checked for compatibility with respect to each label of the contract
+environment. Checking for compatibility involves searching the context for
+contract applications.
+
+Keil and Thiemann realizes the tour de force of combining union and intersection
+contracts with user-defined contracts. The price to pay, though, is that
+implementing their solution in a reasonable way is far from obvious. Not only
+when starting from the more abstract, non-deterministic formulation, but even
+when starting from the algorithmic version of their system.
 
 \unsure{WARNING: what is below is being reworked by Yann}
 
@@ -1595,10 +1601,10 @@ environment!\todo{(Yann) TBC: find better wording}
     Maybe the point is that the algorithmic system is way more complex than the
 declarative one
 (Teo) reworded}.
-A second, major one,
-is the dependency added over the evaluation context, since, again,
-it makes composing this, with other features desired on programming languages,
-difficult, or even impossible.
+% A second, major one,
+% is the dependency added over the evaluation context, since, again,
+% it makes composing this, with other features desired on programming languages,
+% difficult, or even impossible.
 \resolved{(Yann) I think we need to substantiate this claim. If this
 context dependency explains why CSE is invalid, maybe have a little example?
 (Teo) I removed it, I don't think there's an example, mainly since
@@ -1612,12 +1618,17 @@ whatever)}
 \label{sec:will-morr-wadl}
 \unsure{Subsection title?}
 
-Williams, Morris, and Wadler, take a different approach on user defined contracts,
-they are completely forbidden in their system, explicitly to not encounter
-the previously mentioned issue.
-This restriction goes against what is usually expected from dynamic checks:
-validation of data, and not just inclusion on types.
+As mentioned in Section~\ref{sec:issues-sem}, Williams, Morris, and Wadler,
+downright exclude user-defined contracts from the picture. This choice gives
+them more freedom in the quest of a more uniform operational semantics. While
+this can be a sensible choice (in a gradual typing context e.g.), this is a show
+stopper for our initial use-case of the Nickel configuration language, the main
+motivation being to use contracts as customizable validation functions.
 
+\ref{sec:issues-sem}
+On the semantic side, one of the so-called the sound monitoring properties
+linking the operational semantics to the denotational semantics doesn't
+correspond to its attached description.
 On top of that, a fundamental problem arises on said paper,
 symptom of the difficulty of establishing good enough, and yet
 simple semantics for union and intersection dynamic checks.
