@@ -1409,7 +1409,7 @@ the evaluation procedure maintains a global environment of contracts that is
 extended each time a non-trivial contract (union, intersection or higher-order)
 is opened. Then, any contract application must check the presence of the
 corresponding label in the environment. What's more, each time a function with a contract attached is applied,
-the whole \emph{context} (that is, the continuation of the application) must be
+the whole \emph{context} (that is, the continuation of the application)
 must be checked for compatibility with respect to each label of the contract
 environment. Checking for compatibility involves searching the context for
 contract applications.
