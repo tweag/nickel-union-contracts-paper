@@ -1813,9 +1813,35 @@ to prioritise the highe order ones.
 
 
 
-\section{Related work}
+\section{(More) Related work}
 \label{sec:related-work}
 \info{Including a mention of statically typed systems with union}
+
+\subsection{Gradual typing: a new perspective}
+
+Castagna et. al \cite{gradualCastagna} present a gradual type system that
+incorporates multiple non-trivial typing constructs, in particular, subtyping,
+unions, recursive types, negation types, and a bottom type.
+Which can easily encode intersection, difference, and top types.
+
+This system, even if related to the ones we studied, adheres to a different
+school of gradual typing, Greenberg would call it the static first
+school\cite{practiceTheoryGrad}.
+In this line of work, the goal is usually to develop a type system that can
+handle a dynamic type to represent the lack of precission on some type.
+The main reasons why we consider this work not comparable with what we attempted
+to solve are:
+\begin{itemize}
+  \item Like Williams et al\cite{RootCauseOfBlame}, it doesn't allow
+        to use user defined contracts.
+  \item Their base calculus needs to have a non-trivial type inference
+        algorithm, that makes the development of a programming language
+        much more cumbersome. For instance, it defines a set-theoretic
+        interpretation of types, and a subtyping relation based on it.
+  \item Contracts are completely handled by the execution engine (in the paper,
+        the rewriting system), and not added as a library with some basic
+        syntactic support.
+\end{itemize}  
 
 
 
