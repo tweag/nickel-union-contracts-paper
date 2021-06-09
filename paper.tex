@@ -198,14 +198,18 @@
 \bibliographystyle{ACM-Reference-Format}
 
 \begin{abstract}
-This paper reports an attempt to incorporate union and intersection types in
-Nickel, a configuration programming language with a gradual type system and
-first-class contracts. While the end result looks appealing, it turns out the
-concrete impact on both the design and the implementation of the language is
-unexpectedly high. We review the issues raised in particular by the
-implementation of contracts for unions and intersections, and why we think the
-cost ends up too high for the benefit. We conclude by suggesting different leads
-to represent and type unions.
+Union and intersection types are a staple of gradually typed language such
+as TypeScript. While it's long been recognized that union and
+intersections types are difficult to verify statically, it may appear
+at first that the dynamic part of gradual typing is actually pretty
+simple.
+
+It turns out however, that in presence of higher-order contracts union
+and intersection is deceptively difficult. The literature on
+higher-order contracts with union and intersection, while keenly aware
+of the fact, doesn't really explain why. We point and illustrate the
+problems and trade-offs inherent to union and intersection contracts,
+via example and a survey of the literature.
 \end{abstract}
 
 
