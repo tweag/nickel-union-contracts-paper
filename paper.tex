@@ -817,53 +817,26 @@ function addElem(list: Array<string> | Array<number>) {
 
 \subsection{Intersections}
 
-Intersections ($\cap$) are less prevalent. An intersection is a value that belongs to
-two types at the same time. An example is a number literal \nickel{1}
-which could be accepted as both an \nickel{Int} and a \nickel{Float} without
-having to perform conversions.
-In that case, a value of type \nickel{Int @& Float} can be used as a value of
-both type \nickel{Int} and \nickel{Float}.
+An intersection type \nickel{A @& B} validates values which are both
+valid for contract \nickel{A} and contract \nickel{B}.
 
-% \label{fig:intersection-subytping-ex}
-% \begin{lstlisting}[title={Value subtyping}]
-% 1 : Int @& Float
-% \end{lstlisting}
+Intersection contracts (and types) are probably less prevalent than
+union in practical type systems. However, a function from a union is
+equivalent to an intersection. That is \nickel{(A @| B) ->
+  C}$\simeq$\nickel{(A -> C) @& (B -> C)}. So in a system with
+functions and unions, intersections are already morally present (and,
+for that matter, in a system with functions and intersections, unions
+are morally present). Some
+of our examples in Sections~\ref{sec:issues-sem}
+and~\ref{sec:issues-literature} are better expressed in terms of
+intersections, so it's best to include them.
 
-The real usability of intersections shows up when intersecting
-functions, since it can be used to encode overloading.
-For instance, take a look at Figure
-\ref{fig:intersection-overloading-ex}, where the function
-\nickel{duplicate} works both as a function to duplicate
-arrays, as well as a function to duplicate strings.
-This is particular useful when using unions, since it's a
-good way to express that a function can deal with different
-shapes of data.
-For instance, on the same figure, you can use \nickel{duplicate}
-over some value with type \nickel{[String] @| String}, and know
-that it will work correctly.
-
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel]
-let duplicate | ([String] -> [String]) @& (String -> String) =
-  fun x => x ++ x in
-let text | [String] @| String = ... in
-duplicate text
-\end{lstlisting}
-\caption{Duplicating an array of Strings or a String}
-\label{fig:intersection-overloading-ex}
-\end{figure}
-
-
-% \label{fig:intersection-overloading-ex}
-% \begin{lstlisting}[title={Overloading}]
-% incr: (Int -> Int) @& (Float -> Float) =
-%   fun x => x + 1
-% \end{lstlisting}
-
-They can also be used to combine dictionaries in an object-oriented fashion. For instance, in Figure \ref{fig:intersection-record}
-two types are defined \nickel{Animal} and \nickel{Pet}, and
-a variable that is compatible with both types is declared, with
-type \nickel{Animal @& Pet}.
+Yet intersections are useful in their own right. They can be used to
+combine dictionaries in the style of object-oriented inheritance. For instance, in
+Figure \ref{fig:intersection-record} two types are defined
+\nickel{Animal} and \nickel{Pet}, and a variable that is compatible
+with both types is declared, with type \nickel{Animal @& Pet}. This
+particular application is supported, for instance, by TypeScript.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -879,39 +852,29 @@ let myDog | Animal @& Pet =
 \label{fig:intersection-record}
 \end{figure}
 
-% They can also be used to combine constraints (such as traits or interfaces),as
-% done in Scala 3 (Figure~\ref{fig:intersection-mixins-ex}).
-
-% \label{fig:intersection-mixins-ex}
-% \begin{lstlisting}[language=Scala,title={Structural mixins}]
-% Comparator: {cmp: T -> T -> Bool}
-% Shower: {show: T -> String}
-
-% showSmaller : (dict: Comparator & Shower) -> T -> T -> String
-% \end{lstlisting}
-
-Finally, intersection naturally show up as the dual of unions.
-Thus, in a system
-featuring unions, a union in a negative positions is a form of intersection
-(Figure~\ref{fig:intersection-dual}).
+Another application of intersections shows up when intersecting
+functions: it can be used to encode overloading.
+For instance, take a look at Figure~\ref{fig:intersection-overloading-ex}, where the function
+\nickel{duplicate} works both as a function to duplicate
+arrays, as well as a function to duplicate strings.
+This is particularly useful when using unions, since it's a
+good way to express that a function can deal with different
+shapes of data.
+For instance, in the same figure, \nickel{duplicate} is (correctly) called
+on a value of type \nickel{[String] @| String}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language = nickel]
-f : (Num @| Str) -> Bool
-(*@ $\simeq$ @*) f : (Num -> Bool) @& (Str -> Bool)
+\begin{lstlisting}[language=nickel]
+let duplicate
+    | (List String -> List String)
+    @& (String -> String) =
+  fun x => x ++ x in
+let text | [String] @| String = ... in
+duplicate text
 \end{lstlisting}
-\caption{Intersection as the dual of unions}
-\label{fig:intersection-dual}
+\caption{Duplicating an array of Strings or a String}
+\label{fig:intersection-overloading-ex}
 \end{figure}
-
-\resolved{Either here or the next section, show examples of unintuitive behaviour
-of U and I. For example, I is not jos composition of contracts.
-And union has to be treated as any one of the options.
-Kindo of resolved for unions}
-% Things to settle: how to motivate them, how to compare them to ADTs. Purely
-% dynamic approach, or typed approach too?
-
-
 
 \section{Incompatibilities}
 \label{sec:issues-sem}
