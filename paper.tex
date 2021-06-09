@@ -1671,46 +1671,59 @@ let f = (*@$\square$@*) in
 
 \unsure{WARNING: what is below is being reworked by Yann}
 
-Racket is a language based on Scheme, mainly thought as a language to experiment
-with different language desings and ideas. It provides a very complete contract
-system\cite{RacketContracts}.
+Racket is a language based on the Scheme dialect of Lisp. Among established
+languages, Racket is probably the one with the most comprehensive contract
+system\cite{RacketContracts}. Regarding union and intersections, Racket provides
+the \racket{and/c} and \racket{or/c} combinators for contract.  These
+combinators correspond to the naive interpretation of unions and intersections
+(as in Figure~\ref{fig:naive-impl}): \racket{and/c} (resp.  \racket{or/c})
+simply checks sequentially that all (resp. one) contracts pass.  In consequence,
+unions or intersections of higher-order contracts don't match intuition, and in
+particular intersections don't model overloading. As in
+Figure~\ref{fig:naive-impl}, the example given in
+Figure~\ref{fig:racket-overloading} always fail because no argument satisfies
+both \racket{number?} and \racket{string?}.
 
-Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
-These contracts are lightweight versions of intersections and unions, they simply
-check that every contract is valid, in the case of \racket{and/c},
-and that at least one contract
-is valid, in the case of \racket{or/c}.
+% Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
+% These contracts are lightweight versions of intersections and unions, they simply
+% check that every contract is valid, in the case of \racket{and/c},
+% and that at least one contract
+% is valid, in the case of \racket{or/c}.
 
-So, for instance, the usual usecase of intersection to encode bounded overloading
-does not work on Racket. Take a look at the next example, the function
-\racket{overload} should accept a call like \racket{(overload 3)}, but it fails
-since 3 is not a valid \racket{string?}.
+% So, for instance, the usual usecase of intersection to encode bounded overloading
+% does not work on Racket. Take a look at the next example, the function
+% \racket{overload} should accept a call like \racket{(overload 3)}, but it fails
+% since 3 is not a valid \racket{string?}.
 
 \begin{figure}[h]
-
 \begin{lstlisting}[language=racket]
 (define/contract overload
 (and/c (-> number? number?)
        (-> string? string?))
 (lambda (x) x))
 \end{lstlisting}
-\caption{Non working function overloading on Racket.}
-
+\caption{\racket{and/c} and overloading}
+\label{fig:racket-overloading}
 \end{figure}
 
-Even worst, the \racket{or/c} contract doesn't allow to have multiple higher order
-contracts that could (potentially) apply to a function, these have to be
-differentiated by first order markers.
-For instance, the code on Figure~\ref{code:racket:or/c:working}
-would correctly allow only to call
-\racket{united} with a \racket{number?},
-and it can make this distinction since it knows that
-\racket{(lambda (x) x)} can not be a function that takes 2 parameters.
-However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
-before running, since the \racket{or/c} contract is unable to know
-which of the two function contracts to use.
-Ideally, this last example should just behave as wrapping
-the function with the \racket{(-> even? even?)} contract.
+When higher-order contracts are combined using \racket{or/c}, Racket imposes
+that contracts must distinguishable by their arity. Doing so, there is at most
+one candidate that can be selected directly. This is illustrated in
+Figure~\ref{code:racket:or/c:working} whose program is accepted. On the other
+hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
+
+% that could (potentially) apply to a function, these have to be
+% differentiated by first order markers.
+% For instance, the code on Figure~\ref{code:racket:or/c:working}
+% would correctly allow only to call
+% \racket{united} with a \racket{number?},
+% and it can make this distinction since it knows that
+% \racket{(lambda (x) x)} can not be a function that takes 2 parameters.
+% However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
+% before running, since the \racket{or/c} contract is unable to know
+% which of the two function contracts to use.
+% Ideally, this last example should just behave as wrapping
+% the function with the \racket{(-> even? even?)} contract.
 
 \begin{figure}[h]
 
@@ -1720,7 +1733,7 @@ the function with the \racket{(-> even? even?)} contract.
       (-> string? string? string?))
 (lambda (x) x))
 \end{lstlisting}
-\caption{Working \racket{or/c} example on Racket.}
+\caption{Accepted use of \racket{or/c} with higher-order contracts}
 \label{code:racket:or/c:working}
 
 \end{figure}
@@ -1733,7 +1746,7 @@ the function with the \racket{(-> even? even?)} contract.
       (-> even? even?))
 (lambda (x) x))
 \end{lstlisting}
-\caption{Non working \racket{or/c} example on Racket.}
+\caption{Rejected use of \racket{or/c} with higher-order contracts}
 \label{code:racket:or/c:non-working}
 
 \end{figure}
@@ -1745,16 +1758,24 @@ the function with the \racket{(-> even? even?)} contract.
 
 \subsubsection{case->}
 
-Racket does provide an alternative for overloading methods, called the
-\racket{case->} contract, however, this overloading of methods only
-works over contracts of functions with different amount of parameters.
-It's a good alternative to allow limited overloading of functions.
-As an example, consider the following non failing piece of code, and
-try to understand how Racket can decide, at each application,
-which function contract to use.
+Racket does provide the \racket{case->} combinator which(partially) supports
+overloading. As for the \racket{or/c}, the candidate contracts must have
+distinct arities to avoid ambiguity. An example is provided in
+Figure~\ref{fig:rafig:racket-case-fun}. The resulting possibilities are similar
+to static overloading, where one function can take additional parameters for
+example (e.g. as supported for Java methods). Unfortunately, it excludes the
+overloading of generic operations with fixed arity such as equality, comparison,
+arithmetic operators, and so on.
+
+% Racket does provide an alternative for overloading methods, called the
+% \racket{case->} contract, however, this overloading of methods only
+% works over contracts of functions with different amount of parameters.
+% It's a good alternative to allow limited overloading of functions.
+% As an example, consider the following non failing piece of code, and
+% try to understand how Racket can decide, at each application,
+% which function contract to use.
 
 \begin{figure}[h]
-
 \begin{lstlisting}[language=racket]
 (define/contract overcase
   (case-> (-> string? string?)
@@ -1768,16 +1789,19 @@ which function contract to use.
 
 (overcase "hello")
 \end{lstlisting}
+\caption{Overloading with the \racket{case->} combinator}
+\label{fig:racket-case-fun}
 \end{figure}
 
-Even if Racket's intent is not to implement union and intersection
-dynamic checks, they do provide contracts that are, in some sense,
-simplified versions of those.
-In our eyes, Racket has accepted the difficulty of correctly and practically
-combine union, intersection, and higher order contracts, and has choose
-to prioritise the highe order ones.
-
-
+In conclusion, Racket also seems to avoid the difficulties of general unions and
+intersections. They make the pragmatic choice of a simple semantics that work
+for non higher-order contracts and a limited support for overloading.
+% Even if Racket's intent is not to implement union and intersection
+% dynamic checks, they do provide contracts that are, in some sense,
+% simplified versions of those.
+% In our eyes, Racket has accepted the difficulty of correctly and practically
+% combine union, intersection, and higher order contracts, and has choose
+% to prioritise the highe order ones.
 
 \section{(More) Related work}
 \label{sec:related-work}
