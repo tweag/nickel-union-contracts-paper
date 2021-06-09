@@ -1478,10 +1478,9 @@ g 0 | C
 
 In return, the complexity is offloaded to a separate procedure that must decide
 when to raise blame. This complexity is salient in the deterministic, sequential
-version\footnote{cf Section 5.1 of \cite{KeilThiemannUnionIntersection}}. There,
+version~\cite[Section 5.1]{KeilThiemannUnionIntersection}. There,
 the evaluation procedure has to deal again with the problem of eliding contracts
-that are not \emph{compatible}\footnote{You can check more on this topic on
-Section 5.1 of \cite{KeilThiemannUnionIntersection}} (contracts are incompatible
+that are not \emph{compatible}~\cite[Section 5.1]{KeilThiemannUnionIntersection} (contracts are incompatible
 if they are coming from a different branch and should be ignored). In practice,
 the evaluation procedure maintains a global environment of contracts that is
 extended each time a non-trivial contract (union, intersection or higher-order)
