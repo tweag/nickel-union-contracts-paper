@@ -1483,7 +1483,6 @@ implementing their solution in a reasonable way is far from obvious. Not only
 when starting from the more abstract, non-deterministic formulation, but even
 when starting from the algorithmic version of their system.
 
-\unsure{WARNING: what is below is being reworked by Yann}
 
 % Another difficult issue Keil and Thiemann were able to solve, is the
 % fact that user defined contracts and intersection do not usually play nice
@@ -1570,39 +1569,58 @@ this can be a sensible choice (in a gradual typing context e.g.), this is a show
 stopper for our initial use-case of the Nickel configuration language, the main
 motivation being to use contracts as customizable validation functions.
 
-\ref{sec:issues-sem}
 On the semantic side, one of the so-called the sound monitoring properties
-linking the operational semantics to the denotational semantics doesn't
-correspond to its attached description.
-On top of that, a fundamental problem arises on said paper,
-symptom of the difficulty of establishing good enough, and yet
-simple semantics for union and intersection dynamic checks.
-One of their main results, is the fact that their calculus obeys
-all of their expected monitoring properties for higher ordered, union
-and intersection contracts.
-However, one of these properties states the following:
+linking the operational semantics to the denotational semantics (supposed to
+capture the intuitive interpretation) is at odds with the given interpretation.
+% On top of that, a fundamental problem arises on said paper,
+% symptom of the difficulty of establishing good enough, and yet
+% simple semantics for union and intersection dynamic checks.
+% One of their main results, is the fact that their calculus obeys
+% all of their expected monitoring properties for higher ordered, union
+% and intersection contracts.
+
+For a contract $A$, $\llbracket A \rrbracket^+$ defines the set of terms that
+satisfy $A$. For example,
+
+\begin{lstlisting}[language=nickel,frame=none,numbers=none]
+    if true then 1 else "a" (*@$\in \llbracket Num \rrbracket^+$@*)
+\end{lstlisting}
+
+For higher-order contracts, the notion has two facets. A \nickel{Num -> Str}
+contract can be violated in two ways: by the function returning a value that is
+not a string, or by the caller providing an argument that is not a number.  The
+former is embodied by the same notion as before: $f \in \llbracket Num \to Str
+\rrbracket^+$ if whenever $f$ receives a number, it returns a string.  One
+important contribution of~\cite{KeilThiemannUnionIntersection}, upon
+which~\cite{RootCauseOfBlame} builds upon, is to extend the notion of contract
+satisfaction to \emph{contexts} (i.e. a continuations), embodying the caller's
+obligations. A context $K$ is a term with a hole to be filled with a term (see
+Figure~\ref{fig:valid-contexts} for examples). Then, $K \in \llbracket Num \to
+Str \rrbracket^-$ (the context $K$ satisfies the contract \nickel{Num -> Str})
+if it only applies the hole to arguments satisfying the \nickel{Num} contract.
+
+These interpretations $\llbracket . \rrbracket^+$ and $\llbracket .
+\rrbracket^-$ then need to be extended to the setting of unions and
+intersections. In particular, one of the definitions of~\cite{RootCauseOfBlame}
+is the following:
 
 \begin{figure}[h]
 $$ K \in \llbracket A \cap B \rrbracket^-~if~K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
-\caption{Sound monitoring property for intersection from Williams, Morris, and Wadler.}
+\caption{Sound monitoring property for intersection from~\cite{RootCauseOfBlame}}
 \label{fig:wmw-semantics}
 \end{figure}
 
-Which means that a continuation $K$ complies negatively with an
-intersection of $A$ and $B$ if it complies negatively with at least one of these.
-Or, less formally, that if you have a program that is missing a value at a given point,
-you can put a value wrapped with a contract stating $A \cap B$,
-and expect not to get a negative violation of that contract,
-if you can either put a value
-wrapped with $A$, or a value wrapped with $B$.
+This reads as: a context $K$ satisfies the intersection of $A$ and $B$ if it
+satisfies at least one of the two. Morally, the $K$s in $\llbracket A \cap B
+\rrbracket^-$  should be the ones that can have their hole filled with a term
+satisfying $A \cap B$ without violating the $A \cap B$ contract.
 
-Altough this is true, it's a weaker statement of what we'd like to have,
-consider the two contexts presented on Figure \ref{fig:valid-contexts},
-the first one is a valid context for a \nickel{Num -> Num} function,
-that is, you could replace the $\square$ by some function wrapped in a
-\nickel{Num -> Num} contract, and the context will not violate it.
-Similarly, the second context from the same figure is a valid
-\nickel{Bool -> Bool} context.
+Although valid, this interpretation is weaker than what~\cite{RootCauseOfBlame}
+actually describes it to be and than the semantics given
+in~\cite{KeilThiemannUnionIntersection}. Consider the two contexts presented on
+Figure~\ref{fig:valid-contexts}. The first one is a context satisfying
+\nickel{Num -> Num}, applying the hole to a number. Similarly, the second context
+from the same figure satisfies \nickel{Bool -> Bool}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel, title=\nickel{Num -> Num} context]
@@ -1615,32 +1633,51 @@ Similarly, the second context from the same figure is a valid
 \label{fig:valid-contexts}
 \end{figure}
 
-Next, we can combine these two contexts into one, that essentially
-has one single missing value, that will be used independently in both contexts
-from Figure \ref{fig:valid-contexts}, as shown on Figure \ref{fig:invalid-context}.
-This context is not a valid \nickel{Num -> Num} context, since it will apply
-the value put on $\square$ (through \nickel{f}) to a non \nickel{Num} (\nickel{true}).
-In a similar way, it is not a valid \nickel{Bool -> Bool} context either.
-Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
-shown on Figure \ref{fig:wmw-semantics}, it is not a valid
-\nickel{Num -> Num @& Bool -> Bool} context.
+Now, combining these two context as in~\ref{fig:invalid-context} gives a context
+that doesn't satisfy \nickel{Num -> Num} nor \nickel{Bool -> Bool}.  According
+to the semantics of~\cite{RootCauseOfBlame}, it thus doesn't satisfy \nickel{Num
+-> Num @& Bool -> Bool}. Yet, our intuition tells us that this example is a
+perfectly valid context for this contract: an overloaded function satisfying
+both \nickel{Num -> Num} and \nickel{Bool -> Bool} can safely be applied to a
+number and to a boolean in a row. And indeed, the denotational semantics given
+in~\cite{KeilThiemannUnionIntersection} does accept this context as valid.
+
+The issue is not as bad as it sounds: the system presented
+in~\cite{RootCauseOfBlame} actually corresponds to the wished, stronger
+semantics in practice. The specification is just not exactly the right one, but
+this can probably be fixed along the lines
+of~\ref{KeilThiemannUnionIntersection}, where the notion of context used to
+define satisfaction is carefully restricted (\emph{elimination contexts}). While
+this kind of oversight doesn't lower the quality of the work
+of~\ref{RootCauseOfBlame} by any measure, it illustrates that contract
+satisfaction in presence of unions, intersections and functions is a tricky
+notion. This difficulty contrasts with the standard framework of higher-order
+contracts where satisfaction is much more straightforward.
+% Next, we can combine these two contexts into one, that essentially
+% has one single missing value, that will be used independently in both contexts
+% from Figure \ref{fig:valid-contexts}, as shown on Figure \ref{fig:invalid-context}.
+% This context is not a valid \nickel{Num -> Num} context, since it will apply
+% the value put on $\square$ (through \nickel{f}) to a non \nickel{Num} (\nickel{true}).
+% In a similar way, it is not a valid \nickel{Bool -> Bool} context either.
+% Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
+% shown on Figure \ref{fig:wmw-semantics}, it is not a valid
+% \nickel{Num -> Num @& Bool -> Bool} context.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let f = (*@$\square$@*) in
 (f 3, f true)
 \end{lstlisting}
-\caption{Invalid \nickel{Num -> Num @& Bool -> Bool} context,
-combining contexts from Figure \ref{fig:valid-contexts}}
+\caption{Combined context}
 \label{fig:invalid-context}
 \end{figure}
 
-However, both our intuition, as the most common use case of intersections
-(that is, overloading), tells us that this should work.
-While this problem does not invalidate their work (in fact, the system they present
-handles these cases correctly), it shows that existing research is still not on
-good shape to handle the growing usecases being developed for
-unions and intersections around dynamic languages.
+% However, both our intuition, as the most common use case of intersections
+% (that is, overloading), tells us that this should work.
+% While this problem does not invalidate their work (in fact, the system they present
+% handles these cases correctly), it shows that existing research is still not on
+% good shape to handle the growing usecases being developed for
+% unions and intersections around dynamic languages.
 
 % $$ K ::= Id | K \bullet \square N | K \bullet V \square | K \bullet \square @^pA  $$
 
@@ -1651,7 +1688,6 @@ unions and intersections around dynamic languages.
 % operation ($O(\overrightarrow{\text{V}}, \square, \overrightarrow{\text{N}})$).
 
 
-
 % K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
 \resolved{(Yann) Maybe adding a concrete example of this (it can be the same term but with
     concrete types like Number and String and simple contexts like application
@@ -1660,6 +1696,7 @@ unions and intersections around dynamic languages.
 \subsection{Racket}
 \label{sec:racket}
 
+\unsure{WARNING: what is below is being reworked by Yann}
 
 Racket is a language based on Scheme, mainly thought as a language to experiment
 with different language desings and ideas. It provides a very complete contract
@@ -1797,7 +1834,7 @@ to solve are:
   \item Contracts are completely handled by the execution engine (in the paper,
         the rewriting system), and not added as a library with some basic
         syntactic support.
-\end{itemize}  
+\end{itemize}
 
 
 
