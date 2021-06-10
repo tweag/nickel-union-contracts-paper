@@ -509,7 +509,7 @@ are impractical to check statically. For instance that a string
 represents a well-formed URL, or a number is a valid port.
 
 This same property is desirable of contracts as well, otherwise we
-lose an important benefits of dynamic checking. Preferably, we want to
+lose an important benefit of dynamic checking. Preferably, we want to
 be able to extend the universe of contracts with user-defined
 predicates (sometimes called flat contracts).
 
@@ -866,15 +866,15 @@ This is particularly useful when using unions, since it's a
 good way to express that a function can deal with different
 shapes of data.
 For instance, in the same figure, \nickel{duplicate} is (correctly) called
-on a value of type \nickel{[String] @| String}.
+on a value of type \nickel{List Str @| Str}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let duplicate
-    | (List String -> List String)
-    @& (String -> String) =
+    | (List Str -> List Str)
+    @& (Str -> Str) =
   fun x => x ++ x in
-let text | [String] @| String = ... in
+let text | List Str @| Str = ... in
 duplicate text
 \end{lstlisting}
 \caption{Duplicating an array of Strings or a String}
@@ -1187,7 +1187,7 @@ altogether.
 \begin{lstlisting}[language=nickel]
 let c = contracts.frompred (fun f =>
   f 0 == 0) in
-let g | (string -> string) @& c
+let g | (Str -> Str) @& c
       = fun x => x
 \end{lstlisting}
 \caption{intersection and user defined contracts}
@@ -1202,8 +1202,8 @@ contracts?}
 % But this should not have happened, since in the program of Figure
 % \ref{fig:inter-flat-contracts} \nickel{g} is never applied to \nickel{0}, in
 % fact, it is never applied to anything.  Checking if \nickel{C} has already
-% failed, and marking \nickel{String -> String} as failed negatively on \nickel{l}
-% is not enough, the contract \nickel{String -> String} should not have been used
+% failed, and marking \nickel{Str -> Str} as failed negatively on \nickel{l}
+% is not enough, the contract \nickel{Str -> Str} should not have been used
 % inside the evaluation of \nickel{C}, which adds an extra layer of complexity:
 % contracts should be guarded, and execution depends on the shape of the
 % surrounding evaluation context.
@@ -1389,7 +1389,7 @@ leading this example to run as expected.
 \begin{lstlisting}[language=nickel,title={Original program}]
 let C = contracts.fromPred (fun f =>
   f 0 == 0) in
-let g | (String -> String) @& C
+let g | (Str -> Str) @& C
       = fun x => x
 in g 0
 \end{lstlisting}
