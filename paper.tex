@@ -866,9 +866,8 @@ let Date = {day | Num, month | Num, year | Num} in
 let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
 let appendDate | (List (Date @| Str)
                  @| List (DateWeek @| Str))
-                 -> List
-  = fun list =>
-  lists.cons list "01/01/2021"
+                 -> List =
+  fun list => lists.cons list "01/01/2021"
 }
 \end{lstlisting}
 \caption{Adding an element to a union of two arrays}
@@ -933,7 +932,7 @@ on a value of type \nickel{(List Str) @| Str}.
 \begin{lstlisting}[language=nickel]
 let duplicate
     | (List Str -> List Str)
-    @& (Str -> Str) =
+      @& (Str -> Str) =
   fun x => x ++ x in
 let text | (List Str) @| Str = ... in
 duplicate text
