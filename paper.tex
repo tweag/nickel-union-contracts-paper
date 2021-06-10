@@ -1464,27 +1464,18 @@ straightforward.
 
 Racket is a language based on the Scheme dialect of Lisp. Among established
 languages, Racket is probably the one with the most comprehensive contract
-system\cite{RacketContracts}. Regarding union and intersections, Racket provides
-the \racket{and/c} and \racket{or/c} combinators for contract.  These
-combinators correspond to the naive interpretation of unions and intersections
-(as in Figure~\ref{fig:naive-impl} for intersections): \racket{and/c} (resp.  \racket{or/c})
-simply checks sequentially that all (resp. one) contracts pass.  In consequence,
-unions or intersections of higher-order contracts don't match intuition, and in
-particular intersections don't model overloading. As in
+system~\cite{RacketContracts}. Regarding union and intersections, Racket provides
+the \racket{and/c} and \racket{or/c} combinators for contract.
+
+The
+intersection combinator \racket{and/c} corresponds to the naive
+interpretation of intersection described in
+Section~\ref{sec:flat-and-inter}: applying contract \racket{(and/c A
+  B)} is like applying contract \racket{A} then applying contract \racket{B}. In
+particular \racket{and/c} doesn't model overloading. As in
 Figure~\ref{fig:naive-impl}, the example given in
 Figure~\ref{fig:racket-overloading} always fail because no argument satisfies
 both \racket{number?} and \racket{string?}.
-
-% Among those contracts, they provide \racket{and/c} and \racket{or/c} contracts.
-% These contracts are lightweight versions of intersections and unions, they simply
-% check that every contract is valid, in the case of \racket{and/c},
-% and that at least one contract
-% is valid, in the case of \racket{or/c}.
-
-% So, for instance, the usual usecase of intersection to encode bounded overloading
-% does not work on Racket. Take a look at the next example, the function
-% \racket{overload} should accept a call like \racket{(overload 3)}, but it fails
-% since 3 is not a valid \racket{string?}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=racket]
@@ -1497,24 +1488,13 @@ both \racket{number?} and \racket{string?}.
 \label{fig:racket-overloading}
 \end{figure}
 
-When higher-order contracts are combined using \racket{or/c}, Racket imposes
+The union combinator \racket{or/c} is similarly simple. It must be
+able to decide immediately which branch holds: \racket{or/c} is a
+simple Boolean disjunction. For instance, when higher-order contracts are combined using \racket{or/c}, Racket imposes
 that contracts must be distinguishable by their arity. Doing so, there is at most
 one candidate that can be selected directly. This is illustrated in
 Figure~\ref{code:racket:or/c:working} whose program is accepted. On the other
 hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
-
-% that could (potentially) apply to a function, these have to be
-% differentiated by first order markers.
-% For instance, the code on Figure~\ref{code:racket:or/c:working}
-% would correctly allow only to call
-% \racket{united} with a \racket{number?},
-% and it can make this distinction since it knows that
-% \racket{(lambda (x) x)} can not be a function that takes 2 parameters.
-% However, the code on Figure~\ref{code:racket:or/c:non-working} would fail
-% before running, since the \racket{or/c} contract is unable to know
-% which of the two function contracts to use.
-% Ideally, this last example should just behave as wrapping
-% the function with the \racket{(-> even? even?)} contract.
 
 \begin{figure}[h]
 
@@ -1549,22 +1529,17 @@ hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
 
 \paragraph{case->}
 
-Racket does provide the \racket{case->} combinator which(partially) supports
-overloading. As for the \racket{or/c}, the candidate contracts must have
-distinct arities to avoid ambiguity. An example is provided in
+To compensate for the fact that \racket{and/c} doesn't support
+overloading,
+Racket provides a second intersection-like combinator: \racket{case->}. As for the \racket{or/c}, the candidate contracts must have
+distinct arities to avoid ambiguity, unlike \racket{or/c} the
+alternative chosen when the function is called rather than when the
+contract is applied to the function. An example is provided in
 Figure~\ref{fig:racket-case-fun}. The resulting possibilities are similar
 to static overloading, where one function can take additional parameters for
-example (e.g. as supported for Java methods). Unfortunately, it excludes the
+example (e.g. as supported for Java methods). On the other hand, it excludes the
 overloading of generic operations with fixed arity such as equality, comparison,
 arithmetic operators, and so on.
-
-% Racket does provide an alternative for overloading methods, called the
-% \racket{case->} contract, however, this overloading of methods only
-% works over contracts of functions with different amount of parameters.
-% It's a good alternative to allow limited overloading of functions.
-% As an example, consider the following non failing piece of code, and
-% try to understand how Racket can decide, at each application,
-% which function contract to use.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=racket]
@@ -1584,15 +1559,10 @@ arithmetic operators, and so on.
 \label{fig:racket-case-fun}
 \end{figure}
 
-In conclusion, Racket also seems to avoid the difficulties of general unions and
-intersections. They make the pragmatic choice of a simple semantics that work
-for non higher-order contracts and a limited support for overloading.
-% Even if Racket's intent is not to implement union and intersection
-% dynamic checks, they do provide contracts that are, in some sense,
-% simplified versions of those.
-% In our eyes, Racket has accepted the difficulty of correctly and practically
-% combine union, intersection, and higher order contracts, and has choose
-% to prioritise the highe order ones.
+In conclusion, Racket, a programming language with a large user base,
+avoids the difficulties of general unions and intersections (Section~\ref{sec:issues-sem}). They make
+the pragmatic choice of a simple semantics with limited support for
+higher-order contracts in intersections and unions.
 
 \section{(More) Related work}
 \label{sec:related-work}
@@ -1709,4 +1679,5 @@ for union and intersection contracts, these gaps might be quite large in places.
 % LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall MyPy
 % LocalWords:  Kubernetes DevOps natively nixpkgs disjunctions
 % LocalWords:  TypeScript serializable serialization coinductively
-% LocalWords:  coinduction coinductive
+% LocalWords:  coinduction coinductive combinator combinators arities
+% LocalWords:  disjunction
