@@ -384,7 +384,7 @@ show up at evaluation anyway, or will not matter (dead code).}
 
 Let us pause for a moment and consider the following: it is Nickel's
 ambition to be able to manipulate configurations like Nixpkgs. With
-over 50\,000 packages, is one of the largest repository of software
+over 50\,000 packages, it is one of the largest repository of software
 packages in existence~\cite{repology}. Concretely, Nixpkgs is a
 dictionary mapping packages to build recipes. That is, a massive,
 over-50\,000-key-value-pair wide dictionary. It is absolutely out of the
@@ -454,9 +454,9 @@ error: Type error
   | This expression has type Fun,
   | but Str was expected
 4 |
-5 | let mkHost = fun server ext => [(*@{\ldots}@*)] in
-  |              -----------------------
-  |              evaluated to this
+5 | let makeHost = fun server ext => [(*@{\ldots}@*)] in
+  |                --------------------
+  |                evaluated to this
   = ++, 2nd argument
 \end{lstlisting}
     \caption{Error reporting without contract}
