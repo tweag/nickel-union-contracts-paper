@@ -699,15 +699,16 @@ Then:
 In the example above, the first term prints \nickel{"hi"} two times while the
 second term prints it only once. However, \ref{eq:cbn-expansion} does hold for
 \emph{pure} terms, that are terms without side-effects. In a pure language, or a
-language with effect tracking like Haskell\todo{Cite a different language, or
-remove citation}, pure terms can be safely identified for applying
-optimizations.
+language with effect tracking like PureScript\resolved{Cite a different
+    language, or remove citation. (ADDED) tbh PureScript is still
+statically-typed, compiled lang, but who knows: the "script" in the name and the
+web orientation may still be more appealing to the audience of DLS}, pure terms
+can be safely identified for applying optimizations.
 
 Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of
-unions and intersections can make \ref{eq:cbn-expansion} unsound
-\emph{even in a pure setting}, making the optimization of
-Figure~\ref{fig:optimizations-let-floating-ex} unsound in general.
-
+unions and intersections can make \ref{eq:cbn-expansion} unsound \emph{even in a
+pure setting}, preventing the optimization of
+Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 
 \section{Union \& intersection}
 \label{sec:union-inter}
@@ -778,8 +779,8 @@ as a glue between static and dynamic types. Therefore, the question of
 bringing union to contracts is natural, and have indeed been studied
 (\emph{e.g.}~\cite{KeilThiemannUnionIntersection,RootCauseOfBlame}).
 
-Like for static types, value which satisfies the contract \nickel{A @| B}
-is a value which satisfy either contract \nickel{A} or
+Like for static types, a value which satisfies the contract \nickel{A @| B}
+is a value which satisfies either contract \nickel{A} or
 contract \nickel{B} (though in Section~\ref{sec:issues-literature} we
 will see that it may be desirable to weaken this definition).
 
@@ -825,38 +826,6 @@ is no value which lets me complete the example, so this example falls
 a bit flat.
 Teo: Improved the example, also added another one commented that is, for me,
 more realistic, but I think the one uncommented is simpler.}
-We have shown how values of a union are built, is worth mentioning
-how they are used.
-For instance, consider the TypeScript function on Figure \ref{fig:addElem},
-we want it to insert an element to a list that is either an
-\typescript{Array< 42 | "Nickel" >} or an \typescript{Array< "Nickel" | 3.5 >},
-where \typescript{42}, \typescript{3.5}, and \typescript{"Nickel"} are literal
-types\footnote{Note that in TypeScript, union and intersection are written as
-\typescript{|} and \typescript{&}, instead of \nickel{@|} and \nickel{@&},
-as we do in Nickel.}.
-What value could we fill the square ($\square$) with for this to typecheck?
-Since we don't know what's the shape of \typescript{list},
-we can't know whether to push a \typescript{42 | "Nickel"} or a
-\typescript{"Nickel" | 3.5}. In general,
-when using a union, we have to treat it as if it were any one
-of the alternatives. In the case of the example, we should provide
-it with a value that could be pushed to both arrays, the only possible one
-is \typescript{"Nickel"},
-since it's the only value that satisfies the intersection of
-\typescript{42 | "Nickel"} and \typescript{"Nickel" | 3.5}.
-
-\info{Not planned, but nice place to smooth things out towards
-intersections}
-
-\begin{figure}[h]
-\begin{lstlisting}[language=JavaScript]
-function addElem(list: Array< 42 | "Nickel" > | Array< "Nickel" | 3.5 >) {
-    list.push((*@ $\square$ @*))
-}
-\end{lstlisting}
-\caption{Adding an element to a union of two arrays}
-\label{fig:addElem}
-\end{figure}
 
 % \begin{figure}[h]
 % \begin{lstlisting}[language=JavaScript]
@@ -874,16 +843,37 @@ function addElem(list: Array< 42 | "Nickel" > | Array< "Nickel" | 3.5 >) {
 An intersection type \nickel{A @& B} is satisfied by values which
 satisfy both contract \nickel{A} and contract \nickel{B}.
 
-Intersection contracts (and types) are probably less prevalent than
-union in practical type systems. However, a function from a union is
-equivalent to an intersection. That is \nickel{(A @| B) ->
-  C} $\simeq$ \nickel{(A -> C) @& (B -> C)}. So in a system with
-functions and unions, intersections are already morally present (and,
-for that matter, in a system with functions and intersections, unions
-are morally present). Some
-of our examples in Sections~\ref{sec:issues-sem}
-and~\ref{sec:issues-literature} are better expressed in terms of
-intersections, so it's best to include them.
+Intersection contracts (and types) are probably less prevalent than union in
+practical type systems. However, a function from a union is equivalent to an
+intersection. That is \nickel{(A @| B) -> C} $\simeq$ \nickel{(A -> C) @& (B ->
+C)}. So in a system with functions and unions, intersections are already morally
+present (and, for that matter, in a system with functions and intersections,
+unions are morally present). Some of our examples in
+Sections~\ref{sec:issues-sem} and~\ref{sec:issues-literature} are better
+expressed in terms of intersections, so it's best to include them.
+
+Figure~\ref{fig:addElem} gives a concrete example of this phenomenon. The
+function \nickel{appendDate} append an element to \nickel{list} whose type is
+only known to be in union of two lists, each using a different representation.
+Both alternatives support falling back to a simple string for unparsed dates.
+Faced with these two possibilities, \nickel{appendDate} can only append a
+value which fits both types: this is precisely the intersection
+\nickel{(Date @| Str) @& (DateWeek @| Str)}, that is, \nickel{Str}.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=JavaScript]
+let Date = {day | Num, month | Num, year | Num} in
+let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
+let appendDate | (List (Date @| Str)
+                 @| List (DateWeek @| Str))
+                 -> List
+  = fun list =>
+  lists.cons list "01/01/2021"
+}
+\end{lstlisting}
+\caption{Adding an element to a union of two arrays}
+\label{fig:addElem}
+\end{figure}
 
 Yet, intersections are useful in their own right. They can be used to
 combine dictionaries in the style of object-oriented multiple inheritance. For instance, in
@@ -895,8 +885,8 @@ particular application is supported, for instance, by TypeScript.
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
 let Animal =
-  { species: Str, breed: Str, name: Str } in
-let Pet = { owner: Str, name: Str } in
+  { species | Str, breed | Str, name | Str } in
+let Pet = { owner | Str, name | Str } in
 let myDog | Animal @& Pet =
   { species = "Canis Lupus",
     breed   = "Australian Cattle Dog",
