@@ -491,30 +491,16 @@ ensuring that schema validation doesn't affect performance (or, indeed,
 is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
 
-\subsection{Structure of this paper}
-\unsure{Make this section into a contributions section?
-Or maybe just kill it?}
-Section~\ref{sec:intro} introduced the perspective of designing a configuration
-language. We presented the concept of contracts and detailed why contracts are
-particularly fitted for a configuration language, and more generally for data
-validation or program correctness in a dynamically typed language. The rest of
-the paper is structured as follows:
+\subsection{Contributions}
+Our contributions are as follows
 \begin{itemize}
-    \item Section~\ref{sec:feat-lang} outlines various common features of
-        programming languages that may interact in a bad way with union and
-        intersection contracts.
-    \item Section~\ref{sec:union-inter} introduces unions and intersections and
-        lists the possible motivations for adding them to a language.
-    \item Section~\ref{sec:issues-sem} studies intrinsic difficulties one may
-        encounter when trying to implement union and intersection contracts in
-        practice.
-    \item Section~\ref{sec:issues-literature} presents the shortcomings found in
-        existing attempts to solve said difficulties.
-    \item Section~\ref{sec:related-work} provides some related work.
+\item We describe the fundamental difficulties caused by presence of
+  union and intersection contracts in a language, which are kept
+  implicit in the literature (Section~\ref{sec:issues-sem})
+\item We survey the various trade-offs which appear in implemented
+  languages and in the literature to work around these difficulties
+  (Section~\ref{sec:issues-literature})
 \end{itemize}
-
-Section~\ref{sec:conclusion} concludes the paper.
-
 
 \section{A typology of language features}
 \label{sec:feat-lang}
@@ -1610,7 +1596,7 @@ contracts.
 \section{Conclusion}
 \label{sec:conclusion}
 
-The design and implementation of programming languages is a challenging task. It
+The  design and implementation of programming languages is a challenging task. It
 is a delicate exercise to balance complexity, expressivity, efficiency, and user
 experience all together. Unfortunately for designers, a language cannot usually
 be reduced to a simple sum of small independent features. They are rather
