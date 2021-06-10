@@ -200,7 +200,7 @@
 \begin{abstract}
 Union and intersection types are a staple of gradually typed language such
 as TypeScript. While it's long been recognized that union and
-intersections types are difficult to verify statically, it may appear
+intersection types are difficult to verify statically, it may appear
 at first that the dynamic part of gradual typing is actually pretty
 simple.
 
@@ -272,7 +272,7 @@ via example and a survey of the literature.
 
 Union types, meaning a type \nickel{A @| B} containing values which
 belong either to a type \nickel{A} or \nickel{B}, are a popular tool
-when adding a static types to a dynamic language. In particular, both
+when adding static types to a dynamic language. In particular, both
 TypeScript~\cite{TypeScriptUnions} and MyPy~\cite{MyPyOptional}, use
 union types to model the frequent practice to use the value
 \typescript{null} (\python{None} in Python) to represent an absent
@@ -328,23 +328,23 @@ job-matrix definition natively.
 
 In this article, we will use the Nickel language~\cite{NickelRepo} as
 illustration and motivation. At its core, Nickel is the JSON data
-model, and its conformed of:
+model, augmented with abstraction mechanisms, and its conformed of:
 
 \begin{itemize}
   \item dictionaries, written as:
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=nickel]
 {field1 = value1, ..., fieldn = valuen}
 \end{lstlisting}
   \item arrays:
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=nickel]
 [x1, x2, ..., xn]
 \end{lstlisting}
   \item functions:
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=nickel]
 fun arg1 ... argn => body
 \end{lstlisting}
   \item and let-definitions:
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=nickel]
 let id = value in exp
 \end{lstlisting}  
 \end{itemize}
@@ -405,7 +405,7 @@ schema. If this were a simple Boolean test, it would have to evaluate
 all 50\,000 package to check their validity, hence breaking the
 laziness of dictionaries. Do we have to choose between laziness and
 schema validation? Fortunately, we don't! Enter
-\emph{contracts}~\cite{FindlerFelleisenHOContracts}: dynamic check
+\emph{contracts}~\cite{FindlerFelleisenHOContracts}: dynamic checks
 which can be partially delayed, yet errors can be reported
 accurately. Contracts can respect laziness of dictionaries, and they
 can be use to add schema validation to functions as well (in fact
@@ -493,7 +493,8 @@ is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
 
 \subsection{Structure of this paper}
-\unsure{Make this section into a contributions section?}
+\unsure{Make this section into a contributions section?
+Or maybe just kill it?}
 Section~\ref{sec:intro} introduced the perspective of designing a configuration
 language. We presented the concept of contracts and detailed why contracts are
 particularly fitted for a configuration language, and more generally for data
@@ -591,7 +592,6 @@ application by directly substituting the function for its definition at compile
 time (or before execution, for interpreted language). This is especially
 efficient for small functions that are called repeatedly.
 
-\info{I think it's better to use [h] on figures, we can discuss it}
 \begin{figure}[h]
   \begin{center}
 \begin{lstlisting}[language=nickel,title={Source program}]
@@ -757,12 +757,16 @@ specified string.
 \begin{figure}
   \centering
   \begin{lstlisting}[language=JavaScript]
-    interface Circle { kind: "circle"; radius: number; }
+    interface Circle {
+      kind: "circle";
+      radius: number; }
 
-    interface Square { kind: "square"; sideLength: number; }
+    interface Square {
+      kind: "square";
+      sideLength: number; }
 
     type Shape = Circle | Square;
-  \end{lstlisting}
+\end{lstlisting}
 
   \caption{A sum type as a tagged union}
   \label{fig:tagged-union}
@@ -835,7 +839,7 @@ What value could we fill the square ($\square$) with for this to typecheck?
 Since we don't know what's the shape of \typescript{list},
 we can't know whether to push a \typescript{42 | "Nickel"} or a
 \typescript{"Nickel" | 3.5}. In general,
-when using a union, we have to treat it as if it where any one
+when using a union, we have to treat it as if it were any one
 of the alternatives. In the case of the example, we should provide
 it with a value that could be pushed to both arrays, the only possible one
 is \typescript{"Nickel"},
@@ -904,6 +908,27 @@ let myDog | Animal @& Pet =
 \label{fig:intersection-record}
 \end{figure}
 
+\unsure{Maybe it's better to give it in Typescript syntax?
+left it commented just in case}
+% \begin{figure}[h]
+% \begin{lstlisting}[language=JavaScript]
+% type Animal = {
+%   species: string,
+%   breed:   string,
+%   name:    string}
+
+% type Pet = {owner: string, name: string}
+
+% let myDog : Animal & Pet = {
+%   species : "Canis Lupus",
+%   breed   : "Australian Cattle Dog",
+%   owner   : "Anonymous Author",
+%   name    : "Juno" }
+% \end{lstlisting}
+% \caption{An animal that is also a pet}
+% \label{fig:intersection-record}
+% \end{figure}
+
 Another application of intersections shows up when intersecting
 functions: it can be used to encode overloading.
 For instance, take a look at Figure~\ref{fig:intersection-overloading-ex}, where the function
@@ -913,7 +938,7 @@ This is particularly useful when using unions, since it's a
 good way to express that a function can deal with different
 shapes of data.
 For instance, in the same figure, \nickel{duplicate} is (correctly) called
-on a value of type \nickel{List Str @| Str}.
+on a value of type \nickel{(List Str) @| Str}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -921,7 +946,7 @@ let duplicate
     | (List Str -> List Str)
     @& (Str -> Str) =
   fun x => x ++ x in
-let text | List Str @| Str = ... in
+let text | (List Str) @| Str = ... in
 duplicate text
 \end{lstlisting}
 \caption{Duplicating an array of Strings or a String}
@@ -1699,7 +1724,7 @@ hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
   think I've figured out what it means, but it needs more love. Also
   give an example which doesn't work and one that does for or/c.}
 
-\subsubsection{case->}
+\paragraph{case->}
 
 Racket does provide the \racket{case->} combinator which(partially) supports
 overloading. As for the \racket{or/c}, the candidate contracts must have
