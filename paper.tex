@@ -328,13 +328,38 @@ job-matrix definition natively.
 
 In this article, we will use the Nickel language~\cite{NickelRepo} as
 illustration and motivation. At its core, Nickel is the JSON data
-model, that is dictionaries (written \nickel{\{field1 = value1, ...,
-  fieldn = valuen\}}) and arrays (\nickel{[x1, ..., xn]}), augmented
-with functions (\nickel{fun arg1 ... argn => body}) and
-let-definitions (\nickel{let id = value in exp}).\unsure{Arnaud: this
+model, and its conformed of:
+
+\begin{itemize}
+  \item dictionaries, written as:
+\begin{lstlisting}[language=nickel]
+{field1 = value1, ..., fieldn = valuen}
+\end{lstlisting}
+  \item arrays:
+\begin{lstlisting}[language=nickel]
+[x1, x2, ..., xn]
+\end{lstlisting}
+  \item functions:
+\begin{lstlisting}[language=nickel]
+fun arg1 ... argn => body
+\end{lstlisting}
+  \item and let-definitions:
+\begin{lstlisting}[language=nickel]
+let id = value in exp
+\end{lstlisting}  
+\end{itemize}
+
+% In this article, we will use the Nickel language~\cite{NickelRepo} as
+% illustration and motivation. At its core, Nickel is the JSON data
+% model, that is dictionaries (written \nickel{\{field1 = value1, ...,
+%   fieldn = valuen\}}) and arrays (\nickel{[x1, ..., xn]}), augmented
+% with functions (\nickel{fun arg1 ... argn => body}) and
+% let-definitions (\nickel{let id = value in exp}).
+\resolved{Arnaud: this
   paragraph looks kind of bad, maybe it'll be better to put each
   syntax entry in an enumeration, we will see if there is still room
-  for this}
+  for this
+  Teo: Tried to enumerate the constructs, left the original commented}
 
 A Nickel configuration is then evaluated to an explicit configuration,
 \emph{e.g.}  in JSON, which can then be consumed by an
@@ -711,7 +736,7 @@ which can contain both strings and numbers would have type
 \typescript{Array<string|number>}.
 
 A probably even more common pattern is a variable which can contain
-either a value of type a (say, a number) or the \typescript{null}
+either a value of type \typescript{A} (say, a number) or the \typescript{null}
 value. So much so, in fact, that MyPy defines a type alias
 \python{Optional[A]} for \python{Union[A,None]} (\python{None} is how
 Python renders the null value).
@@ -792,32 +817,53 @@ sum contracts as unions.
 % \end{itemize}
 % All of which are common in configurations.
 
-\unsure{Arnaud: this paragraph is pretty good, on the other hand, there
+\resolved{Arnaud: this paragraph is pretty good, on the other hand, there
 is no value which lets me complete the example, so this example falls
-a bit flat.}
+a bit flat.
+Teo: Improved the example, also added another one commented that is, for me,
+more realistic, but I think the one uncommented is simpler.}
 We have shown how values of a union are built, is worth mentioning
 how they are used.
 For instance, consider the TypeScript function on Figure \ref{fig:addElem},
 we want it to insert an element to a list that is either an
-\typescript{Array<string>} or an \typescript{Array<number>},
-what value could we fill \typescript{...} with for this to typecheck?
+\typescript{Array< 42 | "Nickel" >} or an \typescript{Array< "Nickel" | 3.5 >},
+where \typescript{42}, \typescript{3.5}, and \typescript{"Nickel"} are literal types
+\footnote{Note that in TypeScript, union and intersection are written as
+\typescript{|} and \typescript{&}, instead of \nickel{@|} and \nickel{@&},
+as we do in Nickel.}.
+What value could we fill the square ($\square$) with for this to typecheck?
 Since we don't know what's the shape of \typescript{list},
-we can't know whether to push a \typescript{string} or a
-\typescript{number}.
-That is, when using a union, we have to treat it as if it where any one
-of the alternatives, in the case of the example, we should provide
-it with a value that is both a \typescript{string} and a \typescript{number}.
+we can't know whether to push a \typescript{42 | "Nickel"} or a
+\typescript{"Nickel" | 3.5}. In general,
+when using a union, we have to treat it as if it where any one
+of the alternatives. In the case of the example, we should provide
+it with a value that could be pushed to both arrays, the only possible one
+is \typescript{"Nickel"},
+since it's the only value that satisfies the intersection of
+\typescript{42 | "Nickel"} and \typescript{"Nickel" | 3.5}.
+
+\info{Not planned, but nice place to smooth things out towards
+intersections}
 
 \begin{figure}[h]
 \begin{lstlisting}[language=JavaScript]
-function addElem(list: Array<string> | Array<number>) {
-  list.push(...)
+function addElem(list: Array< 42 | "Nickel" > | Array< "Nickel" | 3.5 >) {
+    list.push((*@ $\square$ @*))
 }
 \end{lstlisting}
 \caption{Adding an element to a union of two arrays}
 \label{fig:addElem}
 \end{figure}
 
+% \begin{figure}[h]
+% \begin{lstlisting}[language=JavaScript]
+% function addElem(values: Array<{ Nix: string }> | Array<{ Nickel: number }>) {
+%     values.push({Nix: "Packages", Nickel: 32})
+% }
+% \end{lstlisting}
+% \caption{Adding an element to a union of two arrays}
+% \label{fig:addElem}
+% \end{figure}
 
 
 \subsection{Intersections}
@@ -828,7 +874,7 @@ satisfy both contract \nickel{A} and contract \nickel{B}.
 Intersection contracts (and types) are probably less prevalent than
 union in practical type systems. However, a function from a union is
 equivalent to an intersection. That is \nickel{(A @| B) ->
-  C}$\simeq$\nickel{(A -> C) @& (B -> C)}. So in a system with
+  C} $\simeq$ \nickel{(A -> C) @& (B -> C)}. So in a system with
 functions and unions, intersections are already morally present (and,
 for that matter, in a system with functions and intersections, unions
 are morally present). Some
@@ -845,13 +891,14 @@ particular application is supported, for instance, by TypeScript.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let Animal = { species: Str, race: Str } in
+let Animal =
+  { species: Str, breed: Str, name: Str } in
 let Pet = { owner: Str, name: Str } in
 let myDog | Animal @& Pet =
   { species = "Canis Lupus",
-    race = "Australian Cattle Dog",
-    owner = "Anonymous Author",
-    name = "Juno" }
+    breed   = "Australian Cattle Dog",
+    owner   = "Anonymous Author",
+    name    = "Juno" }
 \end{lstlisting}
 \caption{An animal that is also a pet}
 \label{fig:intersection-record}
@@ -886,14 +933,15 @@ duplicate text
 
 However appealing union and intersection contracts may be, they happen
 to be fundamentally incompatible with the desirable language
-features from Section~\ref{sec:feat-lang}. At least in there
+features from Section~\ref{sec:feat-lang}. At least in their
 full-blown form: in Section~\ref{sec:issues-literature} we will
 discuss pragmatic restrictions of union and intersection contracts to
 recover some or all of the features.
 
 \subsection{Union contracts as a side-effect}
 
-In Nickel, the failure of a function contract can always be traced back to a
+In \unsure{Maybe specify its Nickel without Union or inter}Nickel,
+the failure of a function contract can always be traced back to a
 single call. For example, take the function \nickel{f} with a simple contract
 attached of Figure~\ref{fig:pos-to-pos}. The whole program fails with a contract
 error blaming \nickel{f} because the return value of the second call \nickel{f 5}
@@ -1090,11 +1138,11 @@ no argument can satisfy \nickel{Num @& Str}.
 % entail breaking the whole thing, as shown on the second example on the same
 % Figure, that would fail.
 
-In an higher-order intersection contract, blame is raised when:
+In a higher-order intersection contract, blame is raised when:
 \begin{description}
     \item[Faulty caller] The argument fails \emph{both} components.
-    \item[Faulty implementation] The function fails \emph{one} component that the
-        argument previously satisfied.
+    \item[Faulty implementation] The function fails at least \emph{one}
+        component that the argument previously satisfied.
 \end{description}
 
 % Not all hope is lost, we could pass some extra shared state
@@ -1297,14 +1345,16 @@ A -> B @& A -> C (*@ $\simeq$ @*) A -> (B @& C)
 \label{fig:distributivity-law}
 \end{figure}
 
-Curiously, union and intersection type systems, on which
-\cite{KeilThiemannUnionIntersection} are basing their semantics on, don't
-exhibit this property. Subtyping allows to correctly type check a term like
-\nickel{g 1} as both \nickel{Num -> Num} as well as
-\nickel{Bool -> Num}, and then deducing that \nickel{g 1}
-can be given the type \nickel{Num -> Num @& Bool -> Num}.
-\unsure{(Yann) I just reworked the wording, but I'm not totally sold on the
-argument}
+% Curiously, union and intersection type systems, on which
+% \cite{KeilThiemannUnionIntersection} are basing their semantics on, don't
+% exhibit this property. Subtyping allows to correctly type check a term like
+% \nickel{g 1} as both \nickel{Num -> Num} as well as
+% \nickel{Bool -> Num}, and then deducing that \nickel{g 1}
+% can be given the type \nickel{Num -> Num @& Bool -> Num}.
+\resolved{(Yann) I just reworked the wording, but I'm not totally sold on the
+argument
+(Teo) I agree, I think it would need to be expanded for it to actually
+say something, I'll remove it}
 
 \section{Pragmatic trade-offs}
 \label{sec:issues-literature}
@@ -1334,8 +1384,8 @@ appears to require complex book-keeping in order to correctly raise blame.
 An aspect of the approach of~\cite{KeilThiemannUnionIntersection} is to rewrite
 these nested contracts using the De Morgan law of
 Figure~\ref{fig:de-morgan-law}, eagerly opening up unions while postponing
-intersection as much as possible.  \todo{This assumes the difficulty has been
-previously explained} This transformation flattens arbitrarily nested unions and
+intersection as much as possible.
+This transformation flattens arbitrarily nested unions and
 intersections to a union of intersections, making blame resolution more
 manageable.\unsure{(Yann) find better (more precise) wording}
 
@@ -1364,7 +1414,7 @@ mechanism.
 \resolved{(Yann) Does
 it also make it less efficient? If $(A \cap B)$ fails because of $B$, their
 development causes to recheck the contract $A$ that has been duplicated?}
-\unsure{Arnaud says: this whole
+\resolved{Arnaud says: this whole
 section is too abstract give concrete code and explain what goes
 wrong. It's fine to give code in Nickel syntax}
 
@@ -1394,10 +1444,10 @@ let g | (Str -> Str) @& C
 in g 0
 \end{lstlisting}
 \begin{lstlisting}[numbers=none,title={First component}]
-g 0 | Str -> Str
+(g | Str -> Str) 0
 \end{lstlisting}
 \begin{lstlisting}[numbers=none,title={Second component}]
-g 0 | C
+(g | C) 0
 \end{lstlisting}
 \caption{Intersection and user defined contracts}
 \label{fig:inter-flat-contracts-2}
@@ -1438,7 +1488,7 @@ this can be a sensible choice (in a gradual typing context e.g.), this is a show
 stopper for our initial use-case of the Nickel configuration language, the main
 motivation being to use contracts as customizable validation functions.
 
-On the semantic side, one of the so-called the sound monitoring properties
+On the semantic side, one of the so-called sound monitoring properties
 linking the operational semantics to the denotational semantics (supposed to
 capture the intuitive interpretation) is at odds with the given interpretation.
 % On top of that, a fundamental problem arises on said paper,
@@ -1510,6 +1560,15 @@ both \nickel{Num -> Num} and \nickel{Bool -> Bool} can safely be applied to a
 number and to a boolean in a row. And indeed, the denotational semantics given
 in~\cite{KeilThiemannUnionIntersection} does accept this context as valid.
 
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let f = (*@$\square$@*) in
+(f 3, f true)
+\end{lstlisting}
+\caption{Combined context}
+\label{fig:invalid-context}
+\end{figure}
+
 The issue is not as bad as it sounds: the system presented
 in~\cite{RootCauseOfBlame} actually corresponds to the wished, stronger
 semantics in practice. The specification is just not exactly the right one, but
@@ -1530,15 +1589,6 @@ contracts where satisfaction is much more straightforward.
 % Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
 % shown on Figure \ref{fig:wmw-semantics}, it is not a valid
 % \nickel{Num -> Num @& Bool -> Bool} context.
-
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel]
-let f = (*@$\square$@*) in
-(f 3, f true)
-\end{lstlisting}
-\caption{Combined context}
-\label{fig:invalid-context}
-\end{figure}
 
 % However, both our intuition, as the most common use case of intersections
 % (that is, overloading), tells us that this should work.
@@ -1569,7 +1619,7 @@ languages, Racket is probably the one with the most comprehensive contract
 system\cite{RacketContracts}. Regarding union and intersections, Racket provides
 the \racket{and/c} and \racket{or/c} combinators for contract.  These
 combinators correspond to the naive interpretation of unions and intersections
-(as in Figure~\ref{fig:naive-impl}): \racket{and/c} (resp.  \racket{or/c})
+(as in Figure~\ref{fig:naive-impl} for intersections): \racket{and/c} (resp.  \racket{or/c})
 simply checks sequentially that all (resp. one) contracts pass.  In consequence,
 unions or intersections of higher-order contracts don't match intuition, and in
 particular intersections don't model overloading. As in
@@ -1600,7 +1650,7 @@ both \racket{number?} and \racket{string?}.
 \end{figure}
 
 When higher-order contracts are combined using \racket{or/c}, Racket imposes
-that contracts must distinguishable by their arity. Doing so, there is at most
+that contracts must be distinguishable by their arity. Doing so, there is at most
 one candidate that can be selected directly. This is illustrated in
 Figure~\ref{code:racket:or/c:working} whose program is accepted. On the other
 hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
@@ -1654,7 +1704,7 @@ hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
 Racket does provide the \racket{case->} combinator which(partially) supports
 overloading. As for the \racket{or/c}, the candidate contracts must have
 distinct arities to avoid ambiguity. An example is provided in
-Figure~\ref{fig:rafig:racket-case-fun}. The resulting possibilities are similar
+Figure~\ref{fig:racket-case-fun}. The resulting possibilities are similar
 to static overloading, where one function can take additional parameters for
 example (e.g. as supported for Java methods). Unfortunately, it excludes the
 overloading of generic operations with fixed arity such as equality, comparison,
@@ -1672,8 +1722,8 @@ arithmetic operators, and so on.
 \begin{lstlisting}[language=racket]
 (define/contract overcase
   (case-> (-> string? string?)
-          (-> number? number? number?)
-          )
+         (-> number? number? number?)
+  )
   (lambda (x [y 0]) (if (number? x)
                    (+ x y)
                    x)))
@@ -1734,7 +1784,7 @@ are neither visible nor available to the programmer. Obviously, no contracts
 mean no user-defined contracts as well.
 
 The implementation of casts relies on abstract interpretation, leading to a
-complex specification, whose implementation is straightforward. It is not clear
+complex specification, whose implementation is not straightforward. It is not clear
 either how much these casts rely on static type information to function
 correctly, possibly hampering their transformation to more general standalone
 contracts.
