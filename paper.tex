@@ -1258,10 +1258,11 @@ altogether.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let c = contracts.frompred (fun f =>
+let c = contracts.fromPred (fun f =>
   f 0 == 0) in
 let g | (Str -> Str) @& c
       = fun x => x
+in g 0
 \end{lstlisting}
 \caption{intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
