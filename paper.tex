@@ -1285,62 +1285,30 @@ These systems all make trade-offs, sacrificing some features of union
 and intersection contracts to preserve language features. We survey
 and discuss those trade-offs and their implications.
 
-\subsection{A semantics based on types}
+\subsection{A conductive semantics}
 
+In order to give a precise definition to what values ought to satisfy
+union and intersection contracts, \cite{KeilThiemannUnionIntersection}
+give a coinductively defined semantics inspired by union and
+intersection type systems. The key innovation of
+\cite{KeilThiemannUnionIntersection} is recognizing that giving a
+semantics to higher-order contracts requires defining not only what
+values satisfy a contract, but also what \emph{contexts} satisfy the
+contract. This models the situation where context may violate a
+contract by calling a function with an inappropriate argument.
 
-Previous points of this section were about how implementing the expected
-semantics for union and intersection has a profound impact on the language. Let
-us end the section by investigating a different aspect: does the
-semantics correspond to the programmer's intuition?
+Concretely, given a contract $C$, \cite{KeilThiemannUnionIntersection}
+introduce the two sets $\llbracket C \rrbracket^+$ and $\llbracket C
+\rrbracket^-$ of values and contexts, respectively, satisfying the
+contract. They are defined by mutual induction and coinduction.
 
-But which semantics? We deemed the exchange law of Figure~\ref{fig:naive-impl}
-as ``clearly wrong'' with respect to overloading. There is nothing wrong per se :
-we could choose a semantics for intersections that validate this rule.  However,
-the resulting system wouldn't capture overloading, and is arguably not very
-interesting nor useful. In~\cite{KeilThiemannUnionIntersection}, the authors
-argue for basing the semantics of contracts on union and intersection type
-systems, which have a simple and natural definition from which the other
-properties follow. This approach makes sense, and has been continued in future
-works, and in particular in~\cite{RootCauseOfBlame}.
-
-But even this semantics is no panacea. Figure~\ref{fig:intersection-distribution}
-shows an example that intuitively looks like it should succeeed, returning
-\nickel{(1, 1)}. However, under the semantics used both
-in~\cite{KeilThiemannUnionIntersection} and~\cite{RootCauseOfBlame}, this program
-fails with a contract violation.
-
-% Before wrapping up the section, we would like to show that maybe, union and
-% intersection contracts are not exactly what we would want them to be.  As stated
-% throughout this work, programmers coming from dynamic languages are accustomed
-% to perform safety checks (data validation) with great amounts of flexibility and
-% the whole power of their language of choice at their disposal.
-%
-% For instance, a Python programmer may have no problem in checking at runtime,
-% that a given variable is an integer if a given flag is not set, as shown in
-% Figure \ref{fig:python-assertion}; while a Haskell programmer might close her
-% eyes and leave the room instantly.
-%
-% \begin{figure}[h]
-% \begin{lstlisting}[language=python]
-% result = 42 if flag else "Disabled"
-% ...
-% assert (
-%   (not flag)
-%   or isinstance(result, int)
-% )
-% \end{lstlisting}
-% \caption{Asserting at runtime the type of a variable}
-% \label{fig:python-assertion}
-% \end{figure}
-%
-% These expectations are not really met by how unions and intersections
-% contracts are supposed to work.
-% For example, consider the Nickel code shown on Figure
-% \ref{fig:intersection-distrbution}, at first sight, this code should
-% complete execution successfully, returning \nickel{(1, 1)},
-% however, under both the Keil and Thiemann, as well as the
-% Williams, Morris, and Wadler works, this program will fail, with a violation
-% of the contract imposed to \nickel{g}.
+This semantics has limited support for overloading. Consider the
+example in Figure~\ref{fig:intersection-distribution}: it could
+evaluate to the pair \nickel{(1, 1)}. But the coinductive semantics
+of~\cite{KeilThiemannUnionIntersection} rejects it as a contract
+violation. This can be phrased pithily as the fact that the
+coinductive semantics doesn't validate the property \nickel{A -> B @&
+  A -> C}$\simeq$\nickel{A -> (B @& C)}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1354,24 +1322,12 @@ let h = g 1 in
 \label{fig:intersection-distribution}
 \end{figure}
 
-This discrepancy is inherent to the chosen semantics .  When applying a function
-with an intersection contract, only one component of the intersection must be
-selected for the function. The actual choice of component may be delayed to
-later, but the point is that it must be the same across all usages. In
-Figure~\ref{fig:intersection-distribution}, the contract for \nickel{h} can in
-consequence be either \nickel{Num -> Num} or \nickel{Bool -> Num}, but not both.
-This is a manifestation of the following more general defect: the distributivity
-law given in Figure~\ref{fig:distributivity-law} is not valid in the semantics
-given in~\cite{KeilThiemannUnionIntersection}, while it is both sound to add and
-intuitive.
-
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel]
-A -> B @& A -> C (*@ $\simeq$ @*) A -> (B @& C)
-\end{lstlisting}
-\caption{Distributivity law}
-\label{fig:distributivity-law}
-\end{figure}
+Note that if the last two lines of
+Figure~\ref{fig:intersection-distribution} had read \nickel{(g 1 1, g
+  1 true)} instead, then the coinductive semantics would accept the
+example. It implies that under the coinductive semantics,
+common-subexpression elimination (see Section~\ref{sec:optimizations})
+is quite perilous.
 
 \subsection{A first realization}
 \label{sec:keil-thiemann}
@@ -1865,4 +1821,5 @@ for union and intersection contracts, these gaps might be quite large in places.
 
 % LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall MyPy
 % LocalWords:  Kubernetes DevOps natively nixpkgs disjunctions
-% LocalWords:  TypeScript serializable serialization
+% LocalWords:  TypeScript serializable serialization coinductively
+% LocalWords:  coinduction coinductive
