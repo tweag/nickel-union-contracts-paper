@@ -1322,7 +1322,6 @@ is quite perilous.
 
 \subsection{A first realization}
 \label{sec:keil-thiemann}
-\unsure{Subsection title?}
 
 In Section~\ref{sec:issues-sem}, we've seen that different calls to a function
 with a union contract must share information: the behavior of one call is
@@ -1373,63 +1372,56 @@ implement efficiently.
 
 \subsection{Monitoring properties}
 \label{sec:will-morr-wadl}
-\unsure{Subsection title?}
 
-As mentioned in Section~\ref{sec:issues-sem}, Williams, Morris, and Wadler,
-downright exclude user-defined contracts from the picture. This choice gives
-them more freedom in the quest of a more uniform operational semantics. While
-this can be a sensible choice (in a gradual typing context e.g.), this is a show
-stopper for our initial use-case of the Nickel configuration language, the main
-motivation being to use contracts as customizable validation functions.
+Another realization of the coinductive semantics described in
+Section~\ref{sec:coinductive-sem}, is~\cite{RootCauseOfBlame}, which
+aims at simplifying the algorithmic system proposed
+by~\cite{KeilThiemannUnionIntersection} and described in
+Section~\ref{sec:keil-thiemann}.
 
-On the semantic side, one of the so-called sound monitoring properties
-linking the operational semantics to the denotational semantics (supposed to
-capture the intuitive interpretation) is at odds with the given interpretation.
-% On top of that, a fundamental problem arises on said paper,
-% symptom of the difficulty of establishing good enough, and yet
-% simple semantics for union and intersection dynamic checks.
-% One of their main results, is the fact that their calculus obeys
-% all of their expected monitoring properties for higher ordered, union
-% and intersection contracts.
+A key ingredient of~\cite{RootCauseOfBlame} is disallow user-defined
+contracts. This choice gives the authors more freedom in the quest of
+a more uniform operational semantics. This is sensible trade-off in
+the context of gradual typing à la TypeScript: the problem is to match
+contract with static types, and user-defined contracts don't have a
+static type equivalent. On the other hand, the cost would probably not
+be worth it for a configuration language like Nickel.
 
-For a contract $A$, $\llbracket A \rrbracket^+$ defines the set of terms that
-satisfy $A$. For example,
+% Some of this we may want to move to Section 5.1
+%
+% For a contract $A$, $\llbracket A \rrbracket^+$ defines
+% the set of terms that satisfy $A$. For example,
 
-\begin{lstlisting}[language=nickel,frame=none,numbers=none]
-    if true then 1 else "a" (*@$\in \llbracket Num \rrbracket^+$@*)
-\end{lstlisting}
+% \begin{lstlisting}[language=nickel,frame=none,numbers=none]
+%     if true then 1 else "a" (*@$\in \llbracket Num \rrbracket^+$@*)
+% \end{lstlisting}
 
-For higher-order contracts, the notion has two facets. A \nickel{Num -> Str}
-contract can be violated in two ways: by the function returning a value that is
-not a string, or by the caller providing an argument that is not a number.  The
-former is embodied by the same notion as before: $f \in \llbracket Num \to Str
-\rrbracket^+$ if whenever $f$ receives a number, it returns a string.  One
-important contribution of~\cite{KeilThiemannUnionIntersection}, upon
-which~\cite{RootCauseOfBlame} builds, is to extend the notion of contract
-satisfaction to \emph{contexts}, embodying the caller's
-obligations. A context $K$ is a term with a hole to be filled with a term (Figure~\ref{fig:valid-contexts} has examples). Then, $K \in \llbracket Num \to
-Str \rrbracket^-$ (the context $K$ satisfies the contract \nickel{Num -> Str})
-if it only applies the hole to arguments satisfying the \nickel{Num} contract.
+% For higher-order contracts, the notion has two facets. A \nickel{Num -> Str}
+% contract can be violated in two ways: by the function returning a value that is
+% not a string, or by the caller providing an argument that is not a number.  The
+% former is embodied by the same notion as before: $f \in \llbracket Num \to Str
+% \rrbracket^+$ if whenever $f$ receives a number, it returns a string.  One
+% important contribution of~\cite{KeilThiemannUnionIntersection}, upon
+% which~\cite{RootCauseOfBlame} builds, is to extend the notion of contract
+% satisfaction to \emph{contexts}, embodying the caller's
+% obligations. A context $K$ is a term with a hole to be filled with a term (Figure~\ref{fig:valid-contexts} has examples). Then, $K \in \llbracket Num \to
+% Str \rrbracket^-$ (the context $K$ satisfies the contract \nickel{Num -> Str})
+% if it only applies the hole to arguments satisfying the \nickel{Num} contract.
 
-These interpretations $\llbracket . \rrbracket^+$ and $\llbracket .
-\rrbracket^-$ then need to be extended to the setting of unions and
-intersections. In particular, one of the definitions of~\cite{RootCauseOfBlame}
-is the following:
+As a means of proving the correctness of their simplified system, the
+authors introduce what they call \emph{sound monitoring
+  properties}. Here is the sound monitoring property for contexts of
+intersection contracts:
 
-\begin{figure}[h]
 $$ K \in \llbracket A \cap B \rrbracket^-~if~K \in \llbracket A \rrbracket^- \lor K \in \llbracket B \rrbracket^- $$
-\caption{Sound monitoring property for intersection from~\cite{RootCauseOfBlame}}
-\label{fig:wmw-semantics}
-\end{figure}
 
 This reads as: a context $K$ satisfies the intersection of $A$ and $B$ if it
 satisfies at least one of the two. Morally, the $K$s in $\llbracket A \cap B
 \rrbracket^-$  should be the ones that can have their hole filled with a term
 satisfying $A \cap B$ without violating the $A \cap B$ contract.
 
-Although valid, this interpretation is weaker than what~\cite{RootCauseOfBlame}
-actually describes it to be and than the semantics given
-in~\cite{KeilThiemannUnionIntersection}. Consider the two contexts presented on
+Although sound, this interpretation is weaker than what the
+coinductive semantics permit. Consider the two contexts presented on
 Figure~\ref{fig:valid-contexts}. The first one is a context satisfying
 \nickel{Num -> Num}, applying the hole to a number. Similarly, the second context
 from the same figure satisfies \nickel{Bool -> Bool}.
@@ -1446,13 +1438,9 @@ from the same figure satisfies \nickel{Bool -> Bool}.
 \end{figure}
 
 Now, combining these two context as in Figure~\ref{fig:invalid-context} gives a context
-that doesn't satisfy \nickel{Num -> Num} nor \nickel{Bool -> Bool}.  According
-to the semantics of~\cite{RootCauseOfBlame}, it thus doesn't satisfy \nickel{Num
--> Num @& Bool -> Bool}. Yet, our intuition tells us that this example is a
-perfectly valid context for this contract: an overloaded function satisfying
-both \nickel{Num -> Num} and \nickel{Bool -> Bool} can safely be applied to a
-number and to a boolean in a row. And indeed, the denotational semantics given
-in~\cite{KeilThiemannUnionIntersection} does accept this context as valid.
+that doesn't satisfy \nickel{Num -> Num} nor \hbox{\nickel{Bool -> Bool}.}  According
+to the sound monitoring property of intersection, Figure~\ref{fig:invalid-context} thus doesn't satisfy \nickel{Num
+-> Num @& Bool -> Bool}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1463,47 +1451,14 @@ let f = (*@$\square$@*) in
 \label{fig:invalid-context}
 \end{figure}
 
-The issue is not as bad as it sounds: the system presented
-in~\cite{RootCauseOfBlame} actually corresponds to the wished, stronger
-semantics in practice. The specification is just not exactly the right one, but
-this can probably be fixed along the lines
-of~\cite{KeilThiemannUnionIntersection}, where the notion of context used to
-define satisfaction is carefully restricted (\emph{elimination contexts}). While
-this kind of oversight doesn't lower the quality of the work
-of~\cite{RootCauseOfBlame} by any measure, it illustrates that contract
-satisfaction in presence of unions, intersections and functions is a tricky
-notion. This difficulty contrasts with the standard framework of higher-order
-contracts where satisfaction is much more straightforward.
-% Next, we can combine these two contexts into one, that essentially
-% has one single missing value, that will be used independently in both contexts
-% from Figure \ref{fig:valid-contexts}, as shown on Figure \ref{fig:invalid-context}.
-% This context is not a valid \nickel{Num -> Num} context, since it will apply
-% the value put on $\square$ (through \nickel{f}) to a non \nickel{Num} (\nickel{true}).
-% In a similar way, it is not a valid \nickel{Bool -> Bool} context either.
-% Therefore, according to the semantics from the Williams, Morris, and Wadler paper, as
-% shown on Figure \ref{fig:wmw-semantics}, it is not a valid
-% \nickel{Num -> Num @& Bool -> Bool} context.
-
-% However, both our intuition, as the most common use case of intersections
-% (that is, overloading), tells us that this should work.
-% While this problem does not invalidate their work (in fact, the system they present
-% handles these cases correctly), it shows that existing research is still not on
-% good shape to handle the growing usecases being developed for
-% unions and intersections around dynamic languages.
-
-% $$ K ::= Id | K \bullet \square N | K \bullet V \square | K \bullet \square @^pA  $$
-
-% Keil and Thiemann did noticed this problem, and their contract satisfaction
-% rules only apply to elimination context, a particular kind of context
-% where the hole is either being applied to an argument
-% ($\square N$) or is used as an argument for a primitive
-% operation ($O(\overrightarrow{\text{V}}, \square, \overrightarrow{\text{N}})$).
-
-
-% K ::= Id | K ◦ □ N | K ◦ V □ | K ◦ □ @pA
-\resolved{(Yann) Maybe adding a concrete example of this (it can be the same term but with
-    concrete types like Number and String and simple contexts like application
-    to a dumb argument) is sufficient to make the point}
+The consequence is that~\cite{RootCauseOfBlame} doesn't prove their
+system complete for the coinductive semantics. It's probably just an
+oversight in the proof: we believe their system to be indeed complete
+for the coinductive semantics. But it does speak to the intrinsic
+complexity of union and intersection contracts: it is remarkably easy
+to get details wrong. This difficulty contrasts with the standard
+framework of higher-order contracts where satisfaction is much more
+straightforward.
 
 \subsection{Racket}
 \label{sec:racket}
