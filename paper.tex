@@ -830,8 +830,8 @@ how they are used.
 For instance, consider the TypeScript function on Figure \ref{fig:addElem},
 we want it to insert an element to a list that is either an
 \typescript{Array< 42 | "Nickel" >} or an \typescript{Array< "Nickel" | 3.5 >},
-where \typescript{42}, \typescript{3.5}, and \typescript{"Nickel"} are literal types
-\footnote{Note that in TypeScript, union and intersection are written as
+where \typescript{42}, \typescript{3.5}, and \typescript{"Nickel"} are literal
+types\footnote{Note that in TypeScript, union and intersection are written as
 \typescript{|} and \typescript{&}, instead of \nickel{@|} and \nickel{@&},
 as we do in Nickel.}.
 What value could we fill the square ($\square$) with for this to typecheck?
@@ -885,7 +885,7 @@ of our examples in Sections~\ref{sec:issues-sem}
 and~\ref{sec:issues-literature} are better expressed in terms of
 intersections, so it's best to include them.
 
-Yet intersections are useful in their own right. They can be used to
+Yet, intersections are useful in their own right. They can be used to
 combine dictionaries in the style of object-oriented inheritance. For instance, in
 Figure \ref{fig:intersection-record} two types are defined
 \nickel{Animal} and \nickel{Pet}, and a variable that is compatible
