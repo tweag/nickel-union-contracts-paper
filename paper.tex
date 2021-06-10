@@ -345,7 +345,7 @@ fun arg1 ... argn => body
   \item and let-definitions:
 \begin{lstlisting}[frame=none,numbers=none,language=nickel]
 let id = value in exp
-\end{lstlisting}  
+\end{lstlisting}
 \end{itemize}
 
 % In this article, we will use the Nickel language~\cite{NickelRepo} as
@@ -562,15 +562,16 @@ and intersection contracts\cite{RacketContracts}.
 
 The performance of modern programs heavily relies on the optimizations performed
 by the compiler or the interpreter. Even more so for functional languages, whose
-execution model is often far removed from actual processors, causing naive
-execution to exhibit unacceptable slowdowns.
+execution model is often far removed from the hardware, causing naive execution
+to exhibit unacceptable slowdowns.
 
-One crucial optimization is
-inlining (Figure \ref{fig:optimizations-inlining-ex}). Functional programs tend
-to make heavy use of functions, and a function call is a costly operation from
-the point of view of low-level execution. Inlining eliminates a function
-application by directly substituting the function for its definition at compile
-time (or before execution, for interpreted language). This is especially
+One such important optimization is inlining (Figure
+\ref{fig:optimizations-inlining-ex}). Functional programs tend to make heavy use
+of functions, and a function call is not a free operation: it usually involves a
+number of low-level operations such as saving and storing registers, pushing a new stack
+frame and jumping to and back from the function's body. Inlining eliminates a
+function call by directly substituting the function for its definition at
+compile time (or before execution, for interpreted language). This is especially
 efficient for small functions that are called repeatedly.
 
 \begin{figure}[h]
@@ -594,12 +595,12 @@ let subList = fun l1 l2 =>
 \end{figure}
 
 While inlining expands an expression by substituting a definition for its value,
-an opposite transformation is sometimes beneficial, for example when a composite
-expression is repeated several times. This causes the same expression to be
-wastefully recomputed at each occurrence. Common subexpression elimination (CSE)
-consists in introducing a new identifier for this expression and using the
-identifier in place of the original occurrences
-(Figure \ref{fig:optimizations-cse-ex}), computing the result once and for all.
+an opposite transformation can be beneficial when a composite expression occurs
+at several places. In this case, the same expression is wastefully recomputed at
+each occurrence. Common subexpression elimination (CSE) consists in storing the
+expression in a variable that is then used in place of the original occurrences
+(Figure \ref{fig:optimizations-cse-ex}), thus evaluating the expression once and
+for all.
 
 \begin{figure}[h]
   \begin{center}
@@ -623,10 +624,10 @@ let elemAtOrLast = fun index list =>
 \label{fig:optimizations-cse-ex}
 \end{figure}
 
-Beyond CSE, optimizations such as loop-invariant code motion or
-let-floating~\cite{letFloating} apply the same principle of extracting out an invariant
-expression to avoid its recomputation respectively across loop iterations and
-function calls.
+Beyond CSE, other optimizations such as loop-invariant code motion or
+let-floating~\cite{letFloating} apply the same principle of extracting out an
+invariant expression to avoid recomputing it (respectively across loop
+iterations and function calls).
 
 \begin{figure}
   \begin{center}
@@ -634,7 +635,7 @@ function calls.
 let f = fun x => g y (x + 1)
 \end{lstlisting}
 \begin{lstlisting}[language=nickel,title={Optimized program}]
-let g' = g y
+let g' = g y in
 let f' = fun x => g' (x + 1)
 \end{lstlisting}
   \end{center}
@@ -644,52 +645,60 @@ let f' = fun x => g' (x + 1)
 
 For example, take the code of Figure~\ref{fig:optimizations-let-floating-ex}.
 The partial application \lstinline+g y+ is recomputed each time \lstinline+f+ is
-called. This may be costly, in particular in the presence of contracts: if
-\lstinline+y+ is a list for example, and \lstinline+g+ applies a list contract
-on it, the cost could be linear in the size of \lstinline+y+. A sensible thing
-to do is to factor \lstinline+g y+ out of \lstinline+f+ as in
-Figure~\ref{fig:optimizations-let-floating-ex}, which is something a
-let-floating transformation could indeed do (given \lstinline+g+ is pure, as
-explained below).
+called. This may be costly, in particular in the presence of contracts: if the
+first argument of \lstinline+g+ must be a list with elements of a specific kind
+and if that precondition is enforced by a function contract (say \nickel{g |
+List Odd -> Even -> List Odd}), the additional cost is linear in the size of
+\lstinline+y+. A sensible thing to do is to factor \lstinline+g y+ out of
+\lstinline+f+ as in Figure~\ref{fig:optimizations-let-floating-ex}, which is
+something a let-floating transformation could indeed do (given \lstinline+g+ is
+pure, as detailed below).
 
-The soundness of all these optimizations is tied to the invariance of the
-semantics of programs with respect to specific substitutions. Inlining requires
-that one can replace the application of a function by its body, which is
-basically $\beta$-reduction: as long as the arguments are evaluated following
-the language's strategy, it is a valid transformation. On the other hand,
-a CSE-like transformation on a term $M$ requires an expansion property of the form
+The soundness of these optimizations is tied to the validity of specific program
+equivalences. Inlining requires that one can replace the application of a
+function by its body, which is basically $\beta$-reduction: as long as the
+arguments are evaluated following the language's strategy, this is usually a
+valid transformation. However, Section~\ref{sec:issues-sem} exposes that the
+question of inlining a function with a contract attached is more subtle.
+
+A CSE-like transformation on a term $M$ requires on the other hand an
+equivalence of the form:
 
 \begin{equation}\label{eq:cbn-expansion}
-M[x/N] \simeq let~x~=~N~in~M
+M[N/x] \simeq let~x~=~N~in~M
 \end{equation}
 
-Here, $M[x/N]$ is the substitution of $x$ for $N$ in the term $M$.
-\ref{eq:cbn-expansion} has an evident call-by-name flavour, and consequently
-fails in general for a call-by-value language with side effects.  Indeed, define
-the following function $f$:
+$M[N/x]$ stands for the substitution of $x$ for the term $N$ in the term $M$.
+This equation clearly fails in presence of side-effects, as demonstrated in
+Figure~\ref{fig:optim-invalid-cse}. In that example, \nickel{(f 1, f 1)} prints
+\nickel{"hi"} two times while \nickel{let y = f 1 in (y,y)} only prints it once.
 
-\begin{lstlisting}[language=Nickel]
-let f x = print "hi";(x+1) in
+\begin{figure}[h]
+\begin{lstlisting}[language=Nickel,title={Effectful function}]
+let f x = print "hi";(x+1)
 \end{lstlisting}
-
-Then:
-
-\begin{lstlisting}[language=Nickel]
+\begin{lstlisting}[language=Nickel,title={Invalid expansion}]
 (f 1,f 1) (*@ $\not \simeq$ @*) let y = f 1 in (y,y)
 \end{lstlisting}
+\caption{Counter-example to (\ref{eq:cbn-expansion}) in presence of
+side-effects}
+\label{fig:optim-invalid-cse}
+\end{figure}
 
-In the example above, the first term prints \nickel{"hi"} two times while the
-second term prints it only once. However, \ref{eq:cbn-expansion} does hold for
-\emph{pure} terms, that are terms without side-effects. In a pure language, or a
-language with effect tracking like PureScript\resolved{Cite a different
-    language, or remove citation. (ADDED) tbh PureScript is still
+However, (\ref{eq:cbn-expansion}) does hold for \emph{pure} terms, that are
+terms without side-effects. In a pure language, all these transformations are
+valid.  In impure languages, the situation varies: in some case a large subset
+of pure terms can be identified (in languages with effects tracking such as
+PureScript) to be safely transformed.  Otherwise, the compiler must stay
+conservative and only apply CSE to expressions it can prove are without
+side-effects (arithmetic expressions, for example). \resolved{Cite a
+different language, or remove citation.  (ADDED) tbh PureScript is still
 statically-typed, compiled lang, but who knows: the "script" in the name and the
-web orientation may still be more appealing to the audience of DLS}, pure terms
-can be safely identified for applying optimizations.
+web orientation may still be more appealing to the audience of DLS}
 
-Strikingly, we will see in section~\ref{sec:issues-sem} that the introduction of
-unions and intersections can make \ref{eq:cbn-expansion} unsound \emph{even in a
-pure setting}, preventing the optimization of
+Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
+unions and intersections make (\ref{eq:cbn-expansion}) unsound \emph{even in a
+pure setting}, preventing the kind optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 
 \section{Union \& intersection}
