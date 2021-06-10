@@ -1596,55 +1596,30 @@ contracts.
 \section{Conclusion}
 \label{sec:conclusion}
 
-The  design and implementation of programming languages is a challenging task. It
-is a delicate exercise to balance complexity, expressivity, efficiency, and user
-experience all together. Unfortunately for designers, a language cannot usually
-be reduced to a simple sum of small independent features. They are rather
-composed of a lot of moving parts that interact in unexpected ways. The more a
-language grows, the more any new addition has to be weighted carefully, as it
-has the potential to interact with any of the existing features.
+Despite the fact that union and intersection of dynamic properties may
+at first appear like an easy task, as soon as they are combined with
+higher-order contracts for increased accuracy of error messages, they
+really aren't.
 
-Part of recent developments revolves around improving safety of languages,
-ideally with little to none effort required by the programmers.  Contracts are
-crucial to this endeavour, they are fundamental to allow a safe interaction
-between typed and untyped code in gradually typed languages; but they are also
-interesting in themselves in a fully dynamically typed language (and even in a
-fully statically typed language). Contracts are a precious idiom for data
-validation or to enforce runtime pre- and post-condition that would be hard to
-ensure statically.
+The problem of union and intersection contracts is that they are not
+orthogonal to apparently independent features of programming
+languages. The mere presence of intersection and union contract
+induces computational effects, and can make it quite difficult to
+perform simple program optimizations such as inlining.
 
-% In spirit, contracts are similar to
-% assertions, but they are part of a principled framework, they are composable,
-% they have good error reporting and they are integrated as a language feature. In
-% particular, contracts natively handles higher-order functions and built-in data
-% structures. This makes them an great candidate for integration in the Nickel
-% configuration language.
+Designing a language with union and intersection contracts means
+making difficult choices: some features of union and intersection
+contracts and of the rest of the language must be abandoned. Various
+trade-offs can be made, but it is worth mentioning that implementing a
+system with union and intersection contracts appears to be pretty
+complex a task when unions and intersections are fairly complete.
 
-% This is only the beginning of the story. A language designer then has to choose
-% what contract combinators to provide among a number of possibilities: there is
-% the standard package including higher-order function contracts, record contracts
-% and list contracts.  Then, one could add polymorphic
-% contracts~\cite{BlameForAll}, dependent function
-% contracts~\cite{DependentContracts}, and so on. For validation purpose, union and
-% intersection contracts are really appealing. Unions have a intuitive
-% interpretation as modeling alternatives and thus appear implicitly or explicitly
-% in a lot of data structures.
-
-When trying to enforce properties on dynamic languages, unions appear naturally,
-since they allow to express that a variable is in an unknown state, but within
-some bounded set of alternatives.  Sadly, the implementation of union and
-intersection contracts is not as simple as it first appears. In conjunction with
-higher-order contracts, they introduce side-effects in the language. These
-behaviors were, for most of them, already known: we do not claim their
-discovery. However, as language implementers, we have made an actual attempt at
-including them in a concrete language. We exposed what, in our opinion, are the
-most important barriers and their impact on the rest of the language. Even in a
-pure setting, union and intersection contracts break the equivalence between
-call-by-name and call-by-value, and can consequently prevent optimizations.
-There are discrepancies between the expected and actual semantics that make some
-behaviors unintuitive. Their implementation is a non-trivial change that
-contaminates the evaluation of all other contracts, and the performance penalty
-is not obvious to assess.
+It's hard not to have sympathy for the minimalist end of this
+spectrum, where, like Racket, a language only has a very simple notion
+of unions and intersections. Many applications of unions and
+intersections are not possible in such a context, but the presence of
+union and intersection contracts doesn't interact with the rest of the
+language. It's probably more manageable.
 
 To conclude, let us make clear that we do not think union and intersection
 contracts are fundamentally broken, that they can not be implemented correctly,
@@ -1653,7 +1628,8 @@ sense to have in a language, and some apparent difficulties in the
 implementation could be lifted some day. But as often, there are gaps between
 the theoretical foundation, a proof-of-concept, a prototype, and the integration
 in an actual language. We hope that our attempt may serve as a cautionary tale:
-for union and intersection contracts, these gaps might be quite large in places.
+for union and intersection contracts, these gaps may be larger than
+they appear.
 
 \bibliography{nickel}
 \end{document}
