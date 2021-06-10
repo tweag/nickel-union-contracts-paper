@@ -1275,7 +1275,8 @@ These systems all make trade-offs, sacrificing some features of union
 and intersection contracts to preserve language features. We survey
 and discuss those trade-offs and their implications.
 
-\subsection{A conductive semantics}
+\subsection{A coinductive semantics}
+\label{sec:coinductive-sem}
 
 In order to give a precise definition to what values ought to satisfy
 union and intersection contracts, \cite{KeilThiemannUnionIntersection}
@@ -1330,103 +1331,45 @@ union to satisfy across all usages. Conversely, following the semantics of
 overloading, each application of a function with an intersection contract can
 select a different branch and is thus independent from the others. A general
 contract composed of nested unions, intersections and higher-order contracts
-appears to require complex book-keeping in order to correctly raise blame.
+appears to require complex book-keeping in order to correctly raise
+blame.
 
-An aspect of the approach of~\cite{KeilThiemannUnionIntersection} is to rewrite
-these nested contracts using the De Morgan law of
-Figure~\ref{fig:de-morgan-law}, eagerly opening up unions while postponing
-intersection as much as possible.
-This transformation flattens arbitrarily nested unions and
-intersections to a union of intersections, making blame resolution more
-manageable.\unsure{(Yann) find better (more precise) wording}
+All of this still holds true of the coinductive semantics described in
+Section~\ref{sec:coinductive-sem}. Nevertheless,
+\cite{KeilThiemannUnionIntersection} gives an algorithmic system which
+is complete for their coinductive semantics. In a remarkable technical
+tour de force, their algorithmic system is compatible with
+user-defined contract (see Section~\ref{sec:flat-and-inter}).
 
-\begin{figure}[h]
-\begin{lstlisting}[frame=none, numbers=none, language=nickel]
-A @& (B @| C) (*@ $\simeq$ @*) (A @& B) @| (A @& C)
-\end{lstlisting}
-\caption{De Morgan law for contracts}
-\label{fig:de-morgan-law}
-\end{figure}
+A key aspect of the approach of~\cite{KeilThiemannUnionIntersection}
+is to rewrite nested union and intersection contracts into a
+disjunctive normal form using the De Morgan's law \nickel{A @& (B @|
+  C)}$\simeq$\nickel{(A @& B) @| (A @& C)}. The goal is to be able to
+delay the choice of branch in intersections as much as possible.
 
-To implement this solution, \cite{KeilThiemannUnionIntersection} resorts to
+To implement contract verification, \cite{KeilThiemannUnionIntersection} resorts to
 specific reduction rules for unions and intersections which perform this
-rewriting on the fly. The result is that the reduction rules sometimes feel
-ad-hoc, and make us question the composability and extensibility of the system.
-In the words of Williams, Morris, and Wadler (see
-Section~\ref{sec:will-morr-wadl}): ``(\ldots) the monitoring semantics for
+rewriting on the fly. This aspect is critiqued
+in~\cite{RootCauseOfBlame}:
+``the monitoring semantics for
 contracts of intersection and union types given by Keil and Thiemann are not
 uniform. (\ldots) If uniformity helps composition, then special cases can hinder
-composition.'' \cite{RootCauseOfBlame}. Another less important consequence is
-that in Figure~\ref{fig:de-morgan-law}, the contract \nickel{A} is duplicated,
-potentially causing additional work. If \nickel{B} fails, \nickel{A} will be
-re-evaluated in each branch of the right hand side of
-Figure~\ref{fig:de-morgan-law} in the absence of an additional sharing
-mechanism.
-\resolved{(Yann) Does
-it also make it less efficient? If $(A \cap B)$ fails because of $B$, their
-development causes to recheck the contract $A$ that has been duplicated?}
-\resolved{Arnaud says: this whole
-section is too abstract give concrete code and explain what goes
-wrong. It's fine to give code in Nickel syntax}
+composition.''
 
-One important advantage of~\cite{KeilThiemannUnionIntersection} is to handle
-user-defined contracts. We explained in Section~\ref{sec:issues-sem} why a
-direct approach for higher-order intersection contracts (as done
-in~\cite{RootCauseOfBlame}) is not trivial to adapt for user-defined contracts.
-\cite{KeilThiemannUnionIntersection} provides two operational semantics of the
-contract system: a non-deterministic one, more intuitive and proof-friendly, and
-a deterministic one for actual implementation. The non-deterministic semantics
-cleanly handle intersections with user-defined contracts: as each component is
-checked in a separate thread, there is no direct interaction.
+A cost of this approach is that the De Morgan's law
+\nickel{A @& (B @| C)}$\simeq$\nickel{(A @& B) @| (A @& C)} duplicates
+contract \nickel{A}, which will cause some contracts to be checked
+several times. This can be an issue with user-defined contracts which
+may include costly tests.
 
-Let us recast the problematic example of Figure~\ref{fig:inter-flat-contracts}
-in Figure~\ref{fig:inter-flat-contracts-2}). The execution now splits the
-intersection into two sub-contracts that are checked separately. If one
-component fails, a corresponding flag is set in a global state. In particular,
-the two threads don't interact directly, and don't raise blame by themselves,
-leading this example to run as expected.
+Efficiency is also affected another way: each time a function with a
+contract attached is applied, the whole \emph{context} must be
+traverse to check for a compatibility property.
 
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel,title={Original program}]
-let C = contracts.fromPred (fun f =>
-  f 0 == 0) in
-let g | (Str -> Str) @& C
-      = fun x => x
-in g 0
-\end{lstlisting}
-\begin{lstlisting}[numbers=none,title={First component}]
-(g | Str -> Str) 0
-\end{lstlisting}
-\begin{lstlisting}[numbers=none,title={Second component}]
-(g | C) 0
-\end{lstlisting}
-\caption{Intersection and user defined contracts}
-\label{fig:inter-flat-contracts-2}
-\end{figure}
-
-In return, the complexity is offloaded to a separate procedure that must decide
-when to raise blame. This complexity is salient in the deterministic, sequential
-version~\cite[Section 5.1]{KeilThiemannUnionIntersection}. There,
-the evaluation procedure has to deal again with the problem of eliding contracts
-that are not \emph{compatible}~\cite[Section 5.1]{KeilThiemannUnionIntersection} (contracts are incompatible
-if they are coming from a different branch and should be ignored). In practice,
-the evaluation procedure maintains a global environment of contracts that is
-extended each time a non-trivial contract (union, intersection or higher-order)
-is opened. Then, any contract application must check the presence of the
-corresponding label in the environment. What's more, each time a function with a contract attached is applied,
-the whole \emph{context} (that is, the continuation of the application)
-must be checked for compatibility with respect to each label of the contract
-environment. Checking for compatibility involves searching the context for
-contract applications.
-
-Keil and Thiemann realize the tour de force of combining union and intersection
-contracts with user-defined contracts. The price to pay, though, is that
-implementing their solution in a reasonable way is far from obvious. Not only
-when starting from the more abstract, non-deterministic formulation, but even
-when starting from the algorithmic version of their system.
-\todo{(Yann) TODO: see if there's a low hanging complexity
-    argument we can make (like it's quadratic in the number of open contracts or
-whatever)}
+The algorithmic system of~\cite{KeilThiemannUnionIntersection} is, on
+balance, a technically impressive realization of the coinductive
+semantics, though it is fairly complex and probably difficult to
+implement efficiently.
 
 \subsection{Monitoring properties}
 \label{sec:will-morr-wadl}
