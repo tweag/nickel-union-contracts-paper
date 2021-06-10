@@ -1272,17 +1272,20 @@ more, these side-effects interact with user-defined contracts in a non-trivial
 way, while they are an important feature for validation.
 \unsure{(Yann) Should we talk about thiemann here, who do support user-defined
 contracts?}
-% But this should not have happened, since in the program of Figure
-% \ref{fig:inter-flat-contracts} \nickel{g} is never applied to \nickel{0}, in
-% fact, it is never applied to anything.  Checking if \nickel{C} has already
-% failed, and marking \nickel{Str -> Str} as failed negatively on \nickel{l}
-% is not enough, the contract \nickel{Str -> Str} should not have been used
-% inside the evaluation of \nickel{C}, which adds an extra layer of complexity:
-% contracts should be guarded, and execution depends on the shape of the
-% surrounding evaluation context.
 
+\section{Pragmatic trade-offs}
+\label{sec:issues-literature}
 
-\subsection{Challenging the semantics}
+Despite the difficulties of Section~\ref{sec:issues-sem}, union and
+intersection contracts are still sought after. In this section we turn
+to existing systems with union and intersection contracts in the
+literature and in implementations.
+
+These systems all make trade-offs, sacrificing some features of union
+and intersection contracts to preserve language features. We survey
+and discuss those trade-offs and their implications.
+
+\subsection{A semantics based on types}
 
 
 Previous points of this section were about how implementing the expected
@@ -1370,30 +1373,7 @@ A -> B @& A -> C (*@ $\simeq$ @*) A -> (B @& C)
 \label{fig:distributivity-law}
 \end{figure}
 
-% Curiously, union and intersection type systems, on which
-% \cite{KeilThiemannUnionIntersection} are basing their semantics on, don't
-% exhibit this property. Subtyping allows to correctly type check a term like
-% \nickel{g 1} as both \nickel{Num -> Num} as well as
-% \nickel{Bool -> Num}, and then deducing that \nickel{g 1}
-% can be given the type \nickel{Num -> Num @& Bool -> Num}.
-\resolved{(Yann) I just reworked the wording, but I'm not totally sold on the
-argument
-(Teo) I agree, I think it would need to be expanded for it to actually
-say something, I'll remove it}
-
-\section{Pragmatic trade-offs}
-\label{sec:issues-literature}
-
-Despite the difficulties of Section~\ref{sec:issues-sem}, union and
-intersection contracts are still sought after. In this section we turn
-to existing systems with union and intersection contracts in the
-literature and in implementations.
-
-These systems all make trade-offs, sacrificing some features of union
-and intersection contracts to preserve language features. We survey
-and discuss those trade-offs and their implications.
-
-\subsection{Keil and Thiemann}
+\subsection{A first realization}
 \label{sec:keil-thiemann}
 \unsure{Subsection title?}
 
@@ -1502,7 +1482,7 @@ when starting from the algorithmic version of their system.
     argument we can make (like it's quadratic in the number of open contracts or
 whatever)}
 
-\subsection{Williams, Morris, and Wadler}
+\subsection{Monitoring properties}
 \label{sec:will-morr-wadl}
 \unsure{Subsection title?}
 
