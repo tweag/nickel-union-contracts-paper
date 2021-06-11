@@ -1,4 +1,4 @@
-\documentclass[sigplan,10pt,review,anonymous]{acmart}
+\documentclass[sigplan,10pt]{acmart}
 %\usepackage{amssymb}
 \usepackage{mathtools,amsmath,amsfonts,amsxtra,amsthm,mathrsfs,mathpartir}
 \usepackage{listings}
@@ -16,47 +16,6 @@
 \usepackage{hyperref}
 
 \definecolor{OliveGreen}{RGB}{128,128,0}
-%%%%%%%%%%%%%%%%% Editing marks %%%%%%%%%%%%%%%%%
-
-  % TOGGLE ME to turn off all the commentary:
-  \InputIfFileExists{no-editing-marks}{
-    \def\noeditingmarks{}
-  }
-
-  \usepackage{xargs}
-  \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
-  % ^^ Need for pgfsyspdfmark apparently?
-  \ifx\noeditingmarks\undefined
-      \setlength{\marginparwidth}{1.2cm} % A size that matches the new PACMPL format
-      \newcommand{\Red}[1]{{\color{red}{#1}}}
-      \newcommand{\newaudit}[1]{{\color{blue}{#1}}}
-      \newcommand{\note}[1]{{\color{blue}{\begin{itemize} \item {#1} \end{itemize}}}}
-      \newenvironment{alt}{\color{red}}{}
-
-      \newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
-      \newcommandx{\info}[2][1=]{\todo[linecolor=green,backgroundcolor=green!25,bordercolor=green,#1]{#2}}
-      \newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
-      \newcommandx{\inconsistent}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=red,#1]{#2}}
-      \newcommandx{\critical}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=red,#1]{#2}}
-      \newcommand{\improvement}[1]{\todo[linecolor=pink,backgroundcolor=pink!25,bordercolor=pink]{#1}}
-      \newcommandx{\resolved}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}} % use this to mark a resolved question
-  \else
-  %    \newcommand{\Red}[1]{#1}
-      \newcommand{\Red}[1]{{\color{red}{#1}}}
-      \newcommand{\newaudit}[1]{#1}
-      \newcommand{\note}[1]{}
-      \newenvironment{alt}{}{}
-  %    \renewcommand\todo[2]{}
-      \newcommand{\unsure}[2][1=]{}
-      \newcommand{\info}[2][1=]{}
-      \newcommand{\change}[2]{}
-      \newcommand{\inconsistent}[2]{}
-      \newcommand{\critical}[2]{}
-      \newcommand{\improvement}[1]{}
-      \newcommand{\resolved}[2]{}
-  \fi
-
-%%%%%%%%%%%%%%%%% /Editing marks %%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%% LST listing confinguraiton %%%%%%%%%%%
 
@@ -103,7 +62,7 @@
 } %
 
 % Copied from https://hal.inria.fr/hal-01140459/file/racket.inc.tex
-\lstdefinelanguage{racket} {
+\lstdefinelanguage{Racket} {
   morekeywords=[1]{define, define-syntax, define-macro, lambda, define-stream, stream-lambda},
   morekeywords=[2]{begin, call-with-current-continuation, call/cc,
     call-with-input-file, call-with-output-file, case, cond,
@@ -162,7 +121,7 @@
 }
 
 \lstset{
-  language={nickel},
+  language={Nickel},
   basicstyle=\small\ttfamily, % Global Code Style
   captionpos=b, % Position of the Caption (t for top, b for bottom)
   extendedchars=true, % Allows 256 instead of 128 ASCII characters
@@ -189,9 +148,8 @@
 \lstset{
   escapeinside={(*@}{@*)} % escape sequence to insert latex
 }
-\newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
-\newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
-\newcommand{\haskell}[1]{\lstinline[language=Haskell]{#1}}
+\newcommand{\nickel}[1]{\lstinline[language=Nickel]{#1}}
+\newcommand{\racket}[1]{\lstinline[language=Racket]{#1}}
 \newcommand{\typescript}[1]{\lstinline[language=JavaScript]{#1}}
 \newcommand{\python}[1]{\lstinline[language=Python]{#1}}
 
@@ -331,34 +289,22 @@ model, augmented with abstraction mechanisms, and its conformed of:
 
 \begin{itemize}
   \item dictionaries, written as:
-\begin{lstlisting}[frame=none,numbers=none,language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=Nickel]
 {field1 = value1, ..., fieldn = valuen}
 \end{lstlisting}
   \item arrays:
-\begin{lstlisting}[frame=none,numbers=none,language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=Nickel]
 [x1, x2, ..., xn]
 \end{lstlisting}
   \item functions:
-\begin{lstlisting}[frame=none,numbers=none,language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=Nickel]
 fun arg1 ... argn => body
 \end{lstlisting}
   \item and let-definitions:
-\begin{lstlisting}[frame=none,numbers=none,language=nickel]
+\begin{lstlisting}[frame=none,numbers=none,language=Nickel]
 let id = value in exp
 \end{lstlisting}
 \end{itemize}
-
-% In this article, we will use the Nickel language~\cite{NickelRepo} as
-% illustration and motivation. At its core, Nickel is the JSON data
-% model, that is dictionaries (written \nickel{\{field1 = value1, ...,
-%   fieldn = valuen\}}) and arrays (\nickel{[x1, ..., xn]}), augmented
-% with functions (\nickel{fun arg1 ... argn => body}) and
-% let-definitions (\nickel{let id = value in exp}).
-\resolved{Arnaud: this
-  paragraph looks kind of bad, maybe it'll be better to put each
-  syntax entry in an enumeration, we will see if there is still room
-  for this
-  Teo: Tried to enumerate the constructs, left the original commented}
 
 A Nickel configuration is then evaluated to an explicit configuration,
 \emph{e.g.}  in JSON, which can then be consumed by an
@@ -377,10 +323,7 @@ about the evaluated configuration. To this effect, Nickel lets us
 annotate any expression with a dynamic schema check: \nickel{exp |
   C}. There is also syntactic sugar to annotate definitions:
 \nickel{let id | C = value in exp} stands for \nickel{let id = (value
-  | C) in exp}.\unsure{This point used to be made, do we want to
-  reinsert it? However, Nickel programs are of a special kind: they are usually
-simple, terminating programs that run on fixed inputs. Correctness errors will
-show up at evaluation anyway, or will not matter (dead code).}
+  | C) in exp}.
 
 Let us pause for a moment and consider the following: it is Nickel's
 ambition to be able to manipulate configurations like Nixpkgs. With
@@ -436,7 +379,7 @@ contract, and correctly reports that the caller failed to call
 \begin{figure*}
   \centering
   \begin{subfigure}[b]{0.48\linewidth}
-    \begin{lstlisting}[language=nickel]
+    \begin{lstlisting}[language=Nickel]
 let catHosts = fun last =>
   let hosts = ["foo.com", "bar.org"] in
   lists.fold (fun val acc => val ++ "," ++ acc) hosts last in
@@ -464,7 +407,7 @@ error: Type error
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\linewidth}
-    \begin{lstlisting}[language=nickel]
+    \begin{lstlisting}[language=Nickel]
 let catHosts | Str -> Str = fun last =>
   [(*@{\ldots}@*)]
 \end{lstlisting}
@@ -534,7 +477,7 @@ which, given an integer returns a valid port.
 
 \begin{figure}[h]
   \begin{center}
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let Port = contracts.fromPred (fun p =>
   num.isInt p && 0 <= p && p <= 65535) in
 80 | Port
@@ -576,7 +519,7 @@ efficient for small functions that are called repeatedly.
 
 \begin{figure}[h]
   \begin{center}
-\begin{lstlisting}[language=nickel,title={Source program}]
+\begin{lstlisting}[language=Nickel,title={Source program}]
 let elem = fun elt =>
   lists.any (fun x => x == elt) in
 
@@ -584,7 +527,7 @@ let subList = fun l1 l2 =>
   elem (lists.head l1) l2
   && subList (list.tail l1) l2
 \end{lstlisting}
-\begin{lstlisting}[language=nickel,title={Optimized program}]
+\begin{lstlisting}[language=Nickel,title={Optimized program}]
 let subList = fun l1 l2 =>
   lists.any (fun x => x == (lists.head l1)) l2
   && subList (list.tail l1) l2
@@ -604,14 +547,14 @@ for all.
 
 \begin{figure}[h]
   \begin{center}
-\begin{lstlisting}[language=nickel,title={Source program}]
+\begin{lstlisting}[language=Nickel,title={Source program}]
 let elemAtOrLast = fun index list =>
   if index > lists.length list - 1 then
     lists.elemAt (lists.length list - 1) list
   else
     lists.elemAt index list
 \end{lstlisting}
-\begin{lstlisting}[language=nickel,title={Optimized program}]
+\begin{lstlisting}[language=Nickel,title={Optimized program}]
 let elemAtOrLast = fun index list =>
   let l = lists.length list - 1 in
   if index > l then
@@ -631,10 +574,10 @@ iterations and function calls).
 
 \begin{figure}
   \begin{center}
-\begin{lstlisting}[language=nickel,title={Source program}]
+\begin{lstlisting}[language=Nickel,title={Source program}]
 let f = fun x => g y (x + 1)
 \end{lstlisting}
-\begin{lstlisting}[language=nickel,title={Optimized program}]
+\begin{lstlisting}[language=Nickel,title={Optimized program}]
 let g' = g y in
 let f' = fun x => g' (x + 1)
 \end{lstlisting}
@@ -691,10 +634,7 @@ valid.  In impure languages, the situation varies: in some case a large subset
 of pure terms can be identified (in languages with effects tracking such as
 PureScript) to be safely transformed.  Otherwise, the compiler must stay
 conservative and only apply CSE to expressions it can prove are without
-side-effects (arithmetic expressions, for example). \resolved{Cite a
-different language, or remove citation.  (ADDED) tbh PureScript is still
-statically-typed, compiled lang, but who knows: the "script" in the name and the
-web orientation may still be more appealing to the audience of DLS}
+side-effects (arithmetic expressions, for example).
 
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
 unions and intersections make (\ref{eq:cbn-expansion}) unsound \emph{even in a
@@ -785,50 +725,6 @@ constructors: constructors don't have a canonical representation in
 JSON. So it would be quite natural to represent optional contracts and
 sum contracts as unions.
 
-% Arnaud: I'm not deleting this quite yet because we may want to use
-% these examples, I just didn't manage to make them fit in the flow of
-% the narrative.
-%
-% Unions are not only useful to model the outcome of alternative
-% branches of computations, but they can be used to
-% formalize very common patterns of data types:
-% \begin{itemize}
-%     \item To represent nullable, or optional, values.
-% \begin{lstlisting}[language=nickel]
-% optionalValue | Str @| Null
-% \end{lstlisting}
-
-%     \item For plain enumerations of literals.
-% \begin{lstlisting}[language=nickel]
-% protocol | "Http" @| "Ftp" @| "Sftp"
-% \end{lstlisting}
-
-%     \item To support different representations of the same data.
-% \begin{lstlisting}[language=nickel]
-% person | {name : Str, age : Int}
-%   @| {name : Str, dateOfBirth : Date}
-% \end{lstlisting}
-
-% \end{itemize}
-% All of which are common in configurations.
-
-\resolved{Arnaud: this paragraph is pretty good, on the other hand, there
-is no value which lets me complete the example, so this example falls
-a bit flat.
-Teo: Improved the example, also added another one commented that is, for me,
-more realistic, but I think the one uncommented is simpler.}
-
-% \begin{figure}[h]
-% \begin{lstlisting}[language=JavaScript]
-% function addElem(values: Array<{ Nix: string }> | Array<{ Nickel: number }>) {
-%     values.push({Nix: "Packages", Nickel: 32})
-% }
-% \end{lstlisting}
-% \caption{Adding an element to a union of two arrays}
-% \label{fig:addElem}
-% \end{figure}
-
-
 \subsection{Intersections}
 
 An intersection type \nickel{A @& B} is satisfied by values which
@@ -873,7 +769,7 @@ with both types is declared, with type \nickel{Animal @& Pet}. This
 particular application is supported, for instance, by TypeScript.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let Animal =
   { species | Str, breed | Str, name | Str } in
 let Pet = { owner | Str, name | Str } in
@@ -887,27 +783,6 @@ let myDog | Animal @& Pet =
 \label{fig:intersection-record}
 \end{figure}
 
-\unsure{Maybe it's better to give it in Typescript syntax?
-left it commented just in case}
-% \begin{figure}[h]
-% \begin{lstlisting}[language=JavaScript]
-% type Animal = {
-%   species: string,
-%   breed:   string,
-%   name:    string}
-
-% type Pet = {owner: string, name: string}
-
-% let myDog : Animal & Pet = {
-%   species : "Canis Lupus",
-%   breed   : "Australian Cattle Dog",
-%   owner   : "Anonymous Author",
-%   name    : "Juno" }
-% \end{lstlisting}
-% \caption{An animal that is also a pet}
-% \label{fig:intersection-record}
-% \end{figure}
-
 Another application of intersections shows up when intersecting
 functions: it can be used to encode overloading.
 For instance, take a look at Figure~\ref{fig:intersection-overloading-ex}, where the function
@@ -920,7 +795,7 @@ For instance, in the same figure, \nickel{duplicate} is (correctly) called
 on a value of type \nickel{(List Str) @| Str}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let duplicate
     | (List Str -> List Str)
       @& (Str -> Str) =
@@ -944,12 +819,11 @@ recover some or all of the features.
 
 \subsection{Union contracts as a side-effect}
 
-In \unsure{Maybe specify its Nickel without Union or inter}Nickel,
-the failure of a function contract can always be traced back to a
+In Nickel, the failure of a function contract can always be traced back to a
 single call. For example, take the function \nickel{f} with a simple contract
 attached of Figure~\ref{fig:pos-to-pos}. The whole program fails with a contract
-error blaming \nickel{f} because the return value of the second call \nickel{f 5}
-violates the \nickel{Positive} contract. The first call to \nickel{f} does
+error blaming \nickel{f} because the return value of the second call \nickel{f
+5} violates the \nickel{Positive} contract. The first call to \nickel{f} does
 not matter, and \nickel{f 5} is a single and independent witness of the contract
 violation. The user is pointed to this one location in practice.
 
@@ -978,7 +852,7 @@ must be independent of its environment and of any previous call to \nickel{f'}.
 % one (\nickel{-2}).
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let f | Positive -> Positive
       = fun x => x - 7 in
 (f 10) + (f 5)
@@ -1003,7 +877,7 @@ contract. \nickel{f} is violating this contract once again, as it neither maps
 positive numbers to positive numbers nor positive numbers to negative numbers.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let f | (Positive -> Positive)
         @| (Positive -> NonPositive)
       = fun x => x - 7 in
@@ -1050,12 +924,12 @@ the two calls refer to the same union contract, and shows that \nickel{f} does
 violate its initial contract.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=Original]
+\begin{lstlisting}[language=Nickel, title=Original]
 let f | Num -> (Bool -> Num @| Bool -> Str)
       = fun x y => if y then x else "False"
 in (f 1 true, f 1 false)
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=Optimized]
+\begin{lstlisting}[language=Nickel, title=Optimized]
 let f | Num -> (Bool -> Num @| Bool -> Str)
       = fun x y => if y then x else "False"
 let g = f 1 in
@@ -1065,7 +939,6 @@ let g = f 1 in
 \label{fig:optimized-programs}
 \end{figure}
 
-\unsure{These arguments should go in the purity section}
 To sum up, the addition of union contracts introduce side-effects in a pure
 language. Side-effects have well-known pitfalls:
 \begin{itemize}
@@ -1104,14 +977,14 @@ and \nickel{B} sequentially, resulting in the naive decomposition rule of
 Figure~\ref{fig:naive-impl}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Naive
+\begin{lstlisting}[language=Nickel,frame=none,numbers=none,title={Naive
 decomposition}]
 M | A @& B (*@ $\simeq$ @*) (M | A) | B
 \end{lstlisting}
-\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Exchange law}]
+\begin{lstlisting}[language=Nickel,frame=none,numbers=none,title={Exchange law}]
 (A -> B) @& (C -> D) (*@ $\simeq$ @*) (A @& C) -> (B @& D)
 \end{lstlisting}
-\begin{lstlisting}[language=nickel,title={Overloaded identity}]
+\begin{lstlisting}[language=Nickel,title={Overloaded identity}]
 let g | Num -> Num @& Str -> Str
       = fun x => x in
 g 1
@@ -1178,7 +1051,7 @@ To fix the naive implementation, the interpreter can share state between the
 sub-contracts, in order to decide if blame must be raised or not when a
 sub-contract fails:
 
-\begin{lstlisting}[language=nickel,frame=none,numbers=none]
+\begin{lstlisting}[language=Nickel,frame=none,numbers=none]
 x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 \end{lstlisting}
 
@@ -1186,7 +1059,7 @@ Shared state is represented by the label \nickel{l}. This is in essence the
 approach proposed by Williams, Morris, and Wadler in~\cite{RootCauseOfBlame}.
 
 % \begin{figure}[h]
-% \begin{lstlisting}[language=nickel, title=Implementation]
+% \begin{lstlisting}[language=Nickel, title=Implementation]
 % x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 % \end{lstlisting}
 % \caption{Implementations of intersection contracts: second iteration}
@@ -1214,7 +1087,7 @@ failure shouldn't always result in raising blame. An example is given on Figure
 \ref{fig:inter-flat-contracts}. Decomposing using the shared state approach, we
 end up with:
 
-\begin{lstlisting}[language=nickel,frame=none,numbers=none,title={Stateful
+\begin{lstlisting}[language=Nickel,frame=none,numbers=none,title={Stateful
 decomposition}]
 ((fun x => x) | (Str -> Str)[l]) | C[l]
 \end{lstlisting}
@@ -1222,7 +1095,7 @@ decomposition}]
 where \nickel{l} represents the shared state.  At this point,
 applying the \nickel{C} contract results in evaluating:
 
-\begin{lstlisting}[language=nickel,frame=none,numbers=none]
+\begin{lstlisting}[language=Nickel,frame=none,numbers=none]
 ((fun x => x) | (Str -> Str)[l]) 0 == 0.
 \end{lstlisting}
 
@@ -1234,7 +1107,7 @@ view, and it is thus not obvious how to extend the shared state approach to
 handle user-defined contracts.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let c = contracts.fromPred (fun f =>
   f 0 == 0) in
 let g | (Str -> Str) @& c
@@ -1248,8 +1121,6 @@ in g 0
 Once again, intersection contracts introduce side-effects in the picture. What's
 more, these side-effects interact with user-defined contracts in a non-trivial
 way, while they are an important feature for validation.
-\unsure{(Yann) Should we talk about thiemann here, who do support user-defined
-contracts?}
 
 \section{Pragmatic trade-offs}
 \label{sec:issues-literature}
@@ -1290,7 +1161,7 @@ coinductive semantics doesn't validate the property \nickel{A -> B @&
   A -> C}$\simeq$\nickel{A -> (B @& C)}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let f = fun x y => x in
 let g = f | (Num -> Num -> Num)
             @& (Num -> Bool -> Num) in
@@ -1380,7 +1251,7 @@ be worth it for a configuration language like Nickel.
 % For a contract $A$, $\llbracket A \rrbracket^+$ defines
 % the set of terms that satisfy $A$. For example,
 
-% \begin{lstlisting}[language=nickel,frame=none,numbers=none]
+% \begin{lstlisting}[language=Nickel,frame=none,numbers=none]
 %     if true then 1 else "a" (*@$\in \llbracket Num \rrbracket^+$@*)
 % \end{lstlisting}
 
@@ -1415,10 +1286,10 @@ Figure~\ref{fig:valid-contexts}. The first one is a context satisfying
 from the same figure satisfies \nickel{Bool -> Bool}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel, title=\nickel{Num -> Num} context]
+\begin{lstlisting}[language=Nickel, title=\nickel{Num -> Num} context]
 (*@$\square$@*) 3
 \end{lstlisting}
-\begin{lstlisting}[language=nickel, title=\nickel{Bool -> Bool} context]
+\begin{lstlisting}[language=Nickel, title=\nickel{Bool -> Bool} context]
 (*@$\square$@*) true
 \end{lstlisting}
 \caption{Two different contexts in Nickel}
@@ -1431,7 +1302,7 @@ to the sound monitoring property of intersection, Figure~\ref{fig:invalid-contex
 -> Num @& Bool -> Bool}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=nickel]
+\begin{lstlisting}[language=Nickel]
 let f = (*@$\square$@*) in
 (f 3, f true)
 \end{lstlisting}
@@ -1467,7 +1338,7 @@ Figure~\ref{fig:racket-overloading} always fail because no argument satisfies
 both \racket{number?} and \racket{string?}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=racket]
+\begin{lstlisting}[language=Racket]
 (define/contract overload
 (and/c (-> number? number?)
        (-> string? string?))
@@ -1487,7 +1358,7 @@ hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
 
 \begin{figure}[h]
 
-\begin{lstlisting}[language=racket]
+\begin{lstlisting}[language=Racket]
 (define/contract united
 (or/c (-> number? number?)
       (-> string? string? string?))
@@ -1511,11 +1382,6 @@ hand, the program of Figure~\ref{code:racket:or/c:non-working} is rejected.
 
 \end{figure}
 
-
-\unsure{This section is overall a bit hard to follow. I
-  think I've figured out what it means, but it needs more love. Also
-  give an example which doesn't work and one that does for or/c.}
-
 \paragraph{case->}
 
 To compensate for the fact that \racket{and/c} doesn't support
@@ -1531,7 +1397,7 @@ overloading of generic operations with fixed arity such as equality, comparison,
 arithmetic operators, and so on.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=racket]
+\begin{lstlisting}[language=Racket]
 (define/contract overcase
   (case-> (-> string? string?)
          (-> number? number? number?)
@@ -1555,9 +1421,6 @@ higher-order contracts in intersections and unions.
 
 \section{(More) Related work}
 \label{sec:related-work}
-\info{Including a mention of statically typed systems with union}
-
-\unsure{WARNING: what is below is being reworked by Yann}
 
 \subsection{Higher-order contracts}
 
