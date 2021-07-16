@@ -1,4 +1,11 @@
 \documentclass[sigplan,10pt]{acmart}
+
+% Arxiv settings
+\setcopyright{none}
+\settopmatter{printacmref=false} % Removes citation information below abstract
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\pagestyle{plain} % removes running headers
+
 %\usepackage{amssymb}
 \usepackage{mathtools,amsmath,amsfonts,amsxtra,amsthm,mathrsfs,mathpartir}
 \usepackage{listings}
@@ -1492,15 +1499,5 @@ in an actual language. We hope that our attempt may serve as a cautionary tale:
 for union and intersection contracts, these gaps may be larger than
 they appear.
 
-\bibliography{nickel}
+\bibliography{paper}
 \end{document}
-
-% Local Variables:
-% ispell-dictionary: "american"
-% End:
-
-% LocalWords:  Felleisen JSON TOML YAML templating Jsonnet Dhall MyPy
-% LocalWords:  Kubernetes DevOps natively nixpkgs disjunctions
-% LocalWords:  TypeScript serializable serialization coinductively
-% LocalWords:  coinduction coinductive combinator combinators arities
-% LocalWords:  disjunction
