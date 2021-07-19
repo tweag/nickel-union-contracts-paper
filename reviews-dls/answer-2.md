@@ -16,3 +16,14 @@ doesn't fit in the paper at all.
 ## Correction proposal
 
 N/A
+
+## Minor
+
+> In 1.3, I would suggest explaining the meaning of "exp | C" for audiences unfamiliar with schema check, though they can realize that in later sections.
+Todo.
+
+>  L160: I am not quite sure what the sentence means. Why might a value have type Str -> Str? Isn't it a function type?
+Well, functions are values :) should we use "function" instead, for an audience that is less PLT-oriented?
+
+>  L157: ...and they can be "use" to add... -> can be "used" to add?
+Done.
