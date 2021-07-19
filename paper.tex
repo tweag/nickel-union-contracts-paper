@@ -1067,7 +1067,7 @@ let f | Num -> (Bool -> Num @| Bool -> Str)
 let g = f 1 in
 (g true, g false)
 \end{lstlisting}
-\caption{Equivalent programs, with inlining or CSE applied}
+\caption{Equivalent programs with CSE applied}
 \label{fig:optimized-programs}
 \end{figure}
 
@@ -1241,13 +1241,13 @@ handle user-defined contracts.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
-let c = contracts.fromPred (fun f =>
+let C = contracts.fromPred (fun f =>
   f 0 == 0) in
-let g | (Str -> Str) @& c
+let g | (Str -> Str) @& C
       = fun x => x
 in g 0
 \end{lstlisting}
-\caption{intersection and user defined contracts}
+\caption{Intersection and user defined contracts}
 \label{fig:inter-flat-contracts}
 \end{figure}
 
@@ -1431,7 +1431,7 @@ from the same figure satisfies \nickel{Bool -> Bool}.
 \label{fig:valid-contexts}
 \end{figure}
 
-Now, combining these two context as in Figure~\ref{fig:invalid-context} gives a context
+Now, combining these two contexts as in Figure~\ref{fig:invalid-context} gives a context
 that doesn't satisfy \nickel{Num -> Num} nor \hbox{\nickel{Bool -> Bool}.}  According
 to the sound monitoring property of intersection, Figure~\ref{fig:invalid-context} thus doesn't satisfy \nickel{Num
 -> Num @& Bool -> Bool}.
@@ -1579,12 +1579,12 @@ typed and untyped code. In \cite{WellTypedBlamed}, the authors precisely
 introduce a system integrating gradual typing with contracts \textit{à la
 Findler \& Felleisen}. Nickel adopts a similar type system, with both statically
 typed terms, dynamically typed terms, and first-class contracts. Higher-order
-contracts are the basis of the work~\cite{KeilThiemannUnionIntersection}
-and~\cite{RootCauseOfBlame} that this paper explorted extensively.
+contracts are the basis of the work of \cite{KeilThiemannUnionIntersection}
+and \cite{RootCauseOfBlame} that this paper explored extensively.
 
 \subsection{Unions and intersections in gradual typing}
 
-Castagna et. al \cite{gradualCastagna} introduce a gradual type system based on
+Castagna et al.~\cite{gradualCastagna} introduce a gradual type system based on
 so-called set-theoretic types~\cite{SetTheoreticTypes}.  Set-theoretic types
 feature unions, intersections, negation types together with a notion of
 subtyping. This work adheres to the \emph{static first school} (see
