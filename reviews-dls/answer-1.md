@@ -80,11 +80,11 @@ TODO: read.
 
 I don't think the problem is about currying vs non-currying. Sure, the
 programmer could write a n-ary function to overcome this issue, but this sound
-like a work-around rather than some righter way to do it. Forgetting the general
-debate about currying, the issue is that the semantics doesn't validate the
-equation `A -> B /\ A -> C ~= A -> (B \/ C)`, which is validated e.g. by set
-theoretic functions and thus could be intuitively expected from the user (could
-we find a realizers-based semantics that validate this?).
+like a work-around rather than some right or natural way to do it. Forgetting
+the general debate about currying, the issue is that the semantics doesn't
+validate the equation `A -> B /\ A -> C ~= A -> (B \/ C)`, which is validated
+e.g. by set theoretic functions and thus could be intuitively expected from the
+user (could we find a realizers-based semantics that validate this?).
 
 ## Correction proposal
 
@@ -99,13 +99,12 @@ we find a realizers-based semantics that validate this?).
 > - there appears to be a line that wraps? That seems bad
 I inserted a new line appropriately.
 
- - what is the order of arguments to list.fold? (Why is using a combinator library a good idea here?)
+> what is the order of arguments to list.fold? (Why is using a combinator library a good idea here?)
 The standard one? I think it's pretty clear from the types and arguments names?
 
 > - is there code missing? I see an "in" on the end of a line that binds hosts and then nothing seems to be in the body of the corresponding let.
 It's just the ML syntax. We could put the `in` on a newline for people that are
-not familiar with it, but it will get us quite a lot of newlines, so I don't
-think it's worth it.
+not familiar with it, but it will get us quite a lot of newlines.
 
 > - is the ellipses surrounded by square brackets intended to mean that the code in figure 1a should be copied into figure 1b? All of it or just some? Why do this anyway, as there is a lot of whitespace in figure 1?
 I reproduced the identical code in grey.
@@ -115,10 +114,13 @@ Fixed this one, but we'll probably have to make a whole pass on citations.
 
 > The example in figure 3 being motivated by performance seems a bit strange since the program has the wrong asymptotic complexity (sublist checking does not need to be quadratic).
 Yes...and? This is just a contrived example of inlining, not an example of an
-optimal sublist algorithm.
+optimal algorithm.
 
 > It also looks like there is some currying going on in the elem function? And again there is a dangling "in"? I don't know what's going on with this. Why is there an "in" for elem but not for subList?
-Indeed sublist doesn't have a corresponding in, which is not valid Nickel syntax, although it is valid in ML.
+Indeed sublist doesn't have a corresponding in, which is not valid Nickel
+syntax, although it is valid in ML. I had this problems in several example: I
+just wanted to define an example function at top-level, so `let .. in ..`
+doesn't make sense, but we don't have just "let" in nickel.
 
 > I don't understand why the title of 2.2 is "Referential transparency". It seems to be about optimizations.
 
