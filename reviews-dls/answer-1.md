@@ -91,3 +91,61 @@ we find a realizers-based semantics that validate this?).
 - **Effects**: Add one sentence or two explaining
   why `blame` with plain contracts is a different effect than union and
   intersection contracts at the end of section 2.
+
+## Answers to minor corrections
+
+> Frustratingly, the first example where I was hoping to get used to the syntax of Nickel raises more questions than it answers (figures 1a and b):
+>
+> - there appears to be a line that wraps? That seems bad
+I inserted a new line appropriately.
+
+ - what is the order of arguments to list.fold? (Why is using a combinator library a good idea here?)
+The standard one? I think it's pretty clear from the types and arguments names?
+
+> - is there code missing? I see an "in" on the end of a line that binds hosts and then nothing seems to be in the body of the corresponding let.
+It's just the ML syntax. We could put the `in` on a newline for people that are
+not familiar with it, but it will get us quite a lot of newlines, so I don't
+think it's worth it.
+
+> - is the ellipses surrounded by square brackets intended to mean that the code in figure 1a should be copied into figure 1b? All of it or just some? Why do this anyway, as there is a lot of whitespace in figure 1?
+I reproduced the identical code in grey.
+
+> The spacing around citations is inconsistent ("Eiffel programming language[16]" vs "Enter contracts [11]"). I think a non-breaking space is standard.
+Fixed this one, but we'll probably have to make a whole pass on citations.
+
+> The example in figure 3 being motivated by performance seems a bit strange since the program has the wrong asymptotic complexity (sublist checking does not need to be quadratic).
+Yes...and? This is just a contrived example of inlining, not an example of an
+optimal sublist algorithm.
+
+> It also looks like there is some currying going on in the elem function? And again there is a dangling "in"? I don't know what's going on with this. Why is there an "in" for elem but not for subList?
+Indeed sublist doesn't have a corresponding in, which is not valid Nickel syntax, although it is valid in ML.
+
+> I don't understand why the title of 2.2 is "Referential transparency". It seems to be about optimizations.
+
+> The commas in the first sentence of 3 are not in the right places.
+Done.
+
+> In figure 8 there seems to be an unmatched close curly brace.
+Removed.
+
+> I don't get why appendDate has to append a string. The result contract says just "list"; it isn't the same as the argument so why are the elements of the result contrained at all? I am assuming that lists.cons (but this isn't said and also the arguments to cons are in the opposite order from what I would have expected) does not mutate its arguments. Could that be why?
+
+They are right, the example is bogus as it is. The point is rather than we can
+only assume that an element we pull from the list is a string. We have to rework
+this part a bit.
+
+> The text in the column below figure 12, suggests that union contracts breaks the "optimization" shown in figure 5. But this is already broken for just regular contracts (or io, or non-termination, or any effect). If there are no calls to the f' in figure 5, then we go from zero calls to g to one call to g via the transformation in figure 5. This is unsound as soon as the input y breaks the contract on g. The example in figure 13 however, does not have this problem as far as I can tell and it illustrates the point well.
+
+The point was made in comments for author and they are right in a CBV setting.
+
+> In 4.2, the text uses hyphens in correctly. When setting off text ala parentheses, you should use em-dashes, not hyphens.
+Done.
+
+> In 5.1, please do not treat citations as parts of speech. Instead of "[14] give a coninductively ..." please write something like "Keil and Thiemann [14] give a coninductively ...". There are a number of places along these lines that need to be fixed.
+Todo. Require a full pass.
+
+> "is compatible with user-defined contract" => "is compatible with user-defined contracts"
+Done.
+
+> I can't figure out what the first sentence of 5.3 is saying. What does "is [22]" mean?
+Added a few words.

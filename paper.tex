@@ -439,7 +439,8 @@ contract, and correctly reports that the caller failed to call
     \begin{lstlisting}[language=nickel]
 let catHosts = fun last =>
   let hosts = ["foo.com", "bar.org"] in
-  lists.fold (fun val acc => val ++ "," ++ acc) hosts last in
+  lists.fold (fun val acc =>
+    val ++ "," ++ acc) hosts last in
 
 let makeHost = fun server ext =>
   server ++ "." ++ ext in
@@ -466,9 +467,15 @@ error: Type error
   \begin{subfigure}[b]{0.48\linewidth}
     \begin{lstlisting}[language=nickel]
 let catHosts | Str -> Str = fun last =>
-  [(*@{\ldots}@*)]
+$  let hosts = ["foo.com", "bar.org"] in
+  lists.fold (fun val acc =>
+    val ++ "," ++ acc) hosts last in
+
+let makeHost = fun server ext =>
+  server ++ "." ++ ext in
+
+catHosts (makeHost "google")$
 \end{lstlisting}
-\vspace{10ex}
     \begin{lstlisting}[frame=none,numbers=none, basicstyle=\footnotesize\ttfamily]
 error: Blame error: contract broken by the caller.
   |  Str -> Str
@@ -545,16 +552,16 @@ let Port = contracts.fromPred (fun p =>
 \end{figure}
 
 This type of contracts are present in many different languages,
-for instance, the Eiffel programming language\cite{meyer1987eiffel}, the precursor
+for instance, the Eiffel programming language~\cite{meyer1987eiffel}, the precursor
 of the Design by Contract philosophy, makes it possible to assert
 these kinds of expression as pre- and post-conditions on
-functions and as invariants on classes\cite{EiffelDesignByContract}.
+functions and as invariants on classes~\cite{EiffelDesignByContract}.
 
 The Racket programming language also has a system to work with
 contracts, powerful enough to define flat contracts, and
 to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
-and intersection contracts\cite{RacketContracts}.
+and intersection contracts~\cite{RacketContracts}.
 
 
 \subsection{Referential transparency}
@@ -704,9 +711,9 @@ Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 \section{Union \& intersection}
 \label{sec:union-inter}
 
-Let us now consider union and intersection contracts, before we
-explain, in Section~\ref{sec:issues-sem} how they can compromise the
-properties that we described in Section~\ref{sec:feat-lang}.
+Let us now consider union and intersection contracts, before we explain in
+Section~\ref{sec:issues-sem} how they can compromise the properties that we
+described in Section~\ref{sec:feat-lang}.
 
 \subsection{Unions}
 
@@ -858,8 +865,7 @@ let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
 let appendDate | (List (Date @| Str)
                  @| List (DateWeek @| Str))
                  -> List =
-  fun list => lists.cons list "01/01/2021"
-}
+  fun list => lists.cons "01/01/2021" list
 \end{lstlisting}
 \caption{Adding an element to a union of two arrays}
 \label{fig:addElem}
@@ -1098,7 +1104,7 @@ language. Side-effects have well-known pitfalls:
 \subsection{Intersection with user-defined contracts}
 \label{sec:flat-and-inter}
 
-A natural - but naive - implementation of intersection contracts could be the
+A natural --- but naive --- implementation of intersection contracts could be the
 following: to apply a contract \nickel{A @& B}, apply both contracts \nickel{A}
 and \nickel{B} sequentially, resulting in the naive decomposition rule of
 Figure~\ref{fig:naive-impl}.
@@ -1326,7 +1332,7 @@ Section~\ref{sec:coinductive-sem}. Nevertheless,
 \cite{KeilThiemannUnionIntersection} gives an algorithmic system which
 is complete for their coinductive semantics. In a remarkable technical
 tour de force, their algorithmic system is compatible with
-user-defined contract (see Section~\ref{sec:flat-and-inter}).
+user-defined contracts (see Section~\ref{sec:flat-and-inter}).
 
 A key aspect of the approach of~\cite{KeilThiemannUnionIntersection}
 is to rewrite nested union and intersection contracts into a
@@ -1362,7 +1368,7 @@ implement efficiently.
 \label{sec:will-morr-wadl}
 
 Another realization of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem}, is~\cite{RootCauseOfBlame}, which
+Section~\ref{sec:coinductive-sem} is given in \cite{RootCauseOfBlame}, which
 aims at simplifying the algorithmic system proposed
 by~\cite{KeilThiemannUnionIntersection} and described in
 Section~\ref{sec:keil-thiemann}.
@@ -1562,7 +1568,7 @@ higher-order contracts in intersections and unions.
 \subsection{Higher-order contracts}
 
 Enforcing pre- and post-conditions at runtime is a widely established practice.
-In their foundational paper\cite{FindlerFelleisenHOContracts}, Findler and
+In their foundational paper~\cite{FindlerFelleisenHOContracts}, Findler and
 Felleisen introduce higher-order contracts, a principled approach to run-time
 assertion checking that nicely supports functions. They introduce the notion of
 blame, which is crucial to good error reporting. It became apparent later that
@@ -1586,7 +1592,7 @@ subtyping. This work adheres to the \emph{static first school} (see
 to allow for a less precise type information. It follows that their goals and
 constraints are somehow different, resulting in the absence of first-class
 contracts. As for any gradual type system, they do have to implement
-casts~--~that are very close to contracts~--~for unions and
+casts~---~that are very close to contracts~---~for unions and
 intersections, but these casts
 are neither visible nor available to the programmer. Obviously, no contracts
 mean no user-defined contracts as well.
