@@ -67,6 +67,29 @@ more restrictive. It doesn't look obvious at first sight.
 
 TODO: read.
 
+**POPL 11:** https://www2.ccs.neu.edu/racket/pubs/popl11-dfff.pdf
+
+*Teo*
+I read the POPL 11, and I think I understand what he aims at, but it's not
+really applicable for unions/inter. In particular, the Dimoulas paper
+states different strategies for treating dependent function contracts,
+by changing how the argument that is passed to the codomain contract is wrapped
+with the domain contract: either not wrapped at all, wrapped the same
+as the argument that is passed to the original function, or wrapped with a
+change of labels, where now the context is the contract, and not the original
+context.
+
+I think it has little applicatio value to U/I, since in our case we have
+to wrap a single value, with two contracts.
+In Dimoulas notation, an Inter contract could look something like:
+mon[k,l,j](A /\ B, v) := mon[k,l,j](A, mon\[k,\*,j\](B))
+Where the asterisk could be, according to reviewer 1, j, so
+if the context of mon\[k,\*,j\](B), the contract gets blamed, but
+values may flow in from the outer context, and the we'd want to blame 
+l.
+
+**ESOP 12:** https://www2.ccs.neu.edu/racket/pubs/esop12-dthf.pdf
+
 > I find the discussion of figure 16 a bit too quick. One might say that f
 > should really be a function that accepts two arguments, not a curried
 > function. If that were to be the case, and if Keil & Thiemann's semantics has
@@ -97,26 +120,33 @@ user (could we find a realizers-based semantics that validate this?).
 > Frustratingly, the first example where I was hoping to get used to the syntax of Nickel raises more questions than it answers (figures 1a and b):
 >
 > - there appears to be a line that wraps? That seems bad
+
 I inserted a new line appropriately.
 
 > what is the order of arguments to list.fold? (Why is using a combinator library a good idea here?)
+
 The standard one? I think it's pretty clear from the types and arguments names?
 
 > - is there code missing? I see an "in" on the end of a line that binds hosts and then nothing seems to be in the body of the corresponding let.
+
 It's just the ML syntax. We could put the `in` on a newline for people that are
 not familiar with it, but it will get us quite a lot of newlines.
 
 > - is the ellipses surrounded by square brackets intended to mean that the code in figure 1a should be copied into figure 1b? All of it or just some? Why do this anyway, as there is a lot of whitespace in figure 1?
+
 I reproduced the identical code in grey.
 
 > The spacing around citations is inconsistent ("Eiffel programming language[16]" vs "Enter contracts [11]"). I think a non-breaking space is standard.
+
 Fixed this one, but we'll probably have to make a whole pass on citations.
 
 > The example in figure 3 being motivated by performance seems a bit strange since the program has the wrong asymptotic complexity (sublist checking does not need to be quadratic).
+
 Yes...and? This is just a contrived example of inlining, not an example of an
 optimal algorithm.
 
 > It also looks like there is some currying going on in the elem function? And again there is a dangling "in"? I don't know what's going on with this. Why is there an "in" for elem but not for subList?
+
 Indeed sublist doesn't have a corresponding in, which is not valid Nickel
 syntax, although it is valid in ML. I had this problems in several example: I
 just wanted to define an example function at top-level, so `let .. in ..`
@@ -125,9 +155,11 @@ doesn't make sense, but we don't have just "let" in nickel.
 > I don't understand why the title of 2.2 is "Referential transparency". It seems to be about optimizations.
 
 > The commas in the first sentence of 3 are not in the right places.
+
 Done.
 
 > In figure 8 there seems to be an unmatched close curly brace.
+
 Removed.
 
 > I don't get why appendDate has to append a string. The result contract says just "list"; it isn't the same as the argument so why are the elements of the result contrained at all? I am assuming that lists.cons (but this isn't said and also the arguments to cons are in the opposite order from what I would have expected) does not mutate its arguments. Could that be why?
@@ -141,13 +173,17 @@ this part a bit.
 The point was made in comments for author and they are right in a CBV setting.
 
 > In 4.2, the text uses hyphens in correctly. When setting off text ala parentheses, you should use em-dashes, not hyphens.
+
 Done.
 
 > In 5.1, please do not treat citations as parts of speech. Instead of "[14] give a coninductively ..." please write something like "Keil and Thiemann [14] give a coninductively ...". There are a number of places along these lines that need to be fixed.
+
 Todo. Require a full pass.
 
 > "is compatible with user-defined contract" => "is compatible with user-defined contracts"
+
 Done.
 
 > I can't figure out what the first sentence of 5.3 is saying. What does "is [22]" mean?
+
 Added a few words.

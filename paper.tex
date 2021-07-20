@@ -1211,6 +1211,18 @@ approach proposed by Williams, Morris, and Wadler in~\cite{RootCauseOfBlame}.
 % since applying a function wrapped in \nickel{Str -> Str} contract to \nickel{0}
 % fails negatively.
 
+\begin{figure}[h]
+\begin{lstlisting}[language=nickel]
+let C = contracts.fromPred (fun f =>
+  f 0 == 0) in
+let g | (Str -> Str) @& C
+      = fun x => x
+in g 0
+\end{lstlisting}
+\caption{Intersection and user defined contracts}
+\label{fig:inter-flat-contracts}
+\end{figure}
+
 However, their approach has a major drawback: it is not straightforwardly
 compatible with user-defined contracts (introduced in Section
 \ref{sec:flat-contracts}). The issue is similar to our initial issue with higher-order
@@ -1238,18 +1250,6 @@ does respect semantically both contracts. As opposed to built-in higher-order
 contracts, user-defined contracts are black-box from the interpreter's point of
 view, and it is thus not obvious how to extend the shared state approach to
 handle user-defined contracts.
-
-\begin{figure}[h]
-\begin{lstlisting}[language=nickel]
-let C = contracts.fromPred (fun f =>
-  f 0 == 0) in
-let g | (Str -> Str) @& C
-      = fun x => x
-in g 0
-\end{lstlisting}
-\caption{Intersection and user defined contracts}
-\label{fig:inter-flat-contracts}
-\end{figure}
 
 Once again, intersection contracts introduce side-effects in the picture. What's
 more, these side-effects interact with user-defined contracts in a non-trivial
