@@ -19,12 +19,16 @@ Let us first say that we agree with the reviewer on the following points:
 - Plain contracts without unions or intersections already introduce effects.
 - The CSE equivalence is not valid in all generality (equation (1) line 387)
   already just with plain contracts, in a strict evaluation setting (call-by-value).
+- It is unfortunate that we mention the let-floating optimization
+  of Figure 5 in Section 4 (L630) as an example of an optimization invalidated
+  by union and intersection contracts as it is indeed already invalid in a
+  strict language with plain contracts.
 
 The end of Subsection 2.2 and the discussion around Figure 13 are a bit
 imprecise with respect to this aspect.
 
-The crucial point is that the effects introduced by plain contracts and union
-and intersection contracts are of very different nature:
+Nonetheless, we think the effects introduced by plain contracts and union and
+intersection contracts are crucially of very different nature:
 
 - The `blame` of plain contracts (forgetting error messages) is semantically
   equivalent to non-termination (partiality).
@@ -32,7 +36,7 @@ and intersection contracts are of very different nature:
 
 With the following consequences:
 
-- Plain contracts preserves referential transparency, while union and
+- Plain contracts preserve referential transparency, while union and
   intersection contracts do not. It is actually not uncommon to deem a language
   featuring non-termination as pure, like Haskell or the untyped
   lambda-calculus, hence the "even in a pure setting".
@@ -40,7 +44,7 @@ With the following consequences:
   Nickel, which contains the untyped lambda-calculus), adding plain contracts do
   not make it "less pure", as opposed to adding union and insertion contracts.
 
-Concerning the CSE optimization, we would like to stress the following
+Concerning the CSE optimization, we would also like to make the following
 observation:
 
 - In a lazy setting (call-by-need), the general CSE equivalence (eq 1. L 387) is
@@ -52,11 +56,6 @@ observation:
   out of its scope). This is not the case once one adds union and intersection
   contracts.
 
-That being said, it is unfortunate that we mention the let-floating optimization
-of Figure 5 in Section 4 (L630) as an example of an optimization invalidated by
-union and intersection contracts as it is indeed already invalid in a strict
-language with plain contracts.
-
 **revision plan**
 
 ### Custom contracts
@@ -67,8 +66,8 @@ Reviewer 1 mentions that we treat user-defined contracts as one block, while
 there are in fact different possible variations, so to speak: first-order flat
 contracts for example seem restricted enough to avoid the difficulties of
 combining them with union and intersection contracts. On level up are contracts
-that are still first-order but can still trigger other contracts violation, like
-`\l. hd(l) > 0`.
+that are still first-order but can trigger other contracts violation, like `\l.
+hd(l) > 0`.
 
 **answer**
 
@@ -137,7 +136,7 @@ contracts and full-fledged union and intersection contracts.
 Section 4.2 follows a natural path to fix a naive implementation of union and
 intersection contracts, by adding shared state in the picture. We notice that
 accommodating for user-defined contracts in this setting is non-obvious. Wadler
-et al.  followed this path too and decided to drop user-defined contracts
+et al. followed this path too and decided to drop user-defined contracts
 altogether. However it is not fundamentally impossible to do so, even in the
 approach of Wadler et al.'.
 
@@ -164,6 +163,37 @@ of Castagna et al., in particular with respect to the referential transparency
 aspect.
 
 **answer**
+
+There is confusion on our part about the citation of the work of Castagna et al.
+[10] (Gradual Typing: a new perspective). We actually intended to rather cite
+their previous work on which the latter one build upon: Gradual Types with Union
+and Intersection (Castagna and Lanvin).
+
+In Castagna and Lanvin, they introduce a typed functional language which
+supports gradual typing with union and intersection types (more generally,
+set-theoretic types). They use abstract interpretation to derive their
+semantics, and in their own words, "the resulting definitions are quite
+technical and barely intuitive but they have the properties we seek for".
+
+Because of the complexity of their semantics, we were not able precisely assess
+what their semantics really implement in practice, and especially how it
+compares to the co-inductive semantics of Kiel and Thiemann.
+
+Wadler et al. [22] also cites Castagna and Lanvin in rather general terms,
+concluding: "The calculus does not consider blame (using cast errors instead)
+and their choice of operational semantics prevents the statement of a useful
+blame theorem."
+
+We thus contacted one of the author directly. While they were themselves not
+sure how the two semantics compare, they think their semantics is likely to be
+less expressive than the co-inductive semantics. That is, there may exist terms
+that would succeed in the system of Kiel that Thiemann would fail once
+translated in the system of Castagna et al.
+
+Concerning [10], the paper originally cited in our submission, it adds
+polymorphism compared to Castagna and Lanvin, but at the expense of restrictions
+on intersections. In particular, it is not possible to assign intersection types
+to a function, as stated in their future work section.
 
 **revision plan**
 
