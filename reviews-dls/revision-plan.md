@@ -65,7 +65,7 @@ observation:
 Reviewer 1 mentions that we treat user-defined contracts as one block, while
 there are in fact different possible variations, so to speak: first-order flat
 contracts for example seem restricted enough to avoid the difficulties of
-combining them with union and intersection contracts. On level up are contracts
+combining them with union and intersection contracts. One level up are contracts
 that are still first-order but can trigger other contracts violation, like `\l.
 hd(l) > 0`.
 
