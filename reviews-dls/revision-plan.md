@@ -93,7 +93,7 @@ domain-specific.
 
 **review summary**
 
-Reviewer 1 argue that the discussion of Figure 16 is missing the currying
+Reviewer 1 argues that the discussion of Figure 16 is missing the currying
 aspect: shouldn't the function take a tuple as an argument instead of being
 curried? In that case, could one not say that the flaw in the design then, is
 that currying has replaced n-ary functions?
