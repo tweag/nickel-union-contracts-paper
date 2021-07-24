@@ -1584,18 +1584,27 @@ and \cite{RootCauseOfBlame} that this paper explored extensively.
 
 \subsection{Unions and intersections in gradual typing}
 
-Castagna et al.~\cite{gradualCastagna} introduce a gradual type system based on
-so-called set-theoretic types~\cite{SetTheoreticTypes}.  Set-theoretic types
-feature unions, intersections, negation types together with a notion of
-subtyping. This work adheres to the \emph{static first school} (see
-~\cite{practiceTheoryGrad}) of gradual typing: the reason for gradual types is
-to allow for a less precise type information. It follows that their goals and
-constraints are somehow different, resulting in the absence of first-class
-contracts. As for any gradual type system, they do have to implement
-casts~---~that are very close to contracts~---~for unions and
-intersections, but these casts
-are neither visible nor available to the programmer. Obviously, no contracts
-mean no user-defined contracts as well.
+Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
+gradual type system based on so-called set-theoretic
+types~\cite{SetTheoreticTypes}.  Set-theoretic types feature unions,
+intersections, negation types together with a notion of subtyping. This work
+adheres to the \emph{static first school} (see ~\cite{practiceTheoryGrad}) of
+gradual typing: the reason for gradual types is to allow for a less precise type
+information. It follows that their goals and constraints are somehow different,
+resulting in the absence of first-class contracts. As for any gradual type
+system, they do have to implement casts~---~that are very close to
+contracts~---~for unions and intersections, but these casts are neither visible
+nor available to the programmer. Obviously, no contracts mean no user-defined
+contracts as well.
+
+Castagna and Lanvin use abstract interpretation to derive the semantics of
+unions and intersections. In their own words, "the resulting definitions are
+quite technical and barely intuitive but they have the properties we seek for
+[\ldots]".  This makes any comparison with the co-inductive semantics of Kiel
+and Thiemann rather difficult. Castagna et al.~\cite{gradualCastagna} build on
+Castagna and Lanvin to add polymorphism in the picture. However, it is at the
+price of restricting the union and intersection part: it is not possible to
+assign intersection types to a function anymore.
 
 \section{Conclusion}
 \label{sec:conclusion}

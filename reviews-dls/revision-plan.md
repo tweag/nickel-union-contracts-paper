@@ -197,6 +197,8 @@ to a function, as stated in their future work section.
 
 **revision plan**
 
+See latexdiff
+
 ## Draft notes
 
 - Change the example of "fonction on union -> intersection of functions"
