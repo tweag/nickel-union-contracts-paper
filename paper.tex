@@ -962,12 +962,12 @@ duplicate text
 \section{Incompatibilities}
 \label{sec:issues-sem}
 
-However appealing union and intersection contracts may be, they happen
-to be fundamentally incompatible with the desirable language
-features from Section~\ref{sec:feat-lang}. At least in their
-full-blown form: in Section~\ref{sec:issues-literature} we will
-discuss pragmatic restrictions of union and intersection contracts to
-recover some or all of the features.
+However appealing union and intersection contracts may be, they happen to be
+either hard to combine or even fundamentally incompatible with the desirable
+language features from Section~\ref{sec:feat-lang}. At least in their full-blown
+form: in Section~\ref{sec:issues-literature} we will discuss pragmatic
+restrictions of union and intersection contracts to recover some or all of the
+features.
 
 \subsection{Union contracts as a side-effect}
 
@@ -1380,9 +1380,9 @@ Efficiency is also affected another way: each time a function with a
 contract attached is applied, the whole \emph{context} must be
 traversed to check for a compatibility property.
 
-The algorithmic system of~\cite{KeilThiemannUnionIntersection} is, on
-balance, a technically impressive realization of the coinductive
-semantics, though it is fairly complex and probably difficult to
+The algorithmic system of~\cite{KeilThiemannUnionIntersection} is, on balance, a
+technically impressive realization of the coinductive semantics that supports
+user-defined contracts, though it is fairly complex and probably difficult to
 implement efficiently.
 
 \subsection{Monitoring properties}
