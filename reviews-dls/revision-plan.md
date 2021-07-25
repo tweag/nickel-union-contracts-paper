@@ -70,6 +70,8 @@ combining them with union and intersection contracts. One level up are contracts
 that are still first-order but can trigger other contracts violation, like `\l.
 hd(l) > 0`.
 
+Also, they mention Dimoulas's POLP11 and ESOP12 papers as a relevant source.
+
 **answer**
 
 There are many useful contracts that are first-order, indeed. This is probably
@@ -88,6 +90,15 @@ greatly limit the expressive power and extensibility of user-defined contracts.
 This is a problem for validation purpose, as schemas are diverse and
 domain-specific.
 
+Regarding Dimoulas's papers, even though his work presents a solution for
+contracts that may, arbitrarily, break other contracts in their evaluation,
+we consider this solution is not, at least directly, applicable to
+Unions and Intersections contracts, mainly since on dependent function contracts,
+the value is contracted under two different contexts, that never
+interact with each other and they are, therefore, quite easy to isolate.
+With Unions and Intersections, the opposite occur, it's the same value
+that's applied to two contracts, whose validation depends on both of these.
+
 **revision plan**
 
 ### Currying and intersections
@@ -103,20 +114,35 @@ that currying has replaced n-ary functions?
 
 The programmer could write an n-ary function instead of a curried one to
 overcome the issue, but we are not sure it is the right solution to the problem.
-
-Without entering the debate of currying by default (which is the most pervasive
-choice among functional languages today and surely very handy combined with
-partial application), we think the fundamental issue is that the equivalence
+We think the fundamental issue is that the equivalence
 `A -> B /\ A -> C ~= A -> (B \/ C)` is not valid in the co-inductive semantics.
 
 The point of dynamic checking mechanisms like contracts is to check that a term
 satisfies an external specification without imposing any restriction on its
 structure or intermediate states. It makes it much more flexible than a static
 typing approach, which imposes rigid rules on the whole content term.
-Set-theoretic functions validate the equivalence `A -> B /\ A -> ~= A -> (B \/
+Set-theoretic functions validate the equivalence `A -> B /\ A -> C ~= A -> (B \/
 C)`, so one could expect that a semantics for full-fledged union and
 intersection contracts would validate the equivalence too, or at least imagine
 that there exists a semantics that do so.
+
+Also, on a little more opinionated note, the advantages of admiting higher-order
+functions, is not only about passing functions as arguments, but also about
+constructing functions. For instance, consider the following example:
+
+```
+let longerThan | (Num -> Str -> Bool) /\ (Num -> List Any -> Bool) = 
+  fun s x => (length s) > x in
+
+["Nickel", [1, 2, 3], "DLS 2021"] map (longerThan 4)
+```
+
+With the problem mentioned on the paper, this `map` would fail, since
+`(longerThan 2)` can not accept both `Str` and `List Any` as arguments.
+Of course, this could easily be solved by uncurrying, but it would
+effectively create a necessity for programmers that is not there
+if one does not use contracts, and the example above would need
+to be written as `[...] map (fun x => longerThan (4, x))`.
 
 **revision plan**
 
