@@ -8,9 +8,9 @@
 
 Reviewer 1 notices that we insist on union and intersection contracts
 introducing side-effects, but plain contracts already exhibit side-effects
-because of `blame`. In particular, a comment says "even in a pure setting" at
-the end of section 2. They further remark that the transformation of Figure 13
-is already invalid in general with plain contracts.
+because of `blame`. In particular, the paper says "even in a pure setting" in a
+comment at the end of section 2. They further remark that the transformation of
+Figure 13 is already invalid in general with plain contracts.
 
 **answer**
 
@@ -18,7 +18,8 @@ Let us first say that we agree with the reviewer on the following points:
 
 - Plain contracts without unions or intersections already introduce effects.
 - The CSE equivalence is not valid in all generality (equation (1) line 387)
-  already just with plain contracts, in a strict evaluation setting (call-by-value).
+  just with plain contracts already, in a strict evaluation setting
+  (call-by-value).
 - It is unfortunate that we mention the let-floating optimization
   of Figure 5 in Section 4 (L630) as an example of an optimization invalidated
   by union and intersection contracts as it is indeed already invalid in a
