@@ -879,7 +879,7 @@ value which fits both types: this is precisely the intersection
 \nickel{(Date @| Str) @& (DateWeek @| Str)}, that is, \nickel{Str}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}[language=Nickel]
 let Date = {day | Num, month | Num, year | Num} in
 let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
 let appendDate | (List (Date @| Str)
