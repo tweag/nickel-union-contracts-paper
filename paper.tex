@@ -1051,11 +1051,10 @@ two are always needed.
 
 This behavior indicates that union contracts introduce side-effects. The result
 of \nickel{f 5} now depends on the previous execution and more specifically on
-any prior call to \nickel{f}. This behavior of union contracts break the
-property~\ref{eq:cbn-expansion} introduced in Section~\ref{sec:optimizations},
-that is required to perform CSE-like optimizations in all generality. The
-candidate example of Figure~\ref{fig:optimizations-let-floating-ex} in
-Section~\ref{sec:optimizations} can't be optimized in general.
+any prior call to \nickel{f}. This behavior of union contracts breaks
+referential transparency, as well as the property~\ref{eq:cbn-expansion}
+introduced in Section~\ref{sec:optimizations}, that is required to perform
+CSE-like optimizations.
 
 Figure~\ref{fig:optimized-programs} illustrates this point further. It contains
 an original program and an optimized version where the common subexpression

@@ -59,6 +59,9 @@ observation:
 
 **revision plan**
 
+- Rework the end of Section 2.2 ("even in a pure setting") to make things clearer.
+- Remove the specific mention to let-floating.
+
 ### Custom contracts
 
 **review summary**
@@ -100,6 +103,8 @@ With Unions and Intersections, the opposite occur, it's the same value
 that's applied to two contracts, whose validation depends on both of these.
 
 **revision plan**
+
+Not sure what to do?
 
 ### Currying and intersections
 
@@ -146,6 +151,8 @@ to be written as `[...] map (fun x => longerThan (4, x))`.
 
 **revision plan**
 
+Not sure what to do?
+
 ## Answer to reviewer 3
 
 ### Combining user-defined contracts with unions and intersections
@@ -180,6 +187,8 @@ requires the inspection of the whole *context* of an application, that is, the
 continuation. This looks like a pretty heavy operation to implement.
 
 **revision plan**
+
+Tame the "fundamentally incompatible" wording.
 
 ### Castagna et al.
 
@@ -224,7 +233,7 @@ to a function, as stated in their future work section.
 
 **revision plan**
 
-See latexdiff
+Expand the discussion on Castagna et al.
 
 ## Draft notes
 
