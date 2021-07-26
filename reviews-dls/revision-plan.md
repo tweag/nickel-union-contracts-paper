@@ -153,6 +153,11 @@ to be written as `[...] map (fun x => longerThan (4, x))`.
 
 Not sure what to do?
 
+### Others
+
+- `appendDate` example: indeed, the output type of `appendDate` is not
+    constrained as it is. It has been fixed in the revision proposal.
+
 ## Answer to reviewer 3
 
 ### Combining user-defined contracts with unions and intersections
