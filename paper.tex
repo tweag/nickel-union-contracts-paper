@@ -871,12 +871,15 @@ Sections~\ref{sec:issues-sem} and~\ref{sec:issues-literature} are better
 expressed in terms of intersections, so it's best to include them.
 
 Figure~\ref{fig:addElem} gives a concrete example of this phenomenon. The
-function \nickel{appendDate} append an element to \nickel{list} whose type is
+function \nickel{appendDate} appends an element to \nickel{list} whose type is
 only known to be in union of two lists, each using a different representation.
-Both alternatives support falling back to a simple string for unparsed dates.
-Faced with these two possibilities, \nickel{appendDate} can only append a
-value which fits both types: this is precisely the intersection
-\nickel{(Date @| Str) @& (DateWeek @| Str)}, that is, \nickel{Str}.
+Because the return type is the same as the input type, \nickel{appendDate} must
+preserve this representation (\nickel{Date} and \nickel{DateWeek}
+cannot be mixed in a same list).  Both alternatives support falling back to
+a simple string for unparsed dates.  Faced with these two possibilities,
+\nickel{appendDate} can only append a value which fits both types: this is
+precisely the intersection \nickel{(Date @| Str) @& (DateWeek @| Str)}, that
+is, \nickel{Str}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=Nickel]
@@ -884,7 +887,8 @@ let Date = {day | Num, month | Num, year | Num} in
 let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
 let appendDate | (List (Date @| Str)
                  @| List (DateWeek @| Str))
-                 -> List =
+                 -> (List (Date @| Str)
+                 @| List (DateWeek @| Str)) =
   fun list => lists.cons "01/01/2021" list
 \end{lstlisting}
 \caption{Adding an element to a union of two arrays}
