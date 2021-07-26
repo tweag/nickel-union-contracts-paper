@@ -6,6 +6,7 @@ stdenv.mkDerivation {
   buildInputs = [ biber
                   pdftk
                   zip
+                  git-latexdiff
                   (texlive.combine {
                        inherit (texlive)
                        biblatex
