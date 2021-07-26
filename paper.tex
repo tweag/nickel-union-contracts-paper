@@ -714,8 +714,9 @@ fails in all generality because the transformation may cause a previously
 unevaluated term to be suddenly evaluated.  However, (\ref{eq:cbn-expansion})
 holds given slight restrictions on the context $M$: for example, it holds as
 long as at least one occurrence of $x$ in $M$ is in scope (i.e. not inside a
-function). Beside, many languages out there already feature non-termination. For
-such langauges, adding contracts does not change what optimizations are valid.
+function). Beside, many languages out there (including Nickel) already feature
+non-termination. For such languages, adding contracts does not change what
+optimizations are valid.
 
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
 unions and intersections \emph{breaks referential transparency}. Unions and
@@ -1056,8 +1057,9 @@ CSE-like optimizations.
 
 Figure~\ref{fig:optimized-programs} illustrates this point further. It contains
 an original program and an optimized version where the common subexpression
-\nickel{f 1} has been eliminated. While equivalent in a pure language without
-contracts, these two programs behave differently because of unions:
+\nickel{f 1} has been eliminated. While equivalent in a pure language with only
+non-termination or plain higher-order contracts, these two programs behave
+differently because of unions:
 
 \begin{itemize}
     \item The original version returns \nickel{(1, "False")} without failing.
