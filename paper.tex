@@ -721,7 +721,7 @@ optimizations are valid.
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
 unions and intersections \emph{breaks referential transparency}. Unions and
 intersections make (\ref{eq:cbn-expansion}) unsound even in a lazy language,
-preventing the kind optimization of
+preventing the kind of optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} to fire in general. In a strict
 language, the restrictions to (\ref{eq:cbn-expansion}) outlined above are not
 sufficient anymore. If the effect of plain higher-order contracts behaves as
@@ -871,8 +871,8 @@ Sections~\ref{sec:issues-sem} and~\ref{sec:issues-literature} are better
 expressed in terms of intersections, so it's best to include them.
 
 Figure~\ref{fig:addElem} gives a concrete example of this phenomenon. The
-function \nickel{appendDate} appends an element to \nickel{list} whose type is
-only known to be in union of two lists, each using a different representation.
+function \nickel{appendDate} appends an element to \nickel{list}, whose type is
+only known to be the union of two lists, each using a different representation.
 Because the return type is the same as the input type, \nickel{appendDate} must
 preserve this representation (\nickel{Date} and \nickel{DateWeek}
 cannot be mixed in a same list).  Both alternatives support falling back to
@@ -1297,16 +1297,18 @@ and discuss those trade-offs and their implications.
 \label{sec:coinductive-sem}
 
 In order to give a precise definition to what values ought to satisfy
-union and intersection contracts, \cite{KeilThiemannUnionIntersection}
+union and intersection contracts,
+Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
 give a coinductively defined semantics inspired by union and
-intersection type systems. The key innovation of
-\cite{KeilThiemannUnionIntersection} is recognizing that giving a
+intersection type systems.
+The key innovation of their work is recognizing that giving a
 semantics to higher-order contracts requires defining not only what
 values satisfy a contract, but also what \emph{contexts} satisfy the
 contract. This models the situation where context may violate a
 contract by calling a function with an inappropriate argument.
 
-Concretely, given a contract $C$, \cite{KeilThiemannUnionIntersection}
+Concretely, given a contract $C$,
+Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
 introduce the two sets $\llbracket C \rrbracket^+$ and $\llbracket C
 \rrbracket^-$ of values and contexts, respectively, satisfying the
 contract. They are defined by mutual induction and coinduction.
@@ -1314,8 +1316,8 @@ contract. They are defined by mutual induction and coinduction.
 This semantics has limited support for overloading. Consider the
 example in Figure~\ref{fig:intersection-distribution}: it could
 evaluate to the pair \nickel{(1, 1)}. But the coinductive semantics
-of~\cite{KeilThiemannUnionIntersection} rejects it as a contract
-violation. This can be phrased pithily as the fact that the
+of this work rejects it as a contract violation.
+This can be phrased pithily as the fact that the
 coinductive semantics doesn't validate the property \nickel{A -> B @&
   A -> C}$\simeq$\nickel{A -> (B @& C)}.
 
@@ -1352,8 +1354,9 @@ appears to require complex book-keeping in order to correctly raise
 blame.
 
 All of this still holds true of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem}. Nevertheless,
-\cite{KeilThiemannUnionIntersection} gives an algorithmic system which
+Section~\ref{sec:coinductive-sem}.
+Nevertheless, Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
+give an algorithmic system which
 is complete for their coinductive semantics. In a remarkable technical
 tour de force, their algorithmic system is compatible with
 user-defined contracts (see Section~\ref{sec:flat-and-inter}).
@@ -1364,7 +1367,8 @@ disjunctive normal form using the De Morgan's law \nickel{A @& (B @|
   C)}$\simeq$\nickel{(A @& B) @| (A @& C)}. The goal is to be able to
 delay the choice of branch in intersections as much as possible.
 
-To implement contract verification, \cite{KeilThiemannUnionIntersection} resorts to
+To implement contract verification,
+Keil and Thiemann~\cite{KeilThiemannUnionIntersection} resort to
 specific reduction rules for unions and intersections which perform this
 rewriting on the fly. This aspect is critiqued
 in~\cite{RootCauseOfBlame}:
@@ -1469,8 +1473,9 @@ let f = (*@$\square$@*) in
 \label{fig:invalid-context}
 \end{figure}
 
-The consequence is that~\cite{RootCauseOfBlame} doesn't prove their
-system complete for the coinductive semantics. It's probably just an
+The consequence is that Williams et al.~\cite{RootCauseOfBlame} don't
+prove their system complete for the coinductive semantics.
+It's probably just an
 oversight in the proof: we believe their system to be indeed complete
 for the coinductive semantics. But it does speak to the intrinsic
 complexity of union and intersection contracts: it is remarkably easy
@@ -1612,7 +1617,7 @@ Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
 gradual type system based on so-called set-theoretic
 types~\cite{SetTheoreticTypes}.  Set-theoretic types feature unions,
 intersections, negation types together with a notion of subtyping. This work
-adheres to the \emph{static first school} (see ~\cite{practiceTheoryGrad}) of
+adheres to the \emph{static first school} (see~\cite{practiceTheoryGrad}) of
 gradual typing: the reason for gradual types is to allow for a less precise type
 information. It follows that their goals and constraints are somehow different,
 resulting in the absence of first-class contracts. As for any gradual type

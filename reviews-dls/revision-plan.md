@@ -96,15 +96,23 @@ domain-specific.
 Regarding Dimoulas's papers, even though his work presents a solution for
 contracts that may, arbitrarily, break other contracts in their evaluation,
 we consider this solution is not, at least directly, applicable to
-Unions and Intersections contracts, mainly since on dependent function contracts,
+Union and Intersection contracts, mainly since on dependent function contracts,
 the value is contracted under two different contexts, that never
 interact with each other and they are, therefore, quite easy to isolate.
 With Unions and Intersections, the opposite occur, it's the same value
-that's applied to two contracts, whose validation depends on both of these.
+that must be validated with two contracts, whose final outcome
+depend on both of these subcontracts.
+
+Also, it's important to note that Dimoulas' systems behave by getting stuck
+in the case an undesired event happens (a contract fails because of external,
+semantically unrelated, values flow in), while, as developed by Keil
+and Thiemann, with Unions and Intersections the expected outcome
+is to *not* execute a contract under the wrong context.
 
 **revision plan**
 
-Not sure what to do?
+None, even if important questions, we believe the answers
+don't belong to the paper.
 
 ### Currying and intersections
 
@@ -151,7 +159,10 @@ to be written as `[...] map (fun x => longerThan (4, x))`.
 
 **revision plan**
 
-Not sure what to do?
+We consider the curried vs uncurried discussion
+doesn't belong to the paper, and that enforcing an uncurried style
+would impose an awkard and unnecessary restriction to a
+(functional) programming language.
 
 ### Others
 
