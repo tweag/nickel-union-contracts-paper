@@ -1472,13 +1472,13 @@ let f = (*@$\square$@*) in
 \label{fig:invalid-context}
 \end{figure}
 
-The consequence is that \citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}
-don't prove their system complete for the coinductive semantics.  It's probably
-just an oversight in the proof: we believe their system to be indeed complete
-for the coinductive semantics. But it does speak to the intrinsic complexity of
-union and intersection contracts: it is remarkably easy to get details wrong.
-This difficulty contrasts with the standard framework of higher-order contracts
-where satisfaction is much more straightforward.
+The consequence is that \citeauthor{RootCauseOfBlame} don't prove their system
+complete for the coinductive semantics.  It's probably just an oversight in the
+proof: we believe their system to be indeed complete for the coinductive
+semantics. But it does speak to the intrinsic complexity of union and
+intersection contracts: it is remarkably easy to get details wrong.  This
+difficulty contrasts with the standard framework of higher-order contracts where
+satisfaction is much more straightforward.
 
 \subsection{Racket}
 \label{sec:racket}
@@ -1605,8 +1605,10 @@ typed and untyped code. In \cite{WellTypedBlamed}, the authors precisely
 introduce a system integrating gradual typing with contracts \textit{à la
 Findler \& Felleisen}. Nickel adopts a similar type system, with both statically
 typed terms, dynamically typed terms, and first-class contracts. Higher-order
-contracts are the basis of the work of \cite{KeilThiemannUnionIntersection}
-and \cite{RootCauseOfBlame} that this paper explored extensively.
+contracts are the basis of the work of
+\citeauthor{KeilThiemannUnionIntersection}~\cite{KeilThiemannUnionIntersection}
+and \citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame} that this paper
+explored extensively.
 
 \subsection{Unions and intersections in gradual typing}
 
