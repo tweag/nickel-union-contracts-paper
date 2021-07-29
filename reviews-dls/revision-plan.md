@@ -88,18 +88,17 @@ sacrifices. Ultimately, user-defined contracts are hard to reason
 about formally, which is probably why Williams et al eschew them
 completely. So we stand by this point
 
-Regarding Dimoulas's papers, even though his work presents a solution
+Regarding Dimoulas's papers, their work presents a solution
 for contracts that may, arbitrarily, break other contracts in their
 evaluation. Although this looks related to this problem with
 intersection and user-defined contracts, it is not clear how to
 leverage Dimoulas's techniques for intersection in practice.
 
-It's worth noting, for instance, that Dimoulas's systems behave by
-getting stuck in the case an undesired event happens (a contract fails
-because of external, semantically unrelated, values flow in), while,
-as developed by Keil and Thiemann, with Unions and Intersections the
-expected outcome is,rather, not to execute a contract under the wrong
-context.
+It's worth noting, for instance, that Dimoulas's systems behave by getting stuck
+in the case an undesired event happens (a contract fails because of external,
+semantically unrelated, values flow in). With unions and intersections as
+developed by Keil and Thiemann, the expected outcome is rather to not execute a
+contract under the wrong context.
 
 **revision plan**
 
@@ -207,8 +206,3 @@ to a function, as stated in their future work section.
 
 We will expand the discussion on Castagna et al. with some of the
 remarks in this answer.
-
-## Draft notes
-
-- Change the example of "fonction on union -> intersection of functions"
-- Change the sentence of "even in a pure setting".
