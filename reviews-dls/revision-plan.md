@@ -1,5 +1,9 @@
 # Revision plan
 
+We thank the reviewers for their valuable comments. In addition to the
+various small improvement suggested, that we have implemented, find
+answers to specific questions below.
+
 ## Answer to reviewer 1
 
 ### Effects
@@ -59,8 +63,8 @@ observation:
 
 **revision plan**
 
-- Rework the end of Section 2.2 ("even in a pure setting") to make things clearer.
-- Remove the specific mention to let-floating.
+- We will rework the end of Section 2.2 ("even in a pure setting") to make things clearer.
+- We will remove the specific mention to let-floating.
 
 ### Custom contracts
 
@@ -69,50 +73,38 @@ observation:
 Reviewer 1 mentions that we treat user-defined contracts as one block, while
 there are in fact different possible variations, so to speak: first-order flat
 contracts for example seem restricted enough to avoid the difficulties of
-combining them with union and intersection contracts. One level up are contracts
-that are still first-order but can trigger other contracts violation, like `\l.
-hd(l) > 0`.
+combining them with union and intersection contracts.
 
-Also, they mention Dimoulas's POLP11 and ESOP12 papers as a relevant source.
+In addition, they mention Dimoulas's POLP11 and ESOP12 papers as a relevant source.
 
 **answer**
 
-There are many useful contracts that are first-order, indeed. This is probably
-the case for most use cases of Nickel.
+There are many useful contracts that are first-order, indeed. This is
+probably the case for most use cases of Nickel. But it's not obvious
+how to have one without having the other. A language may choose to
+ignore the problematic contracts, though, we don't have an example of
+such an approach except for Racket's, which makes much bigger
+sacrifices. Ultimately, user-defined contracts are hard to reason
+about formally, which is probably why Williams et al eschew them
+completely. So we stand by this point
 
-In practice, there doesn't appear to be a simple, natural way of enforcing that
-user-defined contracts do not apply their argument. In any dynamically typed (or
-gradually typed) functional language like Nickel, functions and function
-application are first class, and it doesn't seem so easy to forbid their use
-without resorting to an ad-hoc operational mechanism to track contracts argument
-and error out on application.
+Regarding Dimoulas's papers, even though his work presents a solution
+for contracts that may, arbitrarily, break other contracts in their
+evaluation. Although this looks related to this problem with
+intersection and user-defined contracts, it is not clear how to
+leverage Dimoulas's techniques for intersection in practice.
 
-Another solution would be to define user-defined contracts not as general
-functions, but by using a limited set of combinators. That would nonetheless
-greatly limit the expressive power and extensibility of user-defined contracts.
-This is a problem for validation purpose, as schemas are diverse and
-domain-specific.
-
-Regarding Dimoulas's papers, even though his work presents a solution for
-contracts that may, arbitrarily, break other contracts in their evaluation,
-we consider this solution is not, at least directly, applicable to
-Union and Intersection contracts, mainly since on dependent function contracts,
-the value is contracted under two different contexts, that never
-interact with each other and they are, therefore, quite easy to isolate.
-With Unions and Intersections, the opposite occur, it's the same value
-that must be validated with two contracts, whose final outcome
-depend on both of these subcontracts.
-
-Also, it's important to note that Dimoulas' systems behave by getting stuck
-in the case an undesired event happens (a contract fails because of external,
-semantically unrelated, values flow in), while, as developed by Keil
-and Thiemann, with Unions and Intersections the expected outcome
-is to *not* execute a contract under the wrong context.
+It's worth noting, for instance, that Dimoulas's systems behave by
+getting stuck in the case an undesired event happens (a contract fails
+because of external, semantically unrelated, values flow in), while,
+as developed by Keil and Thiemann, with Unions and Intersections the
+expected outcome is,rather, not to execute a contract under the wrong
+context.
 
 **revision plan**
 
-None, even if important questions, we believe the answers
-don't belong to the paper.
+Answering these points in details seem to bring us out of the scope of
+the paper. So we propose to not address them in the revised version.
 
 ### Currying and intersections
 
@@ -125,49 +117,22 @@ that currying has replaced n-ary functions?
 
 **answer**
 
-The programmer could write an n-ary function instead of a curried one to
-overcome the issue, but we are not sure it is the right solution to the problem.
-We think the fundamental issue is that the equivalence
-`A -> B /\ A -> C ~= A -> (B \/ C)` is not valid in the co-inductive semantics.
-
-The point of dynamic checking mechanisms like contracts is to check that a term
-satisfies an external specification without imposing any restriction on its
-structure or intermediate states. It makes it much more flexible than a static
-typing approach, which imposes rigid rules on the whole content term.
-Set-theoretic functions validate the equivalence `A -> B /\ A -> C ~= A -> (B \/
-C)`, so one could expect that a semantics for full-fledged union and
-intersection contracts would validate the equivalence too, or at least imagine
-that there exists a semantics that do so.
-
-Also, on a little more opinionated note, the advantages of admiting higher-order
-functions, is not only about passing functions as arguments, but also about
-constructing functions. For instance, consider the following example:
-
-```
-let longerThan | (Num -> Str -> Bool) /\ (Num -> List Any -> Bool) = 
-  fun s x => (length s) > x in
-
-["Nickel", [1, 2, 3], "DLS 2021"] map (longerThan 4)
-```
-
-With the problem mentioned on the paper, this `map` would fail, since
-`(longerThan 2)` can not accept both `Str` and `List Any` as arguments.
-Of course, this could easily be solved by uncurrying, but it would
-effectively create a necessity for programmers that is not there
-if one does not use contracts, and the example above would need
-to be written as `[...] map (fun x => longerThan (4, x))`.
+If the programmer writes n-ary functions uncurried, in Kiel and
+Thiemann's system, they will indeed not run into the problem of
+Figure 16. This doesn't change our point that the support for
+overloading is limited as it doesn't always work for curried
+functions.
 
 **revision plan**
 
-We consider the curried vs uncurried discussion
-doesn't belong to the paper, and that enforcing an uncurried style
-would impose an awkard and unnecessary restriction to a
-(functional) programming language.
+We will clarify that uncurrying is a workaround. Beyond this, we
+consider a curried vs uncurried discussion doesn't belong to the
+paper.
 
 ### Others
 
-- `appendDate` example: indeed, the output type of `appendDate` is not
-    constrained as it is. It has been fixed in the revision proposal.
+- `appendDate` example: indeed, the output type of `appendDate` was
+  wrong. It has been fixed in the revision proposal.
 
 ## Answer to reviewer 3
 
@@ -175,48 +140,38 @@ would impose an awkard and unnecessary restriction to a
 
 **review summary**
 
-The discussion of the incompatibility between user-defined contracts and union
-and intersection contracts is unclear. Section 4.2 claims it is "not obvious",
-while Section 4 talks about "fundamental incompatibilities". The algorithmic
-system of Keil and Thiemann presented in Section 5 does combine user-defined
-contracts and full-fledged union and intersection contracts.
+The discussion of the incompatibility between user-defined contracts
+and the shared-state implementation of intersection is
+unclear. Section 4.2 claims it is "not obvious", while Section 4 talks
+about "fundamental incompatibilities". The algorithmic system of Keil
+and Thiemann presented in Section 5 does combine user-defined
+contracts and union and intersection contracts.
 
 **answer**
 
-Section 4.2 follows a natural path to fix a naive implementation of union and
-intersection contracts, by adding shared state in the picture. We notice that
-accommodating for user-defined contracts in this setting is non-obvious. Wadler
-et al. followed this path too and decided to drop user-defined contracts
-altogether. However it is not fundamentally impossible to do so, even in the
-approach of Wadler et al.'.
-
-This trade-off gains Wadler et al. a more uniform and in general simpler
-operational semantics than Keil and Thiemann's system, as stated at line 862.
-That also means easier to implement. On the other hand, Kiel and Thiemann's
-system is the most complete one (supporting both general union and intersection
-contracts and user-defined contracts) but also the most complex one. The
-algorithmic version of their system, which is the one that can be implemented,
-is fairly complex, and present many performance challenges (L852). In
-particular, line 849 mentions one dramatic consequence of supporting
-user-defined contracts on their system: the evaluation of function contracts
-requires the inspection of the whole *context* of an application, that is, the
-continuation. This looks like a pretty heavy operation to implement.
+We agree: this is unfortunate. In this respect, Section 4.2 is right
+(in essence, it's the problem that Keil and Thiemann solve). So the
+wording at the beginning of Section 4 is inaccurate. While most of the
+other properties we discuss are about incompatibilities with the
+semantic of contracts, the discussion in 4.2 led us to discuss how
+it's difficult to preserve said semantics in a particular
+implementation strategy.
 
 **revision plan**
 
-Tame the "fundamentally incompatible" wording.
+We will tame the "fundamentally incompatible" wording.
 
 ### Castagna et al.
 
 **review summary**
 
-The reviewer is disappointed by the short and superficial treatment of the work
-of Castagna et al., in particular with respect to the referential transparency
-aspect.
+The reviewer is disappointed by the short treatment of the work of
+Castagna et al., in particular with respect to the referential
+transparency aspect.
 
 **answer**
 
-There is confusion on our part about the citation of the work of Castagna et al.
+There is a mistake on our part about the citation of the work of Castagna et al.
 [10] (Gradual Typing: a new perspective). We actually intended to rather cite
 their previous work on which the latter one build upon: Gradual Types with Union
 and Intersection (Castagna and Lanvin).
@@ -225,7 +180,7 @@ In Castagna and Lanvin, they introduce a typed functional language which
 supports gradual typing with union and intersection types (more generally,
 set-theoretic types). They use abstract interpretation to derive their
 semantics, and in their own words, "the resulting definitions are quite
-technical and barely intuitive but they have the properties we seek for".
+technical and barely intuitive but they have the properties we seek".
 
 Because of the complexity of their semantics, we were not able precisely assess
 what their semantics really implement in practice, and especially how it
@@ -240,7 +195,8 @@ We thus contacted one of the author directly. While they were themselves not
 sure how the two semantics compare, they think their semantics is likely to be
 less expressive than the co-inductive semantics. That is, there may exist terms
 that would succeed in the system of Kiel that Thiemann would fail once
-translated in the system of Castagna et al.
+translated in the system of Castagna et al. This is why we prefer to
+remain prudent on the comparison.
 
 Concerning [10], the paper originally cited in our submission, it adds
 polymorphism compared to Castagna and Lanvin, but at the expense of restrictions
@@ -249,7 +205,8 @@ to a function, as stated in their future work section.
 
 **revision plan**
 
-Expand the discussion on Castagna et al.
+We will expand the discussion on Castagna et al. with some of the
+remarks in this answer.
 
 ## Draft notes
 
