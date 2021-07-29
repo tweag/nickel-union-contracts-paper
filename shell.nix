@@ -32,4 +32,7 @@ stdenv.mkDerivation {
                        ;
                   })
                 ];
+  shellHook = ''
+    alias revision-diff='git-latexdiff --latexmk dls21.1-no-marks --main paper.tex -o reviews-dls/diff.pdf'
+  '';
 }
