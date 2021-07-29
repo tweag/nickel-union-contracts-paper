@@ -1298,7 +1298,7 @@ and discuss those trade-offs and their implications.
 
 In order to give a precise definition to what values ought to satisfy
 union and intersection contracts,
-Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
+\citeauthor{KeilThiemannUnionIntersection}~\cite{KeilThiemannUnionIntersection}
 give a coinductively defined semantics inspired by union and
 intersection type systems.
 The key innovation of their work is recognizing that giving a
@@ -1307,20 +1307,17 @@ values satisfy a contract, but also what \emph{contexts} satisfy the
 contract. This models the situation where context may violate a
 contract by calling a function with an inappropriate argument.
 
-Concretely, given a contract $C$,
-Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
+Concretely, given a contract $C$, \citeauthor{KeilThiemannUnionIntersection}
 introduce the two sets $\llbracket C \rrbracket^+$ and $\llbracket C
-\rrbracket^-$ of values and contexts, respectively, satisfying the
-contract. They are defined by mutual induction and coinduction.
+\rrbracket^-$ of values and contexts, respectively, satisfying the contract.
+They are defined by mutual induction and coinduction.
 
-This semantics has limited support for overloading. Consider the
-example in Figure~\ref{fig:intersection-distribution}: it could
-evaluate to the pair \nickel{(1, 1)}. But
-\citeauthor{KeilThiemannUnionIntersection}'s coinductive semantics
-rejects it as a contract violation.
-This can be phrased pithily as the fact that the
-coinductive semantics doesn't validate the property \nickel{A -> B @&
-  A -> C}$\simeq$\nickel{A -> (B @& C)}.
+This semantics has limited support for overloading. Consider the example in
+Figure~\ref{fig:intersection-distribution}: it could evaluate to the pair
+\nickel{(1, 1)}. But \citeauthor{KeilThiemannUnionIntersection}'s coinductive
+semantics rejects it as a contract violation.  This can be phrased pithily as
+the fact that the coinductive semantics doesn't validate the property
+\nickel{A -> B @& A -> C}$\simeq$\nickel{A -> (B @& C)}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1359,25 +1356,22 @@ appears to require complex book-keeping in order to correctly raise
 blame.
 
 All of this still holds true of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem}.
-Nevertheless, Keil and Thiemann~\cite{KeilThiemannUnionIntersection}
-give an algorithmic system which
-is complete for their coinductive semantics. In a remarkable technical
-tour de force, their algorithmic system is compatible with
-user-defined contracts (see Section~\ref{sec:flat-and-inter}).
+Section~\ref{sec:coinductive-sem}.  Nevertheless,
+\citeauthor{KeilThiemannUnionIntersection} give an algorithmic system which is
+complete for their coinductive semantics. In a remarkable technical tour de
+force, their algorithmic system is compatible with user-defined contracts (see
+Section~\ref{sec:flat-and-inter}).
 
-A key aspect of the approach of~\cite{KeilThiemannUnionIntersection}
+A key aspect of the approach of \citeauthor{KeilThiemannUnionIntersection}
 is to rewrite nested union and intersection contracts into a
 disjunctive normal form using the De Morgan's law \nickel{A @& (B @|
   C)}$\simeq$\nickel{(A @& B) @| (A @& C)}. The goal is to be able to
 delay the choice of branch in intersections as much as possible.
 
-To implement contract verification,
-Keil and Thiemann~\cite{KeilThiemannUnionIntersection} resort to
-specific reduction rules for unions and intersections which perform this
-rewriting on the fly. This aspect is critiqued
-in~\cite{RootCauseOfBlame}:
-``the monitoring semantics for
+To implement contract verification, \citeauthor{KeilThiemannUnionIntersection}
+resort to specific reduction rules for unions and intersections which perform
+this rewriting on the fly. This aspect is critiqued in
+\citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}: ``the monitoring semantics for
 contracts of intersection and union types given by Keil and Thiemann are not
 uniform. (\ldots) If uniformity helps composition, then special cases can hinder
 composition.''
@@ -1392,27 +1386,27 @@ Efficiency is also affected another way: each time a function with a
 contract attached is applied, the whole \emph{context} must be
 traversed to check for a compatibility property.
 
-The algorithmic system of~\cite{KeilThiemannUnionIntersection} is, on balance, a
-technically impressive realization of the coinductive semantics that supports
-user-defined contracts, though it is fairly complex and probably difficult to
-implement efficiently.
+The algorithmic system of \citeauthor{KeilThiemannUnionIntersection}
+is, on balance, a technically impressive realization of the coinductive
+semantics that supports user-defined contracts, though it is fairly complex and
+probably difficult to implement efficiently.
 
 \subsection{Monitoring properties}
 \label{sec:will-morr-wadl}
 
 Another realization of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem} is given in \cite{RootCauseOfBlame}, which
-aims at simplifying the algorithmic system proposed
-by~\cite{KeilThiemannUnionIntersection} and described in
+Section~\ref{sec:coinductive-sem} is given in
+\citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}, which aims at simplifying
+the algorithmic system proposed by Keil and Thiemann and described in
 Section~\ref{sec:keil-thiemann}.
 
-A key ingredient of~\cite{RootCauseOfBlame} is to disallow user-defined
-contracts. This choice gives the authors more freedom in the quest of
-a more uniform operational semantics. This is sensible trade-off in
-the context of gradual typing à la TypeScript: the problem is to match
-contracts with static types, and user-defined contracts don't have a
-static type equivalent. On the other hand, the cost would probably not
-be worth it for a configuration language like Nickel.
+A key ingredient of \citeauthor{RootCauseOfBlame} is to disallow user-defined contracts. This
+choice gives the authors more freedom in the quest of a more uniform operational
+semantics. This is sensible trade-off in the context of gradual typing à la
+TypeScript: the problem is to match contracts with static types, and
+user-defined contracts don't have a static type equivalent. On the other hand,
+the cost would probably not be worth it for a configuration language like
+Nickel.
 
 % Some of this we may want to move to Section 5.1
 %
@@ -1478,15 +1472,13 @@ let f = (*@$\square$@*) in
 \label{fig:invalid-context}
 \end{figure}
 
-The consequence is that Williams et al.~\cite{RootCauseOfBlame} don't
-prove their system complete for the coinductive semantics.
-It's probably just an
-oversight in the proof: we believe their system to be indeed complete
-for the coinductive semantics. But it does speak to the intrinsic
-complexity of union and intersection contracts: it is remarkably easy
-to get details wrong. This difficulty contrasts with the standard
-framework of higher-order contracts where satisfaction is much more
-straightforward.
+The consequence is that \citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}
+don't prove their system complete for the coinductive semantics.  It's probably
+just an oversight in the proof: we believe their system to be indeed complete
+for the coinductive semantics. But it does speak to the intrinsic complexity of
+union and intersection contracts: it is remarkably easy to get details wrong.
+This difficulty contrasts with the standard framework of higher-order contracts
+where satisfaction is much more straightforward.
 
 \subsection{Racket}
 \label{sec:racket}
@@ -1634,11 +1626,12 @@ contracts as well.
 Castagna and Lanvin use abstract interpretation to derive the semantics of
 unions and intersections. In their own words, "the resulting definitions are
 quite technical and barely intuitive but they have the properties we seek for
-[\ldots]".  This makes any comparison with the co-inductive semantics of Kiel
-and Thiemann rather difficult. Castagna et al.~\cite{gradualCastagna} build on
-Castagna and Lanvin to add polymorphism in the picture. However, it is at the
-price of restricting the union and intersection part: it is not possible to
-assign intersection types to a function anymore.
+[\ldots]".  This makes any comparison with the coinductive semantics of
+\citeauthor{KeilThiemannUnionIntersection} rather difficult. Castagna et
+al.~\cite{gradualCastagna} build on Castagna and Lanvin to add polymorphism in
+the picture. However, it is at the price of restricting the union and
+intersection part: it is not possible to assign intersection types to a function
+anymore.
 
 \section{Conclusion}
 \label{sec:conclusion}
