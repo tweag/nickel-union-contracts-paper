@@ -1315,8 +1315,9 @@ contract. They are defined by mutual induction and coinduction.
 
 This semantics has limited support for overloading. Consider the
 example in Figure~\ref{fig:intersection-distribution}: it could
-evaluate to the pair \nickel{(1, 1)}. But the coinductive semantics
-of this work rejects it as a contract violation.
+evaluate to the pair \nickel{(1, 1)}. But
+\citeauthor{KeilThiemannUnionIntersection}'s coinductive semantics
+rejects it as a contract violation.
 This can be phrased pithily as the fact that the
 coinductive semantics doesn't validate the property \nickel{A -> B @&
   A -> C}$\simeq$\nickel{A -> (B @& C)}.
@@ -1332,6 +1333,10 @@ let h = g 1 in
 \caption{Intersection contracts don't distribute}
 \label{fig:intersection-distribution}
 \end{figure}
+
+A solution, for the programmer, is to use an uncurried function
+\nickel{fun (x, y) => x}. So one way to think about this limitation is
+that currying function is not fully supported.
 
 Note that if the last two lines of
 Figure~\ref{fig:intersection-distribution} had read \nickel{(g 1 1, g
