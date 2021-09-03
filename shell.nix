@@ -6,6 +6,7 @@ stdenv.mkDerivation {
   buildInputs = [ biber
                   pdftk
                   zip
+                  git-latexdiff
                   (texlive.combine {
                        inherit (texlive)
                        biblatex
@@ -31,4 +32,7 @@ stdenv.mkDerivation {
                        ;
                   })
                 ];
+  shellHook = ''
+    alias revision-diff='git-latexdiff --latexmk dls21.1-no-marks --main paper.tex -o reviews-dls/diff.pdf'
+  '';
 }

@@ -19,9 +19,7 @@
 %%%%%%%%%%%%%%%%% Editing marks %%%%%%%%%%%%%%%%%
 
   % TOGGLE ME to turn off all the commentary:
-  \InputIfFileExists{no-editing-marks}{
-    \def\noeditingmarks{}
-  }
+  \def\noeditingmarks{}
 
   \usepackage{xargs}
   \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
@@ -366,6 +364,7 @@ application. Therefore a design constraint of Nickel is any Nickel
 data must have a straightforward interpretation in JSON.
 
 \subsection{Contracts}
+\label{sub-sec:contracts}
 
 A useful feature of a configuration language is to provide facilities
 for schema validation. That is, help answer questions like: does our
@@ -703,10 +702,31 @@ different language, or remove citation.  (ADDED) tbh PureScript is still
 statically-typed, compiled lang, but who knows: the "script" in the name and the
 web orientation may still be more appealing to the audience of DLS}
 
+
+Higher-order contracts described in Section~\ref{sub-sec:contracts} already
+introduce side-effects: semantically, the \nickel{blame} operator signaling
+contract violation is equivalent to non-termination (error reporting aside).
+But non-termination is a special kind of effect, if only because it preserves
+referential transparency. In a lazy language like Nickel,
+(\ref{eq:cbn-expansion}) still holds for all terms in the presence of
+non-termination. In a strict language (call-by-value), (\ref{eq:cbn-expansion})
+fails in all generality because the transformation may cause a previously
+unevaluated term to be suddenly evaluated.  However, (\ref{eq:cbn-expansion})
+holds given slight restrictions on the context $M$: for example, it holds as
+long as at least one occurrence of $x$ in $M$ is in scope (i.e. not inside a
+function). Beside, many languages out there (including Nickel) already feature
+non-termination. For such languages, adding contracts does not change what
+optimizations are valid.
+
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
-unions and intersections make (\ref{eq:cbn-expansion}) unsound \emph{even in a
-pure setting}, preventing the kind optimization of
-Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
+unions and intersections \emph{breaks referential transparency}. Unions and
+intersections make (\ref{eq:cbn-expansion}) unsound even in a lazy language,
+preventing the kind of optimization of
+Figure~\ref{fig:optimizations-let-floating-ex} to fire in general. In a strict
+language, the restrictions to (\ref{eq:cbn-expansion}) outlined above are not
+sufficient anymore. If the effect of plain higher-order contracts behaves as
+non-termination, the effect of union and intersection contracts rather behaves
+as shared state.
 
 \section{Union \& intersection}
 \label{sec:union-inter}
@@ -851,20 +871,24 @@ Sections~\ref{sec:issues-sem} and~\ref{sec:issues-literature} are better
 expressed in terms of intersections, so it's best to include them.
 
 Figure~\ref{fig:addElem} gives a concrete example of this phenomenon. The
-function \nickel{appendDate} append an element to \nickel{list} whose type is
-only known to be in union of two lists, each using a different representation.
-Both alternatives support falling back to a simple string for unparsed dates.
-Faced with these two possibilities, \nickel{appendDate} can only append a
-value which fits both types: this is precisely the intersection
-\nickel{(Date @| Str) @& (DateWeek @| Str)}, that is, \nickel{Str}.
+function \nickel{appendDate} appends an element to \nickel{list}, whose type is
+only known to be the union of two lists, each using a different representation.
+Because the return type is the same as the input type, \nickel{appendDate} must
+preserve this representation (\nickel{Date} and \nickel{DateWeek}
+cannot be mixed in a same list).  Both alternatives support falling back to
+a simple string for unparsed dates.  Faced with these two possibilities,
+\nickel{appendDate} can only append a value which fits both types: this is
+precisely the intersection \nickel{(Date @| Str) @& (DateWeek @| Str)}, that
+is, \nickel{Str}.
 
 \begin{figure}[h]
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}[language=Nickel]
 let Date = {day | Num, month | Num, year | Num} in
 let DateWeek = {dayOfWeek | Num, week | Num, year | Num} in
 let appendDate | (List (Date @| Str)
                  @| List (DateWeek @| Str))
-                 -> List =
+                 -> (List (Date @| Str)
+                 @| List (DateWeek @| Str)) =
   fun list => lists.cons "01/01/2021" list
 \end{lstlisting}
 \caption{Adding an element to a union of two arrays}
@@ -941,12 +965,12 @@ duplicate text
 \section{Incompatibilities}
 \label{sec:issues-sem}
 
-However appealing union and intersection contracts may be, they happen
-to be fundamentally incompatible with the desirable language
-features from Section~\ref{sec:feat-lang}. At least in their
-full-blown form: in Section~\ref{sec:issues-literature} we will
-discuss pragmatic restrictions of union and intersection contracts to
-recover some or all of the features.
+However appealing union and intersection contracts may be, they happen to be
+either hard to combine or even fundamentally incompatible with the desirable
+language features from Section~\ref{sec:feat-lang}. At least in their full-blown
+form: in Section~\ref{sec:issues-literature} we will discuss pragmatic
+restrictions of union and intersection contracts to recover some or all of the
+features.
 
 \subsection{Union contracts as a side-effect}
 
@@ -1030,16 +1054,16 @@ two are always needed.
 
 This behavior indicates that union contracts introduce side-effects. The result
 of \nickel{f 5} now depends on the previous execution and more specifically on
-any prior call to \nickel{f}. This behavior of union contracts break the
-property~\ref{eq:cbn-expansion} introduced in Section~\ref{sec:optimizations},
-that is required to perform CSE-like optimizations in all generality. The
-candidate example of Figure~\ref{fig:optimizations-let-floating-ex} in
-Section~\ref{sec:optimizations} can't be optimized in general.
+any prior call to \nickel{f}. This behavior of union contracts breaks
+referential transparency, as well as the property~\ref{eq:cbn-expansion}
+introduced in Section~\ref{sec:optimizations}, that is required to perform
+CSE-like optimizations.
 
 Figure~\ref{fig:optimized-programs} illustrates this point further. It contains
 an original program and an optimized version where the common subexpression
-\nickel{f 1} has been eliminated. While equivalent in a pure language without
-contracts, these two programs behave differently because of unions:
+\nickel{f 1} has been eliminated. While equivalent in a pure language with only
+non-termination or plain higher-order contracts, these two programs behave
+differently because of unions:
 
 \begin{itemize}
     \item The original version returns \nickel{(1, "False")} without failing.
@@ -1273,27 +1297,27 @@ and discuss those trade-offs and their implications.
 \label{sec:coinductive-sem}
 
 In order to give a precise definition to what values ought to satisfy
-union and intersection contracts, \cite{KeilThiemannUnionIntersection}
+union and intersection contracts,
+\citeauthor{KeilThiemannUnionIntersection}~\cite{KeilThiemannUnionIntersection}
 give a coinductively defined semantics inspired by union and
-intersection type systems. The key innovation of
-\cite{KeilThiemannUnionIntersection} is recognizing that giving a
+intersection type systems.
+The key innovation of their work is recognizing that giving a
 semantics to higher-order contracts requires defining not only what
 values satisfy a contract, but also what \emph{contexts} satisfy the
 contract. This models the situation where context may violate a
 contract by calling a function with an inappropriate argument.
 
-Concretely, given a contract $C$, \cite{KeilThiemannUnionIntersection}
+Concretely, given a contract $C$, \citeauthor{KeilThiemannUnionIntersection}
 introduce the two sets $\llbracket C \rrbracket^+$ and $\llbracket C
-\rrbracket^-$ of values and contexts, respectively, satisfying the
-contract. They are defined by mutual induction and coinduction.
+\rrbracket^-$ of values and contexts, respectively, satisfying the contract.
+They are defined by mutual induction and coinduction.
 
-This semantics has limited support for overloading. Consider the
-example in Figure~\ref{fig:intersection-distribution}: it could
-evaluate to the pair \nickel{(1, 1)}. But the coinductive semantics
-of~\cite{KeilThiemannUnionIntersection} rejects it as a contract
-violation. This can be phrased pithily as the fact that the
-coinductive semantics doesn't validate the property \nickel{A -> B @&
-  A -> C}$\simeq$\nickel{A -> (B @& C)}.
+This semantics has limited support for overloading. Consider the example in
+Figure~\ref{fig:intersection-distribution}: it could evaluate to the pair
+\nickel{(1, 1)}. But \citeauthor{KeilThiemannUnionIntersection}'s coinductive
+semantics rejects it as a contract violation.  This can be phrased pithily as
+the fact that the coinductive semantics doesn't validate the property
+\nickel{A -> B @& A -> C}$\simeq$\nickel{A -> (B @& C)}.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1306,6 +1330,10 @@ let h = g 1 in
 \caption{Intersection contracts don't distribute}
 \label{fig:intersection-distribution}
 \end{figure}
+
+A solution, for the programmer, is to use an uncurried function
+\nickel{fun (x, y) => x}. So one way to think about this limitation is
+that currying function is not fully supported.
 
 Note that if the last two lines of
 Figure~\ref{fig:intersection-distribution} had read \nickel{(g 1 1, g
@@ -1328,23 +1356,22 @@ appears to require complex book-keeping in order to correctly raise
 blame.
 
 All of this still holds true of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem}. Nevertheless,
-\cite{KeilThiemannUnionIntersection} gives an algorithmic system which
-is complete for their coinductive semantics. In a remarkable technical
-tour de force, their algorithmic system is compatible with
-user-defined contracts (see Section~\ref{sec:flat-and-inter}).
+Section~\ref{sec:coinductive-sem}.  Nevertheless,
+\citeauthor{KeilThiemannUnionIntersection} give an algorithmic system which is
+complete for their coinductive semantics. In a remarkable technical tour de
+force, their algorithmic system is compatible with user-defined contracts (see
+Section~\ref{sec:flat-and-inter}).
 
-A key aspect of the approach of~\cite{KeilThiemannUnionIntersection}
+A key aspect of the approach of \citeauthor{KeilThiemannUnionIntersection}
 is to rewrite nested union and intersection contracts into a
 disjunctive normal form using the De Morgan's law \nickel{A @& (B @|
   C)}$\simeq$\nickel{(A @& B) @| (A @& C)}. The goal is to be able to
 delay the choice of branch in intersections as much as possible.
 
-To implement contract verification, \cite{KeilThiemannUnionIntersection} resorts to
-specific reduction rules for unions and intersections which perform this
-rewriting on the fly. This aspect is critiqued
-in~\cite{RootCauseOfBlame}:
-``the monitoring semantics for
+To implement contract verification, \citeauthor{KeilThiemannUnionIntersection}
+resort to specific reduction rules for unions and intersections which perform
+this rewriting on the fly. This aspect is critiqued in
+\citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}: ``the monitoring semantics for
 contracts of intersection and union types given by Keil and Thiemann are not
 uniform. (\ldots) If uniformity helps composition, then special cases can hinder
 composition.''
@@ -1359,27 +1386,27 @@ Efficiency is also affected another way: each time a function with a
 contract attached is applied, the whole \emph{context} must be
 traversed to check for a compatibility property.
 
-The algorithmic system of~\cite{KeilThiemannUnionIntersection} is, on
-balance, a technically impressive realization of the coinductive
-semantics, though it is fairly complex and probably difficult to
-implement efficiently.
+The algorithmic system of \citeauthor{KeilThiemannUnionIntersection}
+is, on balance, a technically impressive realization of the coinductive
+semantics that supports user-defined contracts, though it is fairly complex and
+probably difficult to implement efficiently.
 
 \subsection{Monitoring properties}
 \label{sec:will-morr-wadl}
 
 Another realization of the coinductive semantics described in
-Section~\ref{sec:coinductive-sem} is given in \cite{RootCauseOfBlame}, which
-aims at simplifying the algorithmic system proposed
-by~\cite{KeilThiemannUnionIntersection} and described in
+Section~\ref{sec:coinductive-sem} is given in
+\citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame}, which aims at simplifying
+the algorithmic system proposed by Keil and Thiemann and described in
 Section~\ref{sec:keil-thiemann}.
 
-A key ingredient of~\cite{RootCauseOfBlame} is to disallow user-defined
-contracts. This choice gives the authors more freedom in the quest of
-a more uniform operational semantics. This is sensible trade-off in
-the context of gradual typing à la TypeScript: the problem is to match
-contracts with static types, and user-defined contracts don't have a
-static type equivalent. On the other hand, the cost would probably not
-be worth it for a configuration language like Nickel.
+A key ingredient of \citeauthor{RootCauseOfBlame} is to disallow user-defined contracts. This
+choice gives the authors more freedom in the quest of a more uniform operational
+semantics. This is sensible trade-off in the context of gradual typing à la
+TypeScript: the problem is to match contracts with static types, and
+user-defined contracts don't have a static type equivalent. On the other hand,
+the cost would probably not be worth it for a configuration language like
+Nickel.
 
 % Some of this we may want to move to Section 5.1
 %
@@ -1445,14 +1472,13 @@ let f = (*@$\square$@*) in
 \label{fig:invalid-context}
 \end{figure}
 
-The consequence is that~\cite{RootCauseOfBlame} doesn't prove their
-system complete for the coinductive semantics. It's probably just an
-oversight in the proof: we believe their system to be indeed complete
-for the coinductive semantics. But it does speak to the intrinsic
-complexity of union and intersection contracts: it is remarkably easy
-to get details wrong. This difficulty contrasts with the standard
-framework of higher-order contracts where satisfaction is much more
-straightforward.
+The consequence is that \citeauthor{RootCauseOfBlame} don't prove their system
+complete for the coinductive semantics.  It's probably just an oversight in the
+proof: we believe their system to be indeed complete for the coinductive
+semantics. But it does speak to the intrinsic complexity of union and
+intersection contracts: it is remarkably easy to get details wrong.  This
+difficulty contrasts with the standard framework of higher-order contracts where
+satisfaction is much more straightforward.
 
 \subsection{Racket}
 \label{sec:racket}
@@ -1579,23 +1605,35 @@ typed and untyped code. In \cite{WellTypedBlamed}, the authors precisely
 introduce a system integrating gradual typing with contracts \textit{à la
 Findler \& Felleisen}. Nickel adopts a similar type system, with both statically
 typed terms, dynamically typed terms, and first-class contracts. Higher-order
-contracts are the basis of the work of \cite{KeilThiemannUnionIntersection}
-and \cite{RootCauseOfBlame} that this paper explored extensively.
+contracts are the basis of the work of
+\citeauthor{KeilThiemannUnionIntersection}~\cite{KeilThiemannUnionIntersection}
+and \citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame} that this paper
+explored extensively.
 
 \subsection{Unions and intersections in gradual typing}
 
-Castagna et al.~\cite{gradualCastagna} introduce a gradual type system based on
-so-called set-theoretic types~\cite{SetTheoreticTypes}.  Set-theoretic types
-feature unions, intersections, negation types together with a notion of
-subtyping. This work adheres to the \emph{static first school} (see
-~\cite{practiceTheoryGrad}) of gradual typing: the reason for gradual types is
-to allow for a less precise type information. It follows that their goals and
-constraints are somehow different, resulting in the absence of first-class
-contracts. As for any gradual type system, they do have to implement
-casts~---~that are very close to contracts~---~for unions and
-intersections, but these casts
-are neither visible nor available to the programmer. Obviously, no contracts
-mean no user-defined contracts as well.
+Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
+gradual type system based on so-called set-theoretic
+types~\cite{SetTheoreticTypes}.  Set-theoretic types feature unions,
+intersections, negation types together with a notion of subtyping. This work
+adheres to the \emph{static first school} (see~\cite{practiceTheoryGrad}) of
+gradual typing: the reason for gradual types is to allow for a less precise type
+information. It follows that their goals and constraints are somehow different,
+resulting in the absence of first-class contracts. As for any gradual type
+system, they do have to implement casts~---~that are very close to
+contracts~---~for unions and intersections, but these casts are neither visible
+nor available to the programmer. Obviously, no contracts mean no user-defined
+contracts as well.
+
+Castagna and Lanvin use abstract interpretation to derive the semantics of
+unions and intersections. In their own words, "the resulting definitions are
+quite technical and barely intuitive but they have the properties we seek for
+[\ldots]".  This makes any comparison with the coinductive semantics of
+\citeauthor{KeilThiemannUnionIntersection} rather difficult. Castagna et
+al.~\cite{gradualCastagna} build on Castagna and Lanvin to add polymorphism in
+the picture. However, it is at the price of restricting the union and
+intersection part: it is not possible to assign intersection types to a function
+anymore.
 
 \section{Conclusion}
 \label{sec:conclusion}
