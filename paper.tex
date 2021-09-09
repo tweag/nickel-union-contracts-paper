@@ -193,10 +193,13 @@
 \newcommand{\typescript}[1]{\lstinline[language=JavaScript]{#1}}
 \newcommand{\python}[1]{\lstinline[language=Python]{#1}}
 
+\acmConference[DLS 2021]{Dynamic Languages Symposium}{October
+17--22}{Chicago, Illinois, United States}
+
 \bibliographystyle{ACM-Reference-Format}
 
 \begin{abstract}
-Union and intersection types are a staple of gradually typed language such
+Union and intersection types are a staple of gradually typed languages such
 as TypeScript. While it's long been recognized that union and
 intersection types are difficult to verify statically, it may appear
 at first that the dynamic part of gradual typing is actually pretty
@@ -281,10 +284,11 @@ types~\cite{RootCauseOfBlame,gradualCastagna,ORTIN2011278,ToroTanterGradualUnion
 On the other hand, unions are not a common feature of static type
 systems, mostly because they are quite difficult to verify
 statically. So unions are really only worth it in gradually typed
-language where they formalise existing dynamically typed patterns. On
-the other hand, surely, for dynamic tests, unions are really easy: it
-is simply the Boolean disjunctions of two tests.
+language where they formalise existing dynamically typed patterns.
 
+Surely, for dynamic tests, unions ought to be really easy: they
+are simply the Boolean disjunction of two dynamic tests, that fail
+whenever one of those tests fail.
 Unfortunately, as we document in this article, as soon as you extend
 dynamic checks to \emph{contracts}~\cite{FindlerFelleisenHOContracts},
 unions become actually pretty difficult, and threaten desirable
@@ -325,10 +329,12 @@ job-matrix definition natively.
 
 In this article, we will use the Nickel language~\cite{NickelRepo} as
 illustration and motivation. At its core, Nickel is the JSON data
-model, augmented with abstraction mechanisms, and its conformed of:
+model, augmented with abstraction mechanisms, and it's conformed of:
 
 \begin{itemize}
-  \item dictionaries, written as:
+  \item dictionaries, written as
+    \footnote{Note that, unlike JSON, Nickel assigns values in
+    dictionaries using \nickel{=}, and not \nickel{:}.}:
 \begin{lstlisting}[frame=none,numbers=none,language=nickel]
 {field1 = value1, ..., fieldn = valuen}
 \end{lstlisting}
@@ -395,7 +401,8 @@ To be able to support such large dictionaries, Nickel's dictionaries
 are \emph{lazy}, that is, the values are only evaluated when
 explicitly required. For instance, when writing
 \hbox{\nickel{nixpkgs.hello},} only the \nickel{hello} package gets
-evaluated.
+evaluated, even if \nickel{nixpkgs} contained a
+\nickel{world} package as well.
 
 But let's consider now writing something like \nickel{nixpkgs |
   packages}, to guarantee that all the packages conform to the desired
@@ -465,8 +472,8 @@ error: Type error
   \hfill
   \begin{subfigure}[b]{0.48\linewidth}
     \begin{lstlisting}[language=nickel]
-let catHosts | Str -> Str = fun last =>
-$  let hosts = ["foo.com", "bar.org"] in
+$let$ catHosts | Str -> Str $= fun last =>
+  let hosts = ["foo.com", "bar.org"] in
   lists.fold (fun val acc =>
     val ++ "," ++ acc) hosts last in
 
@@ -492,10 +499,13 @@ error: Blame error: contract broken by the caller.
   \caption{Contracts improve error messages}
 \end{figure*}
 
-Unfortunately, the delayed check of contract, while essential to
+As we shall show, the delayed check of contract, while essential to
 ensuring that schema validation doesn't affect performance (or, indeed,
 is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
+While usual contracts require only one witness to show the invalidation
+of a contract, the introduction of unions makes
+the number of witnesses not constantly bounded.
 
 \subsection{Contributions}
 Our contributions are as follows
@@ -557,7 +567,7 @@ these kinds of expression as pre- and post-conditions on
 functions and as invariants on classes~\cite{EiffelDesignByContract}.
 
 The Racket programming language also has a system to work with
-contracts, powerful enough to define flat contracts, and
+contracts, powerful enough to define user-defined contracts, and
 to compose them with other kinds of dynamic checks,
 like higher order contracts or a lightweight take on union
 and intersection contracts~\cite{RacketContracts}.
@@ -592,7 +602,8 @@ let subList = fun l1 l2 =>
 \end{lstlisting}
 \begin{lstlisting}[language=nickel,title={Optimized program}]
 let subList = fun l1 l2 =>
-  lists.any (fun x => x == (lists.head l1)) l2
+  lists.any (fun x => x == (lists.head l1)) 
+            l2
   && subList (list.tail l1) l2
 \end{lstlisting}
   \end{center}
@@ -613,7 +624,8 @@ for all.
 \begin{lstlisting}[language=nickel,title={Source program}]
 let elemAtOrLast = fun index list =>
   if index > lists.length list - 1 then
-    lists.elemAt (lists.length list - 1) list
+    lists.elemAt (lists.length list - 1) 
+                 list
   else
     lists.elemAt index list
 \end{lstlisting}
@@ -719,7 +731,7 @@ non-termination. For such languages, adding contracts does not change what
 optimizations are valid.
 
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
-unions and intersections \emph{breaks referential transparency}. Unions and
+union and intersection contracts \emph{breaks referential transparency}. Unions and
 intersections make (\ref{eq:cbn-expansion}) unsound even in a lazy language,
 preventing the kind of optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} to fire in general. In a strict
@@ -727,6 +739,10 @@ language, the restrictions to (\ref{eq:cbn-expansion}) outlined above are not
 sufficient anymore. If the effect of plain higher-order contracts behaves as
 non-termination, the effect of union and intersection contracts rather behaves
 as shared state.
+
+% TODO Will this be demostrated?
+% yes, I think is better untold, and the paragraph starts by
+% referencing section 5
 
 \section{Union \& intersection}
 \label{sec:union-inter}
@@ -987,7 +1003,7 @@ This single witness property can be justified as follows. Apart from the error
 reporting part (although this is the crucial bit in practice!), the current
 contract system of Nickel can be implemented purely as a library, requiring only
 a \nickel{fail} primitive to abort the execution. In practice, applying a
-function contract to \nickel{f} replaces it with a \nickel{f'} that performs the
+function contract to \nickel{f} replaces it with an \nickel{f'} that performs the
 additional checks. Thus, since the core language is pure (albeit
 partial, if only because \nickel{fail}), the failure of \nickel{f' 5}
 must be independent of its environment and of any previous call to \nickel{f'}.
@@ -1030,7 +1046,7 @@ let f | Positive -> Positive
 Union contracts are different. Consider the program presented in
 Figure~\ref{fig:wrong-union-function}. The same \nickel{f} is now given a union
 contract. \nickel{f} is violating this contract once again, as it neither maps
-positive numbers to positive numbers nor positive numbers to negative numbers.
+positive numbers to positive numbers nor positive numbers to non positive numbers.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1485,7 +1501,7 @@ satisfaction is much more straightforward.
 
 Racket is a language based on the Scheme dialect of Lisp. Among established
 languages, Racket is probably the one with the most comprehensive contract
-system~\cite{RacketContracts}. Regarding union and intersections, Racket provides
+system~\cite{RacketContracts}. Regarding union and intersection, Racket provides
 the \racket{and/c} and \racket{or/c} combinators for contract.
 
 The
