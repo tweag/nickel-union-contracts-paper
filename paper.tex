@@ -603,7 +603,7 @@ let subList = fun l1 l2 =>
 \end{lstlisting}
 \begin{lstlisting}[language=nickel,title={Optimized program}]
 let subList = fun l1 l2 =>
-  lists.any (fun x => x == (lists.head l1)) 
+  lists.any (fun x => x == (lists.head l1))
             l2
   && subList (list.tail l1) l2
 \end{lstlisting}
@@ -625,7 +625,7 @@ for all.
 \begin{lstlisting}[language=nickel,title={Source program}]
 let elemAtOrLast = fun index list =>
   if index > lists.length list - 1 then
-    lists.elemAt (lists.length list - 1) 
+    lists.elemAt (lists.length list - 1)
                  list
   else
     lists.elemAt index list
@@ -715,35 +715,14 @@ different language, or remove citation.  (ADDED) tbh PureScript is still
 statically-typed, compiled lang, but who knows: the "script" in the name and the
 web orientation may still be more appealing to the audience of DLS}
 
-
-Higher-order contracts described in Section~\ref{sub-sec:contracts} already
-introduce side-effects: semantically, the \nickel{blame} operator signaling
-contract violation is equivalent to non-termination (error reporting aside).
-But non-termination is a special kind of effect, if only because it preserves
-referential transparency. In a lazy language like Nickel,
-(\ref{eq:cbn-expansion}) still holds for all terms in the presence of
-non-termination. In a strict language (call-by-value), (\ref{eq:cbn-expansion})
-fails in all generality because the transformation may cause a previously
-unevaluated term to be suddenly evaluated.  However, (\ref{eq:cbn-expansion})
-holds given slight restrictions on the context $M$: for example, it holds as
-long as at least one occurrence of $x$ in $M$ is in scope (i.e. not inside a
-function). Beside, many languages out there (including Nickel) already feature
-non-termination. For such languages, adding contracts does not change what
-optimizations are valid.
-
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
-union and intersection contracts \emph{breaks referential transparency}. Unions and
-intersections make (\ref{eq:cbn-expansion}) unsound even in a lazy language,
-preventing the kind of optimization of
-Figure~\ref{fig:optimizations-let-floating-ex} to fire in general. In a strict
-language, the restrictions to (\ref{eq:cbn-expansion}) outlined above are not
-sufficient anymore. If the effect of plain higher-order contracts behaves as
-non-termination, the effect of union and intersection contracts rather behaves
-as shared state.
-
-% TODO Will this be demostrated?
-% yes, I think is better untold, and the paragraph starts by
-% referencing section 5
+union and intersection contracts \emph{breaks referential transparency} and make
+(\ref{eq:cbn-expansion}) \emph{unsound}\footnote{(\ref{eq:cbn-expansion}) holds
+  even in a technically impure language like Nickel with non-termination and
+  higher-order contracts because of lazy evaluation. This is not the case in a strict language,
+  although in that case, (\ref{eq:cbn-expansion}) still holds more often without
+  unions and intersections than with.}, preventing the kind of optimization of
+Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 
 \section{Union \& intersection}
 \label{sec:union-inter}
@@ -1679,7 +1658,7 @@ of unions and intersections. Many applications of unions and
 intersections are not possible in such a context, but the presence of
 union and intersection contracts doesn't interact with the rest of the
 language. It's probably more manageable, and it's the approach taken
-by Nickel to be able to logically combine contracts. 
+by Nickel to be able to logically combine contracts.
 
 To conclude, let us make clear that we do not think union and intersection
 contracts are fundamentally broken, that they can not be implemented correctly,
