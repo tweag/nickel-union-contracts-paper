@@ -29,6 +29,7 @@ stdenv.mkDerivation {
                        ifmtarg comment ncctools
                        inconsolata newtx txfonts
                        xstring atenddvi zref preprint
+                       microtype
                        ;
                   })
                 ];
