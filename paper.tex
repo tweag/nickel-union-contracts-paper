@@ -209,7 +209,7 @@ union and intersection contracts, via example and a survey of the literature.
 \end{abstract}
 
 
-\title{Union and intersection contracts are hard, actually}
+\title{Union and Intersection Contracts Are Hard, Actually}
 \author{Teodoro Freund}
 \affiliation{
   \institution{Universidad de Buenos Aires}
@@ -311,7 +311,7 @@ dynamic checks to \emph{contracts}~\cite{FindlerFelleisenHOContracts},
 unions become actually pretty difficult, and threaten desirable
 properties of your language.
 
-\subsection{Configuration languages}
+\subsection{Configuration Languages}
 
 To motivate contracts and the problem caused by unions, let's make a
 detour through configuration languages.
@@ -536,7 +536,7 @@ Our contributions are as follows
   (Section~\ref{sec:issues-literature})
 \end{itemize}
 
-\section{A typology of language features}
+\section{A Typology Of Language Features}
 \label{sec:feat-lang}
 
 Union contracts are not only difficult to implement, their
@@ -546,7 +546,7 @@ properties; we will show how these properties interact with union
 contracts in Sections~\ref{sec:issues-sem}
 and~\ref{sec:issues-literature}.
 
-\subsection{User-defined contracts}
+\subsection{User-Defined Contracts}
 \label{sec:flat-contracts}
 
 A strength of dynamic checking is that we can easily check properties which
@@ -591,7 +591,7 @@ like higher order contracts or a lightweight take on union
 and intersection contracts~\cite{RacketContracts}.
 
 
-\subsection{Referential transparency}
+\subsection{Referential Transparency}
 \label{sec:optimizations}
 
 The performance of modern programs heavily relies on the optimizations performed
@@ -740,7 +740,7 @@ union and intersection contracts \emph{breaks referential transparency} and make
   union and intersection contracts make it worse.}, preventing the kind of optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 
-\section{Union \& intersection}
+\section{Union \& Intersection}
 \label{sec:union-inter}
 
 Let us now consider union and intersection contracts, before we explain in
@@ -755,7 +755,7 @@ type \nickel{A} or of type \nickel{B}: literally the union of
 systems such as TypeScript~\cite{TypeScriptUnions} and
 MyPy~\cite{MyPyOptional}.
 
-\paragraph{In gradually typed systems}
+\paragraph{In Gradually Typed Systems}
 
 The problem that these practical gradual type systems are trying to solve is to
 capture, in static types, as many programming patterns as possible
@@ -984,7 +984,7 @@ form: in Section~\ref{sec:issues-literature} we will discuss pragmatic
 restrictions of union and intersection contracts to recover some or all of the
 features.
 
-\subsection{Union contracts as a side-effect}
+\subsection{Union Contracts as a Side-Effect}
 
 In \unsure{Maybe specify its Nickel without Union or inter}Nickel,
 the failure of a function contract can always be traced back to a
@@ -1137,7 +1137,7 @@ language. Side-effects have well-known pitfalls:
 % side effects to your code.
 
 
-\subsection{Intersection with user-defined contracts}
+\subsection{Intersection With User-Defined Contracts}
 \label{sec:flat-and-inter}
 
 A natural --- but naive --- implementation of intersection contracts could be the
@@ -1293,7 +1293,7 @@ way, while they are an important feature for validation.
 \unsure{(Yann) Should we talk about thiemann here, who do support user-defined
 contracts?}
 
-\section{Pragmatic trade-offs}
+\section{Pragmatic Trade-Offs}
 \label{sec:issues-literature}
 
 Despite the difficulties of Section~\ref{sec:issues-sem}, union and
@@ -1305,7 +1305,7 @@ These systems all make trade-offs, sacrificing some features of union
 and intersection contracts to preserve language features. We survey
 and discuss those trade-offs and their implications.
 
-\subsection{A coinductive semantics}
+\subsection{A Coinductive Semantics}
 \label{sec:coinductive-sem}
 
 In order to give a precise definition to what values ought to satisfy
@@ -1354,7 +1354,7 @@ example. It implies that under the coinductive semantics,
 common-subexpression elimination (see Section~\ref{sec:optimizations})
 is quite perilous.
 
-\subsection{A first realization}
+\subsection{A First Realization}
 \label{sec:keil-thiemann}
 
 In Section~\ref{sec:issues-sem}, we've seen that different calls to a function
@@ -1403,7 +1403,7 @@ is, on balance, a technically impressive realization of the coinductive
 semantics that supports user-defined contracts, though it is fairly complex and
 probably difficult to implement efficiently.
 
-\subsection{Monitoring properties}
+\subsection{Monitoring Properties}
 \label{sec:will-morr-wadl}
 
 Another realization of the coinductive semantics described in
@@ -1597,13 +1597,13 @@ avoids the difficulties of general unions and intersections (Section~\ref{sec:is
 the pragmatic choice of a simple semantics with limited support for
 higher-order contracts in intersections and unions.
 
-\section{(More) Related work}
+\section{(More) Related Work}
 \label{sec:related-work}
 \info{Including a mention of statically typed systems with union}
 
 \unsure{WARNING: what is below is being reworked by Yann}
 
-\subsection{Higher-order contracts}
+\subsection{Higher-Order Contracts}
 
 Enforcing pre- and post-conditions at runtime is a widely established practice.
 In their foundational paper~\cite{FindlerFelleisenHOContracts}, Findler and
@@ -1622,7 +1622,7 @@ contracts are the basis of the work of
 and \citeauthor{RootCauseOfBlame}~\cite{RootCauseOfBlame} that this paper
 explored extensively.
 
-\subsection{Unions and intersections in gradual typing}
+\subsection{Unions and Intersections in Gradual Typing}
 
 Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
 gradual type system based on so-called set-theoretic
@@ -1647,7 +1647,7 @@ the picture. However, it is at the price of restricting the union and
 intersection part: it is not possible to assign intersection types to a function
 anymore.
 
-\subsection{Context sensitive contracts}
+\subsection{Context Sensitive Contracts}
 
 The work by Dimoulas et al.~\cite{dimoulasESOP,dimoulasPOPL} presents
 a complete study on systems that may execute (and potentially invalidate)
