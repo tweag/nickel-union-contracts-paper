@@ -718,10 +718,9 @@ web orientation may still be more appealing to the audience of DLS}
 Strikingly, we will see in Section~\ref{sec:issues-sem} that the introduction of
 union and intersection contracts \emph{breaks referential transparency} and make
 (\ref{eq:cbn-expansion}) \emph{unsound}\footnote{(\ref{eq:cbn-expansion}) holds
-  even in a technically impure language like Nickel with non-termination and
-  higher-order contracts because of lazy evaluation. This is not the case in a strict language,
-  although in that case, (\ref{eq:cbn-expansion}) still holds more often without
-  unions and intersections than with.}, preventing the kind of optimization of
+  in Nickel despite non-termination and contract-checking errors
+  because of lazy evaluation. In strict languages (\ref{eq:cbn-expansion}) needs to be restricted, nevertheless
+  union and intersection contracts make it worse.}, preventing the kind of optimization of
 Figure~\ref{fig:optimizations-let-floating-ex} to fire in general.
 
 \section{Union \& intersection}
