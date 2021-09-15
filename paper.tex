@@ -1631,6 +1631,41 @@ the picture. However, it is at the price of restricting the union and
 intersection part: it is not possible to assign intersection types to a function
 anymore.
 
+\subsection{Context sensitive contracts}
+
+The work by Dimoulas et al.~\cite{dimoulasESOP,dimoulasPOPL} presents
+a complete study on systems that may execute (and potentially invalidate)
+contracts inside other contracts, in particular through the study
+of dependent function contracts.
+Their ideas have the potential to help solve the problems outlined
+on Sections \ref{sec:flat-and-inter} and \ref{sec:keil-thiemann},
+however, we consider it's not clear how to leverage their techniques
+for intersections.
+
+As a first obstacle, it's worth noting that their system is intended
+to get stuck upon the checking of a contract in a context that shouldn't
+be checked in, while to keep the semantics of unions and intersections
+valid, we'd expect for that check to get skipped, and for execution
+to continue.
+
+% > Also worth noting is that Dimoulas's work deals extensively with these kinds
+% > of contracts and there is no mention of it in this paper. His POPL 2011 and
+% > ESOP 2012 papers are relevant to such contracts.
+
+
+% Regarding Dimoulas's papers, their work presents a solution
+% for contracts that may, arbitrarily, break other contracts in their
+% evaluation. Although this looks related to this problem with
+% intersection and user-defined contracts, it is not clear how to
+% leverage Dimoulas's techniques for intersection in practice.
+
+% It's worth noting, for instance, that Dimoulas's systems behave by getting stuck
+% in the case an undesired event happens (a contract fails because of external,
+% semantically unrelated, values flow in). With unions and intersections as
+% developed by Keil and Thiemann, the expected outcome is rather to not execute a
+% contract under the wrong context.
+
+
 \section{Conclusion}
 \label{sec:conclusion}
 
