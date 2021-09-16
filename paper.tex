@@ -525,7 +525,7 @@ is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
 While usual contracts require only one witness to show the invalidation
 of a contract, the introduction of unions makes
-the number of witnesses not constantly bounded.
+the number of witnesses not bounded.
 
 \subsection{Contributions}
 Our contributions are as follows
@@ -1660,11 +1660,11 @@ on Sections \ref{sec:flat-and-inter} and \ref{sec:keil-thiemann},
 however, it isn't clear how to leverage their techniques
 for intersections.
 
-As a first obstacle, it's worth noting that their system is intended
-to get stuck upon the checking of a contract in a context that shouldn't
-be checked in, while to keep the semantics of unions and intersections
-valid, we'd expect for that check to get skipped, and for execution
-to continue.
+% As a first obstacle, it's worth noting that their system is intended
+% to get stuck upon the checking of a contract in a context that shouldn't
+% be checked in, while to keep the semantics of unions and intersections
+% valid, we'd expect for that check to get skipped, and for execution
+% to continue.
 
 % > Also worth noting is that Dimoulas's work deals extensively with these kinds
 % > of contracts and there is no mention of it in this paper. His POPL 2011 and
