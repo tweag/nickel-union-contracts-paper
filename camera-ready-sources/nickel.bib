@@ -1,0 +1,605 @@
+@online{repology,
+    title     = "Repology package tracker",
+    url       = "https://web.archive.org/web/20210910024725/https://repology.org/repositories/statistics/total",
+    year      = {2021}
+}
+
+@online{TypeScriptUnions,
+    title    = "Union Types in TypeScript, TypeScript handbook",
+    url      = "https://web.archive.org/web/20210910024843/https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types",
+    year     = {2021}
+}
+
+@online{MyPyOptional,
+    title    = "Optional types and the None type",
+    url      = "https://web.archive.org/web/20210910024940/https://mypy.readthedocs.io/en/latest/kinds_of_types.html#optional-types-and-the-none-type",
+    year     = {2016}
+}
+
+@online{NickelRepo,
+    title    = "The Nickel repository on GitHub",
+    url      = "https://archive.softwareheritage.org/swh:1:dir:66ab3b7cda21c78149b1b51eb1c7827d3e35e77b;origin=https://github.com/tweag/nickel;visit=swh:1:snp:9147140b16412b3c288b3d235bf28c481ae46b6d;anchor=swh:1:rev:5cb1ba649eb145fc0fee82eece8c62a6b67b597e",
+    year     = {2020}
+}
+
+@online{cueLang,
+    title    = "The CUE Configuration Language",
+    url      = "https://web.archive.org/web/20210910025022/https://cuelang.org/",
+    year     = {2019}
+}
+
+@online{dhallLang,
+    title    = "The Dhall configuration language",
+    url      = "https://web.archive.org/web/20210910025152/https://dhall-lang.org/",
+    year     = {2021?}
+}
+
+@online{jsonnetLang,
+    title    = "Jsonnet - The Data Templating Language",
+    url      = "https://web.archive.org/web/20210910025206/https://jsonnet.org/",
+    year     = {2021?}
+}
+
+
+@INPROCEEDINGS{Siek06gradualtyping,
+    author = {Jeremy G. Siek and Walid Taha},
+    title = {Gradual Typing for Functional Languages},
+    booktitle = {IN SCHEME AND FUNCTIONAL PROGRAMMING WORKSHOP},
+    year = {2006},
+    pages = {81--92},
+    publisher = {}
+}
+
+@article{FindlerFelleisenHOContracts,
+    author = {Findler, Robert Bruce and Felleisen, Matthias},
+    title = {Contracts for Higher-Order Functions},
+    year = {2002},
+    issue_date = {September 2002},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {37},
+    number = {9},
+    issn = {0362-1340},
+    url = {https://doi.org/10.1145/583852.581484},
+    doi = {10.1145/583852.581484},
+    abstract = {Assertions play an important role in the construction of robust
+                software. Their use in programming languages dates back to the
+                1970s. Eiffel, an object-oriented programming language,
+                wholeheartedly adopted assertions and developed the "Design by
+                Contract" philosophy. Indeed, the entire object-oriented
+                community recognizes the value of assertion-based contracts on
+                methods.In contrast, languages with higher-order functions do
+                not support assertion-based contracts. Because predicates on
+                functions are, in general, undecidable, specifying such
+                predicates appears to be meaningless. Instead, the functional
+                languages community developed type systems that statically
+                approximate interesting predicates.In this paper, we show how to
+                support higher-order function contracts in a theoretically
+                well-founded and practically viable manner. Specifically, we
+                introduce $\lambda$-con, a typed lambda calculus with assertions for higher-order functions. The calculus models the assertion monitoring system that we employ in DrScheme. We establish basic properties of the model (type soundness, etc.) and illustrate the usefulness of contract checking with examples from DrScheme's code base.We believe that the development of an assertion system for higher-order functions serves two purposes. On one hand, the system has strong practical potential because existing type systems simply cannot express many assertions that programmers would like to state. On the other hand, an inspection of a large base of invariants may provide inspiration for the direction of practical future type system research.},
+    journal = {SIGPLAN Not.},
+    month = sep,
+    pages = {48–59},
+    numpages = {12},
+    keywords = {contracts, solfware reliability, behavioral specifications, higher-order functions, predicate typing}
+}
+
+@inproceedings{WellTypedBlamed,
+    author = {Wadler, Philip and Findler, Robert Bruce},
+    title = {Well-Typed Programs Can't Be Blamed},
+    year = {2009},
+    isbn = {9783642005893},
+    publisher = {Springer-Verlag},
+    address = {Berlin, Heidelberg},
+    url = {https://doi.org/10.1007/978-3-642-00590-9_1},
+    doi = {10.1007/978-3-642-00590-9_1},
+    abstract = {We introduce the blame calculus , which adds the notion of blame from Findler
+    and Felleisen's contracts to a system similar to Siek and Taha's gradual
+    types and Flanagan's hybrid types . We characterise where positive and
+    negative blame can arise by decomposing the usual notion of subtype into positive
+    and negative subtypes, and show that these recombine to yield naive subtypes. Naive
+    subtypes previously appeared in type systems that are unsound, but we believe this
+    is the first time naive subtypes play a role in establishing type soundness.},
+    booktitle = {Proceedings of the 18th European Symposium on Programming Languages and Systems: Held as Part of the Joint European Conferences on Theory and Practice of Software, ETAPS 2009},
+    pages = {1–16},
+    numpages = {16},
+    location = {York, UK},
+    series = {ESOP '09}
+}
+
+@inproceedings{BlameForAll,
+    author = {Ahmed, Amal and Findler, Robert Bruce and Siek, Jeremy G. and Wadler, Philip},
+    title = {Blame for All},
+    year = {2011},
+    isbn = {9781450304900},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/1926385.1926409},
+    doi = {10.1145/1926385.1926409},
+    abstract = {Several programming languages are beginning to integrate static
+                and dynamic typing, including Racket (formerly PLT Scheme), Perl
+                6, and C\# 4.0 and the research languages Sage (Gronski,
+                Knowles, Tomb, Freund, and Flanagan, 2006) and Thorn (Wrigstad,
+                Eugster, Field, Nystrom, and Vitek, 2009). However, an important
+                open question remains, which is how to add parametric
+                polymorphism to languages that combine static and dynamic
+                typing. We present a system that permits a value of dynamic type
+                to be cast to a polymorphic type and vice versa, with relational
+                parametricity enforced by a kind of dynamic sealing along the
+                lines proposed by Matthews and Ahmed (2008) and Neis, Dreyer,
+                and Rossberg (2009). Our system includes a notion of blame,
+                which allows us to show that when casting between a more-precise
+                type and a less-precise type, any cast failures are due to the
+                less-precisely-typed portion of the program. We also show that a
+                cast from a subtype to its supertype cannot fail.},
+    booktitle = {Proceedings of the 38th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+    pages = {201–214},
+    numpages = {14},
+    keywords = {blame tracking, casts, lambda-calculus, coercions},
+    location = {Austin, Texas, USA},
+    series = {POPL '11}
+}
+
+@inproceedings{KeilThiemannUnionIntersection,
+    author = {Keil, Matthias and Thiemann, Peter},
+    title = {Blame Assignment for Higher-Order Contracts with Intersection and Union},
+    year = {2015},
+    isbn = {9781450336697},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/2784731.2784737},
+    doi = {10.1145/2784731.2784737},
+    abstract = { We present an untyped calculus of blame assignment for a higher-order contract system with two new operators: intersection and union. The specification of these operators is based on the corresponding type theoretic constructions. This connection makes intersection and union contracts their inevitable dynamic counterparts with a range of desirable properties and makes them suitable for subsequent integration in a gradual type system. A denotational specification provides the semantics of a contract in terms of two sets: a set of terms satisfying the contract and a set of contexts respecting the contract. This kind of specification for contracts is novel and interesting in its own right. A nondeterministic operational semantics serves as the specification for contract monitoring and for proving its correctness. It is complemented by a deterministic semantics that is closer to an implementation and that is connected to the nondeterministic semantics by simulation. The calculus is the formal basis of TJS, a language embedded, higher-order contract system implemented for JavaScript. },
+    booktitle = {Proceedings of the 20th ACM SIGPLAN International Conference on Functional Programming},
+    pages = {375–386},
+    numpages = {12},
+    keywords = {Union, Intersection, Higher-Order Contracts, Blame},
+    location = {Vancouver, BC, Canada},
+    series = {ICFP 2015}
+}
+
+
+@article{RootCauseOfBlame,
+    author = {Williams, Jack and Morris, J. Garrett and Wadler, Philip},
+    title = {The Root Cause of Blame: Contracts for Intersection and Union Types},
+    year = {2018},
+    issue_date = {November 2018},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {2},
+    number = {OOPSLA},
+    url = {https://doi.org/10.1145/3276504},
+    doi = {10.1145/3276504},
+    abstract = {Gradual typing has emerged as the tonic for programmers with a thirst for a blend of static and dynamic typing. Contracts provide a lightweight form of gradual typing as they can be implemented as a library, rather than requiring a gradual type system.  Intersection and union types are well suited to static and dynamic languages: intersection encodes overloaded functions; union encodes uncertain data arising from branching code. We extend the untyped lambda calculus with contracts for monitoring higher-order intersection and union types, for the first time giving a uniform treatment to both. Each operator requires a single reduction rule that does not depend on the constituent types or the context of the operator.  We present a new method for defining contract satisfaction based on blame behaviour. A value positively satisfies a type if applying a contract of that type can never elicit positive blame. A continuation negatively satisfies a type if applying a contract of that type can never elicit negative blame. We supplement our definition of satisfaction with a series of monitoring properties that satisfying values and continuations should have.},
+    journal = {Proc. ACM Program. Lang.},
+    month = oct,
+    articleno = {134},
+    numpages = {29},
+    keywords = {intersection, gradual typing, contracts, blame, union}
+}
+
+@inproceedings{FindlerMultiLang,
+    author = {Matthews, Jacob and Findler, Robert Bruce},
+    title = {Operational Semantics for Multi-Language Programs},
+    year = {2007},
+    isbn = {1595935754},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/1190216.1190220},
+    doi = {10.1145/1190216.1190220},
+    abstract = {Inter-language interoperability is big business, as the success
+                of Microsoft's .NET and COM and Sun's JVM show. Programming
+                language designers are designing programming languages that
+                reflect that fact --- SML\#, Mondrian, and Scala, to name just a
+                few examples, all treat interoperability with other languages as
+                a central design feature. Still, current multi-language research
+                tends not to focus on the semantics of interoperation features,
+                but only on how to implement them efficiently. In this paper, we
+                take first steps toward higher-level models of interoperating
+                systems. Our technique abstracts away the low-level details of
+                interoperability like garbage collection and representation
+                coherence, and lets us focus on semantic properties like
+                type-safety and observable equivalence.Beyond giving simple
+                expressive models that are natural compositions of
+                single-language models, our studies have uncovered several
+                interesting facts about interoperability. For example,
+                higher-order contracts naturally emerge as the glue to ensure
+                that interoperating languages respect each other's type systems.
+                While we present our results in an abstract setting, they shed
+                light on real multi-language systems and tools such as the JNI,
+                SWIG, and Haskell's stable pointers.},
+    booktitle = {Proceedings of the 34th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+    pages = {3–10},
+    numpages = {8},
+    keywords = {multi-language systems, operational semantics, interoperability},
+    location = {Nice, France},
+    series = {POPL '07}
+}
+
+@inproceedings{FelleisenInterLang,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Interlanguage Migration: From Scripts to Programs},
+year = {2006},
+isbn = {159593491X},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1176617.1176755},
+doi = {10.1145/1176617.1176755},
+abstract = {As scripts grow into full-fledged applications, programmers should want to port portions of their programs from scripting languages to languages with sound and rich type systems. This form of interlanguage migration ensures type-safety and provides minimal guarantees for reuse in other applications, too.In this paper, we present a framework for expressing this form of interlanguage migration. Given a program that consists of modules in the untyped lambda calculus, we prove that rewriting one of them in a simply typed lambda calculus produces an equivalent program and adds the expected amount of type safety, i.e., code in typed modules can't go wrong. To ensure these guarantees, the migration process infers constraints from the statically typed module and imposes them on the dynamically typed modules in the form of behavioral contracts.},
+booktitle = {Companion to the 21st ACM SIGPLAN Symposium on Object-Oriented Programming Systems, Languages, and Applications},
+pages = {964–974},
+numpages = {11},
+keywords = {module systems, contract, interlanguage migration, $\lambda$-calculus},
+location = {Portland, Oregon, USA},
+series = {OOPSLA '06}
+}
+
+@inproceedings{FlowTypingRacket1,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {The Design and Implementation of Typed Scheme},
+year = {2008},
+isbn = {9781595936899},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1328438.1328486},
+doi = {10.1145/1328438.1328486},
+abstract = {When scripts in untyped languages grow into large programs, maintaining them becomes difficult. A lack of types in typical scripting languages means that programmers must (re)discover critical pieces of design information every time they wish to change a program. This analysis step both slows down the maintenance process and may even introduce mistakes due to the violation of undiscovered invariants.This paper presents Typed Scheme, an explicitly typed extension of an untyped scripting language. Its type system is based on the novel notion of occurrence typing, which we formalize and mechanically prove sound. The implementation of Typed Scheme additionally borrows elements from a range of approaches, including recursive types, true unions and subtyping, plus polymorphism combined with a modicum of local inference. Initial experiments with the implementation suggest that Typed Scheme naturally accommodates the programming style of the underlying scripting language, at least for the first few thousand lines of ported code.},
+booktitle = {Proceedings of the 35th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {395–406},
+numpages = {12},
+keywords = {type systems, scheme},
+location = {San Francisco, California, USA},
+series = {POPL '08}
+}
+
+
+
+@article{10.1145/1328897.1328486,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {The Design and Implementation of Typed Scheme},
+year = {2008},
+issue_date = {January 2008},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {43},
+number = {1},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1328897.1328486},
+doi = {10.1145/1328897.1328486},
+abstract = {When scripts in untyped languages grow into large programs, maintaining them becomes difficult. A lack of types in typical scripting languages means that programmers must (re)discover critical pieces of design information every time they wish to change a program. This analysis step both slows down the maintenance process and may even introduce mistakes due to the violation of undiscovered invariants.This paper presents Typed Scheme, an explicitly typed extension of an untyped scripting language. Its type system is based on the novel notion of occurrence typing, which we formalize and mechanically prove sound. The implementation of Typed Scheme additionally borrows elements from a range of approaches, including recursive types, true unions and subtyping, plus polymorphism combined with a modicum of local inference. Initial experiments with the implementation suggest that Typed Scheme naturally accommodates the programming style of the underlying scripting language, at least for the first few thousand lines of ported code.},
+journal = {SIGPLAN Not.},
+month = jan,
+pages = {395–406},
+numpages = {12},
+keywords = {scheme, type systems}
+}
+
+@article{FlowTypingRacket2,
+author = {Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Logical Types for Untyped Languages},
+year = {2010},
+issue_date = {September 2010},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {45},
+number = {9},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1932681.1863561},
+doi = {10.1145/1932681.1863561},
+abstract = {Programmers reason about their programs using a wide variety of formal and informal methods. Programmers in untyped languages such as Scheme or Erlang are able to use any such method to reason about the type behavior of their programs. Our type system for Scheme accommodates common reasoning methods by assigning variable occurrences a subtype of their declared type based on the predicates prior to the occurrence, a discipline dubbed occurrence typing. It thus enables programmers to enrich existing Scheme code with types, while requiring few changes to the code itself.Three years of practical experience has revealed serious shortcomings of our type system. In particular, it relied on a system of ad-hoc rules to relate combinations of predicates, it could not reason about subcomponents of data structures, and it could not follow sophisticated reasoning about the relationship among predicate tests, all of which are used in existing code.In this paper, we reformulate occurrence typing to eliminate these shortcomings. The new formulation derives propositional logic formulas that hold when an expression evaluates to true or false, respectively. A simple proof system is then used to determine types of variable occurrences from these propositions. Our implementation of this revised occurrence type system thus copes with many more untyped programming idioms than the original system.},
+journal = {SIGPLAN Not.},
+month = sep,
+pages = {117–128},
+numpages = {12},
+keywords = {logic, untyped languages, type systems}
+}
+
+@TECHREPORT{FlowTypingWhiley,
+  AUTHOR =        {Pearce, David J. and Noble, James},
+  TITLE =         {Whiley: a Language Combining Flow-Typing withUpdateable Value Semantics},
+  NUMBER =        {ECSTR12-09},
+  INSTITUTION =   {Victoria University of Wellington, New Zealand},
+  ABSTRACT =      {Whiley is a statically typed language with the look-and-feel
+                   of a dynamically typed language. Forexample, as with many
+                   dynamically typed languages, assignments to variables, fields
+                   and list elementsalways succeed. Key to this is a careful
+                   combination offlow typingandupdateable value semantics.This
+                   enables a programming model that lies between the imperative
+                   (where mutable data is passed byreference and updated in
+                   place) and the functional (where immutable data is passed by
+                   value or by name).In Whiley, mutable data that may be updated
+                   in place is passed and returned by value, with the
+                   compilerfree to eliminate unnecessary copies. Combined with
+                   flow typing (where variables may have differenttypes at
+                   different program points), this yields an unusually flexible
+                   type system.In this paper, we explore the advantages of a
+                   programming model built around flow typing and update-able
+                   value semantics. Building on our previous work, we develop an
+                   extended flow typing calculus cap-turing the salient features
+                   of Whiley. Soundness and termination is proved. Finally, to
+                   address concernsthat Whiley’s programming model cannot be
+                   made efficient, we report on experiments demonstrating
+                   thatsimple optimisations eliminate many unnecessary copies,
+                   and that the vast majority of update operationscan be
+                   performed in place},
+  MONTH =         {April},
+  YEAR  =         {2012},
+  AUTHOR1_EMAIL = {djp@ecs.vuw.ac.nz},
+  AUTHOR2_EMAIL = {kjx@ecs.vuw.ac.nz},
+  PAGES =         {31},
+  URL   =         {https://homepages.ecs.vuw.ac.nz/~djp/files/ECSTR12-09.pdf},
+  CONTACT =       {djp@cse.msu.edu}
+}
+
+@online{FlowTypingGroovy,
+    title     = "What's new in Groovy 2.0",
+    url       = "https://www.infoq.com/articles/new-groovy-20/",
+    year      = {2012}
+}
+
+@online{FlowTypingTypeScript,
+    title     = "TypeScript Handbook",
+    url       = "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types"
+}
+
+@online{DLangContracts,
+    title     = "Contract Programming - D Programming Language",
+    url       = "https://dlang.org/spec/contracts.html"
+}
+
+@online{EiffelDesignByContract,
+    title     = "Design by Contract and Assertions - Eiffel",
+    url       = "https://web.archive.org/web/20210116003625/https://www.eiffel.org/doc/solutions/Design_by_Contract_and_Assertions",
+    year      = {2021?}
+}
+
+@online{RacketContracts,
+    title     = "Contracts - Racket Documentation",
+    url       = "https://web.archive.org/web/20210814023650/https://docs.racket-lang.org/reference/contracts.html",
+    year      = {2021?}
+}
+
+@conference{DependentContracts,
+title = "$\lambda$dB: Blame tracking at higher fidelity",
+abstract = "This paper introduces $\lambda$dB, a blame calculus with dependent
+types. It supports dependent functions, predicate refinement at all types, the
+dynamic type, and full blame tracking. It is inspired by and extends previous
+work on hybrid types and Sage, by Flanagan and others; manifest contracts, by
+Greenberg, Pierce, and Weirich; and blame calculus by Wadler and Findler. While
+previous work only allows refinement over base types, $\lambda$dB supports refinement over any type. We introduce novel techniques in order to prove blame safety for this language, including a careful analysis that reduces open judgments on terms to closed ones on values, and the idea of {\textquoteleft}subtyping with a witness{\textquoteright}, which fix flaws in the previous work of Wadler and Findler. These technical contributions mean that we can achieve a completely operational account of the metatheory of our language, and thereby avoid the need to intertwine operational and semantic models which bedevils the work on hybrid types and manifest contracts.",
+author = "Jakub Zalewski and James McKinna and Morris, {J. Garrett} and Philip Wadler",
+year = "2020",
+language = "English",
+note = "First ACM SIGPLAN Workshop on Gradual Typing 2020, WGT 2020 ; Conference date: 19-01-2020 Through 25-01-2020",
+
+}
+
+@inproceedings{GradualTypingClasses,
+author = {Takikawa, Asumu and Strickland, T. Stephen and Dimoulas, Christos and Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Gradual Typing for First-Class Classes},
+year = {2012},
+isbn = {9781450315616},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2384616.2384674},
+doi = {10.1145/2384616.2384674},
+abstract = {Dynamic type-checking and object-oriented programming often go hand-in-hand; scripting languages such as Python, Ruby, and JavaScript all embrace object-oriented (OO) programming. When scripts written in such languages grow and evolve into large programs, the lack of a static type discipline reduces maintainability. A programmer may thus wish to migrate parts of such scripts to a sister language with a static type system. Unfortunately, existing type systems neither support the flexible OO composition mechanisms found in scripting languages nor accommodate sound interoperation with untyped code. In this paper, we present the design of a gradual typing system that supports sound interaction between statically- and dynamically-typed units of class-based code. The type system uses row polymorphism for classes and thus supports mixin-based OO composition. To protect migration of mixins from typed to untyped components, the system employs a novel form of contracts that partially seal classes. The design comes with a theorem that guarantees the soundness of the type system even in the presence of untyped components.},
+booktitle = {Proceedings of the ACM International Conference on Object Oriented Programming Systems Languages and Applications},
+pages = {793–810},
+numpages = {18},
+keywords = {row polymorphism, gradual typing, design by contract, blame theorem (proof technique), sealing, first-class classes, contracts},
+location = {Tucson, Arizona, USA},
+series = {OOPSLA '12}
+}
+
+
+
+@article{10.1145/2398857.2384674,
+author = {Takikawa, Asumu and Strickland, T. Stephen and Dimoulas, Christos and Tobin-Hochstadt, Sam and Felleisen, Matthias},
+title = {Gradual Typing for First-Class Classes},
+year = {2012},
+issue_date = {October 2012},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {47},
+number = {10},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/2398857.2384674},
+doi = {10.1145/2398857.2384674},
+abstract = {Dynamic type-checking and object-oriented programming often go hand-in-hand; scripting languages such as Python, Ruby, and JavaScript all embrace object-oriented (OO) programming. When scripts written in such languages grow and evolve into large programs, the lack of a static type discipline reduces maintainability. A programmer may thus wish to migrate parts of such scripts to a sister language with a static type system. Unfortunately, existing type systems neither support the flexible OO composition mechanisms found in scripting languages nor accommodate sound interoperation with untyped code. In this paper, we present the design of a gradual typing system that supports sound interaction between statically- and dynamically-typed units of class-based code. The type system uses row polymorphism for classes and thus supports mixin-based OO composition. To protect migration of mixins from typed to untyped components, the system employs a novel form of contracts that partially seal classes. The design comes with a theorem that guarantees the soundness of the type system even in the presence of untyped components.},
+journal = {SIGPLAN Not.},
+month = oct,
+pages = {793–810},
+numpages = {18},
+keywords = {blame theorem (proof technique), first-class classes, contracts, gradual typing, sealing, design by contract, row polymorphism}
+}
+
+@article{meyer1987eiffel,
+author = {Meyer, B},
+title = {Eiffel: Programming for Reusability and Extendibility},
+year = {1987},
+issue_date = {Feb. 1987},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {22},
+number = {2},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/24686.24694},
+doi = {10.1145/24686.24694},
+journal = {SIGPLAN Not.},
+month = feb,
+pages = {85–94},
+numpages = {10}
+}
+
+@inproceedings{letFloating,
+author = {Peyton Jones, Simon and Partain, Will and Santos, Andr\'{e}},
+title = {Let-Floating: Moving Bindings to Give Faster Programs},
+year = {1996},
+isbn = {0897917707},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/232627.232630},
+doi = {10.1145/232627.232630},
+abstract = {Virtually every compiler performs transformations on the program it is compiling in an attempt to improve efficiency. Despite their importance, however, there have been few systematic attempts to categorise such transformations and measure their impact.In this paper we describe a particular group of transformations --- the "let-floating" transformations --- and give detailed measurements of their effect in an optimizing compiler for the non-strict functional language Haskell. Let-floating has not received much explicit attention in the past, but our measurements show that it is an important group of transformations (at least for lazy languages), offering a reduction of more than 30% in heap allocation and 15% in execution time.},
+booktitle = {Proceedings of the First ACM SIGPLAN International Conference on Functional Programming},
+pages = {1–12},
+numpages = {12},
+location = {Philadelphia, Pennsylvania, USA},
+series = {ICFP '96}
+}
+
+@article{gradualCastagna,
+author = {Castagna, Giuseppe and Lanvin, Victor and Petrucciani, Tommaso and Siek, Jeremy G.},
+title = {Gradual Typing: A New Perspective},
+year = {2019},
+issue_date = {January 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {POPL},
+url = {https://doi.org/10.1145/3290329},
+doi = {10.1145/3290329},
+abstract = {We define a new, more semantic interpretation of gradual types and use it to ``gradualize'' two forms of polymorphism: subtyping polymorphism and implicit parametric polymorphism. In particular, we use the new interpretation to define three gradual type systems ---Hindley-Milner, with subtyping, and with union and intersection types--- in terms of two preorders, subtyping and materialization. We define these systems both declaratively ---by adding two subsumption-like rules--- which yields clearer, more intelligible, and streamlined definitions, and algorithmically by reusing existing techniques such as unification and tallying.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {16},
+numpages = {32},
+keywords = {Semantic Subtyping, Union Types, Intersection Types, Hindley-Milner, Let-Polymorphism, Gradual Typing, Subtyping}
+}
+
+@InProceedings{practiceTheoryGrad,
+  author =	{Michael Greenberg},
+  title =	{{The Dynamic Practice and Static Theory of Gradual Typing}},
+  booktitle =	{3rd Summit on Advances in Programming Languages (SNAPL 2019)},
+  pages =	{6:1--6:20},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-113-9},
+  ISSN =	{1868-8969},
+  year =	{2019},
+  volume =	{136},
+  editor =	{Benjamin S. Lerner and Rastislav Bod{\'i}k and Shriram Krishnamurthi},
+  publisher =	{Schloss Dagstuhl--Leibniz-Zentrum fuer Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{http://drops.dagstuhl.de/opus/volltexte/2019/10549},
+  URN =		{urn:nbn:de:0030-drops-105495},
+  doi =		{10.4230/LIPIcs.SNAPL.2019.6},
+  annote =	{Keywords: dynamic typing, gradual typing, static typing, implementation, theory, challenge problems}
+}
+
+@article{SetTheoreticTypes,
+author = {Frisch, Alain and Castagna, Giuseppe and Benzaken, Véronique},
+year = {2008},
+month = {09},
+pages = {},
+title = {Semantic subtyping: Dealing set-theoretically with function, union, intersection, and negation types},
+volume = {55},
+journal = {J. ACM},
+doi = {10.1145/1391289.1391293}
+}
+
+@article{ORTIN2011278,
+title = {Union and intersection types to support both dynamic and static typing},
+journal = {Information Processing Letters},
+volume = {111},
+number = {6},
+pages = {278-286},
+year = {2011},
+issn = {0020-0190},
+doi = {https://doi.org/10.1016/j.ipl.2010.12.006},
+url = {https://www.sciencedirect.com/science/article/pii/S0020019010003984},
+author = {Francisco Ortin and Miguel García},
+keywords = {Programming languages, Program specification, Compilers, Formal languages, Type systems},
+abstract = {Although static typing provides undeniable benefits for the development of applications, dynamically typed languages have become increasingly popular for specific scenarios. Since each approach offers different benefits, the StaDyn programming language has been designed to support both dynamic and static typing. This paper describes the minimal core of the StaDyn programming language. Its type system performs type reconstruction over both dynamic and static implicitly typed references. A new interpretation of union and intersection types allows statically gathering the type information of dynamic references, which improves runtime performance and robustness. The evaluation of the generated code has shown how our approach offers an important runtime performance benefit.}
+}
+
+@inproceedings{ToroTanterGradualUnion,
+author = {Toro, Matías and Tanter, Éric},
+year = {2017},
+month = {08},
+pages = {382-404},
+title = {A Gradual Interpretation of Union Types},
+isbn = {978-3-319-66705-8},
+doi = {10.1007/978-3-319-66706-5_19}
+}
+
+@article{CastagnaLanvinGradualUnionIntersection,
+author = {Castagna, Giuseppe and Lanvin, Victor},
+title = {Gradual Typing with Union and Intersection Types},
+year = {2017},
+issue_date = {September 2017},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {1},
+number = {ICFP},
+url = {https://doi.org/10.1145/3110285},
+doi = {10.1145/3110285},
+abstract = { We propose a type system for functional languages with gradual types and set-theoretic
+type connectives and prove its soundness. In particular, we show how to lift the definition
+of the domain and result type of an application from non-gradual types to gradual
+ones and likewise for the subtyping relation. We also show that deciding subtyping
+for gradual types can be reduced in linear time to deciding subtyping on non-gradual
+types and that the same holds true for all subtyping-related decision problems that
+must be solved for type inference. More generally, this work not only enriches gradual
+type systems with unions and intersections and with the type precision that arise
+from their use, but also proposes and advocates a new style of gradual types programming
+where union and intersection types are used by programmers to instruct the system
+to perform fewer dynamic checks. },
+journal = {Proc. ACM Program. Lang.},
+month = aug,
+articleno = {41},
+numpages = {28},
+keywords = {intersection types, Gradual typing, union types, set-theoretic types, negation types}
+}
+
+
+@inproceedings{dimoulasPOPL,
+author = {Dimoulas, Christos and Findler, Robert Bruce and Flanagan, Cormac and Felleisen, Matthias},
+title = {Correct Blame for Contracts: No More Scapegoating},
+year = {2011},
+isbn = {9781450304900},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1926385.1926410},
+doi = {10.1145/1926385.1926410},
+abstract = {Behavioral software contracts supplement interface information with logical assertions.
+A rigorous enforcement of contracts provides useful feedback to developers if it signals
+contract violations as soon as they occur and if it assigns blame to violators with
+preciseexplanations. Correct blame assignment gets programmers started with the debugging
+process and can significantly decrease the time needed to discover and fix bugs.Sadly
+the literature on contracts lacks a framework for making statements about the correctness
+of blame assignment and for validating such statements. This paper fills the gap and
+uses the framework to demonstrate how one of the proposed semantics for higher-order
+contracts satisfies this criteria and another semantics occasionally assigns blame
+to the wrong module.Concretely, the paper applies the framework to the lax enforcement
+of dependent higher-order contracts and the picky one. A higher-order dependent contract
+specifies constraints for the domain and range of higher-order functions and also
+relates arguments and results in auxiliary assertions. The picky semantics ensures
+that the use of arguments in the auxiliary assertion satisfies the domain contracts
+and the lax one does not. While the picky semantics discovers more contract violations
+than the lax one, it occasionally blames the wrong module. Hence the paper also introduces
+a third semantics, dubbed indy, which fixes the problems of the picky semantics without
+giving up its advantages.},
+booktitle = {Proceedings of the 38th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {215–226},
+numpages = {12},
+keywords = {higher-order programming, behavioral contracts, blame assignment},
+location = {Austin, Texas, USA},
+series = {POPL '11}
+}
+
+
+@InProceedings{dimoulasESOP,
+author="Dimoulas, Christos
+and Tobin-Hochstadt, Sam
+and Felleisen, Matthias",
+editor="Seidl, Helmut",
+title="Complete Monitors for Behavioral Contracts",
+booktitle="Programming Languages and Systems",
+year="2012",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="214--233",
+abstract="A behavioral contract in a higher-order language may invoke methods of unknown objects. Although this expressive power allows programmers to formulate sophisticated contracts, it also poses a problem for language designers. Indeed, two distinct semantics have emerged for such method calls, dubbed lax and picky. While lax fails to protect components in certain scenarios, picky may blame an uninvolved party for a contract violation.",
+isbn="978-3-642-28869-2"
+}
