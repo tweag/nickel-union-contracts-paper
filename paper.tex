@@ -1066,7 +1066,7 @@ of the union. In this example, a single call to \nickel{f} that would be the
 witness of the violation of the whole contract doesn't even exist: a minimum of
 two are always needed.
 
-This behavior indicates that union contracts introduce side-effects. The result
+This behavior shows that union contracts introduce side-effects. The result
 of \nickel{f 5} now depends on the previous execution and more specifically on
 any prior call to \nickel{f}. This behavior of union contracts breaks
 referential transparency, as well as the property~\ref{eq:cbn-expansion}
@@ -1226,7 +1226,7 @@ sub-contract fails:
 x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 \end{lstlisting}
 
-Shared state is represented by the label \nickel{l}. This is in essence the
+Shared state is represented by the label \nickel{l}. Such a shared state is in essence the
 approach proposed by Williams, Morris, and Wadler in~\cite{RootCauseOfBlame}.
 
 % \begin{figure}[h]
@@ -1261,7 +1261,7 @@ in g 0
 \label{fig:inter-flat-contracts}
 \end{figure}
 
-However, their approach has a major drawback: it is not straightforwardly
+However, this shared-state approach has a major drawback: it isn't straightforwardly
 compatible with user-defined contracts (introduced in Section
 \ref{sec:flat-contracts}). The issue is similar to our initial issue with higher-order
 contracts and the naive decomposition: user-defined contracts may apply
@@ -1274,7 +1274,7 @@ end up with:
 decomposition}]
 ((fun x => x) | (Str -> Str)[l]) | C[l]
 \end{lstlisting}
-
+%
 where \nickel{l} represents the shared state.  At this point,
 applying the \nickel{C} contract results in evaluating:
 
@@ -1373,7 +1373,7 @@ All of this still holds true of the coinductive semantics described in
 Section~\ref{sec:coinductive-sem}.  Nevertheless,
 \citeauthor{KeilThiemannUnionIntersection} give an algorithmic system which is
 complete for their coinductive semantics. In a remarkable technical tour de
-force, their algorithmic system is compatible with user-defined contracts (see
+force, their algorithmic system allows for user-defined contracts (see
 Section~\ref{sec:flat-and-inter}).
 
 A key aspect of the approach of \citeauthor{KeilThiemannUnionIntersection}
@@ -1503,7 +1503,7 @@ system~\cite{RacketContracts}. Regarding union and intersection, Racket provides
 the \racket{and/c} and \racket{or/c} combinators for contract.
 
 The
-intersection combinator \racket{and/c} corresponds to the naive
+\racket{and/c} combinator corresponds to the naive
 interpretation of intersection described in
 Section~\ref{sec:flat-and-inter}: applying contract \racket{(and/c A
   B)} is like applying contract \racket{A} then applying contract \racket{B}. In
@@ -1640,9 +1640,9 @@ nor available to the programmer. Obviously, no contracts mean no user-defined
 contracts as well.
 
 Castagna and Lanvin use abstract interpretation to derive the semantics of
-unions and intersections. In their own words, "the resulting definitions are
+unions and intersections. In their words: ``the resulting definitions are
 quite technical and barely intuitive but they have the properties we seek for
-[\ldots]".  This makes any comparison with the coinductive semantics of
+[\ldots]''.  This makes any comparison with the coinductive semantics of
 \citeauthor{KeilThiemannUnionIntersection} rather difficult. Castagna et
 al.~\cite{gradualCastagna} build on Castagna and Lanvin to add polymorphism in
 the picture. However, it is at the price of restricting the union and
