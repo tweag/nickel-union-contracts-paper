@@ -1627,7 +1627,7 @@ explored extensively.
 \subsection{Unions and Intersections in Gradual Typing}
 
 Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
-gradual type system based on so-called set-theoretic
+gradual type system based on set-theoretic
 types~\cite{SetTheoreticTypes}.  Set-theoretic types feature unions,
 intersections, negation types together with a notion of subtyping. This work
 adheres to the \emph{static first school} (see~\cite{practiceTheoryGrad}) of
@@ -1698,7 +1698,8 @@ languages. The mere presence of intersection and union contract
 induces computational effects, and can make it quite difficult to
 perform simple program optimizations such as inlining.
 
-Designing a language with union and intersection contracts means
+Designing a language with union and intersection contracts necessarily
+means
 making difficult choices: some features of union and intersection
 contracts and of the rest of the language must be abandoned. Various
 trade-offs can be made, but it is worth mentioning that implementing a
