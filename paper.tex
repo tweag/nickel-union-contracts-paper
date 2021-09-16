@@ -174,8 +174,8 @@
   frame=trbl, % draw a frame at the top, right, left and bottom of the listing
   frameround=tttt, % make the frame round at all four corners
   framesep=4pt, % quarter circle size of the round corners
-  numbers=left, % show line numbers at the left
-  numberstyle=\tiny\ttfamily, % style of the line numbers
+  numbers=none, % show line numbers at the left
+  % numberstyle=\tiny\ttfamily, % style of the line numbers
   escapeinside={(*@}{@*)} % escape sequence to insert latex
   % commentstyle=\color{dark-grey}, % style of comments
   % keywordstyle=[1]\color{blue-portage}, % style of keywords
@@ -187,7 +187,8 @@
 }
 
 \lstset{
-  escapeinside={(*@}{@*)} % escape sequence to insert latex
+  escapeinside={(*@}{@*)}, % escape sequence to insert latex
+  numbers=none % for the camera-ready version: numbers overlap with margins
 }
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
 \newcommand{\racket}[1]{\lstinline[language=racket]{#1}}
