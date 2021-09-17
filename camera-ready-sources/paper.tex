@@ -419,7 +419,7 @@ slow experience.
 
 To be able to support such large dictionaries, Nickel's dictionaries
 are \emph{lazy}, that is, the values are only evaluated when
-explicitly required. For instance, when writing
+explicitly required. For instance, when evaluating the expression
 \hbox{\nickel{nixpkgs.hello},} only the \nickel{hello} package gets
 evaluated, even if \nickel{nixpkgs} contained a
 \nickel{world} package as well.
@@ -437,7 +437,7 @@ can be used to add schema validation to functions as well (in fact
 functions were the original motivation for contracts).
 
 There is no Boolean function which can check that a value has type
-\nickel{Str -> Str}. Instead, a contract for \nickel{Str -> Str}
+\nickel{Str -> Str}. Instead, a contract for \nickel{Str -> Str} \\
 checks for each call of the function whether
 \begin{enumerate}
 \item the argument has type \nickel{Str}, otherwise the caller of the
@@ -525,16 +525,16 @@ is possible at all on functions), make union contracts (and their less
 appreciated sibling, intersection contracts) quite problematic.
 While usual contracts require only one witness to show the invalidation
 of a contract, the introduction of unions makes
-the number of witnesses not constantly bounded.
+the number of witnesses not bounded.
 
 \subsection{Contributions}
 Our contributions are as follows
 \begin{itemize}
-\item We describe the fundamental difficulties caused by presence of
+\item We describe the fundamental difficulties caused by pre-sence of
   union and intersection contracts in a language, which are kept
   implicit in the literature (Section~\ref{sec:issues-sem})
 \item We survey the various trade-offs which appear in implemented
-  languages and in the literature to work around these difficulties
+  languages and in the academic literature to work around these difficulties
   (Section~\ref{sec:issues-literature})
 \end{itemize}
 
@@ -761,7 +761,7 @@ MyPy~\cite{MyPyOptional}.
 
 The problem that these practical gradual type systems are trying to solve is to
 capture, in static types, as many programming patterns as possible
-from the underlying dynamically typed language (JavaScript for
+from the underlying dynamically typed language (Java\-Script for
 TypeScript and Python for MyPy). One such pattern is
 heterogeneous collections. For instance, in TypeScript, an array
 which can contain both strings and numbers would have type
@@ -909,7 +909,7 @@ let appendDate | (List (Date @| Str)
 \label{fig:addElem}
 \end{figure}
 
-Yet, intersections are useful in their own right. They can be used to
+Yet, intersection are useful in their own right: they can be used to
 combine dictionaries in the style of object-oriented multiple inheritance. For instance, in
 Figure \ref{fig:intersection-record} two types are defined
 \nickel{Animal} and \nickel{Pet}, and a variable that is compatible
@@ -1044,7 +1044,7 @@ let f | Positive -> Positive
 Union contracts are different. Consider the program presented in
 Figure~\ref{fig:wrong-union-function}. The same \nickel{f} is now given a union
 contract. \nickel{f} is violating this contract once again, as it neither maps
-positive numbers to positive numbers nor positive numbers to nonpositive numbers.
+all positive numbers to positive numbers nor to nonpositive numbers.
 
 \begin{figure}[h]
 \begin{lstlisting}[language=nickel]
@@ -1066,7 +1066,7 @@ of the union. In this example, a single call to \nickel{f} that would be the
 witness of the violation of the whole contract doesn't even exist: a minimum of
 two are always needed.
 
-This behavior indicates that union contracts introduce side-effects. The result
+This behavior shows that union contracts introduce side-effects. The result
 of \nickel{f 5} now depends on the previous execution and more specifically on
 any prior call to \nickel{f}. This behavior of union contracts breaks
 referential transparency, as well as the property~\ref{eq:cbn-expansion}
@@ -1226,7 +1226,7 @@ sub-contract fails:
 x | A @& B (*@ $\simeq$ @*) (x | A[l]) | B[l]
 \end{lstlisting}
 
-Shared state is represented by the label \nickel{l}. This is in essence the
+Shared state is represented by the label \nickel{l}. Such a shared state is in essence the
 approach proposed by Williams, Morris, and Wadler in~\cite{RootCauseOfBlame}.
 
 % \begin{figure}[h]
@@ -1261,7 +1261,7 @@ in g 0
 \label{fig:inter-flat-contracts}
 \end{figure}
 
-However, their approach has a major drawback: it is not straightforwardly
+However, this shared-state approach has a major drawback: it isn't straightforwardly
 compatible with user-defined contracts (introduced in Section
 \ref{sec:flat-contracts}). The issue is similar to our initial issue with higher-order
 contracts and the naive decomposition: user-defined contracts may apply
@@ -1274,7 +1274,7 @@ end up with:
 decomposition}]
 ((fun x => x) | (Str -> Str)[l]) | C[l]
 \end{lstlisting}
-
+%
 where \nickel{l} represents the shared state.  At this point,
 applying the \nickel{C} contract results in evaluating:
 
@@ -1373,7 +1373,7 @@ All of this still holds true of the coinductive semantics described in
 Section~\ref{sec:coinductive-sem}.  Nevertheless,
 \citeauthor{KeilThiemannUnionIntersection} give an algorithmic system which is
 complete for their coinductive semantics. In a remarkable technical tour de
-force, their algorithmic system is compatible with user-defined contracts (see
+force, their algorithmic system allows for user-defined contracts (see
 Section~\ref{sec:flat-and-inter}).
 
 A key aspect of the approach of \citeauthor{KeilThiemannUnionIntersection}
@@ -1503,7 +1503,7 @@ system~\cite{RacketContracts}. Regarding union and intersection, Racket provides
 the \racket{and/c} and \racket{or/c} combinators for contract.
 
 The
-intersection combinator \racket{and/c} corresponds to the naive
+\racket{and/c} combinator corresponds to the naive
 interpretation of intersection described in
 Section~\ref{sec:flat-and-inter}: applying contract \racket{(and/c A
   B)} is like applying contract \racket{A} then applying contract \racket{B}. In
@@ -1627,7 +1627,7 @@ explored extensively.
 \subsection{Unions and Intersections in Gradual Typing}
 
 Castagna and Lanvin~\cite{CastagnaLanvinGradualUnionIntersection} introduce a
-gradual type system based on so-called set-theoretic
+gradual type system based on set-theoretic
 types~\cite{SetTheoreticTypes}.  Set-theoretic types feature unions,
 intersections, negation types together with a notion of subtyping. This work
 adheres to the \emph{static first school} (see~\cite{practiceTheoryGrad}) of
@@ -1640,9 +1640,9 @@ nor available to the programmer. Obviously, no contracts mean no user-defined
 contracts as well.
 
 Castagna and Lanvin use abstract interpretation to derive the semantics of
-unions and intersections. In their own words, "the resulting definitions are
+unions and intersections. In their words: ``the resulting definitions are
 quite technical and barely intuitive but they have the properties we seek for
-[\ldots]".  This makes any comparison with the coinductive semantics of
+[\ldots]''.  This makes any comparison with the coinductive semantics of
 \citeauthor{KeilThiemannUnionIntersection} rather difficult. Castagna et
 al.~\cite{gradualCastagna} build on Castagna and Lanvin to add polymorphism in
 the picture. However, it is at the price of restricting the union and
@@ -1657,14 +1657,14 @@ contracts inside other contracts, in particular through the study
 of dependent function contracts.
 Their ideas have the potential to help solve the problems outlined
 on Sections \ref{sec:flat-and-inter} and \ref{sec:keil-thiemann},
-however, we consider it's not clear how to leverage their techniques
+however, it isn't clear how to leverage their techniques
 for intersections.
 
-As a first obstacle, it's worth noting that their system is intended
-to get stuck upon the checking of a contract in a context that shouldn't
-be checked in, while to keep the semantics of unions and intersections
-valid, we'd expect for that check to get skipped, and for execution
-to continue.
+% As a first obstacle, it's worth noting that their system is intended
+% to get stuck upon the checking of a contract in a context that shouldn't
+% be checked in, while to keep the semantics of unions and intersections
+% valid, we'd expect for that check to get skipped, and for execution
+% to continue.
 
 % > Also worth noting is that Dimoulas's work deals extensively with these kinds
 % > of contracts and there is no mention of it in this paper. His POPL 2011 and
@@ -1698,7 +1698,8 @@ languages. The mere presence of intersection and union contract
 induces computational effects, and can make it quite difficult to
 perform simple program optimizations such as inlining.
 
-Designing a language with union and intersection contracts means
+Designing a language with union and intersection contracts necessarily
+means
 making difficult choices: some features of union and intersection
 contracts and of the rest of the language must be abandoned. Various
 trade-offs can be made, but it is worth mentioning that implementing a
