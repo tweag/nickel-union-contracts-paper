@@ -171,9 +171,9 @@
   keepspaces=true, % does not ignore spaces to fit width, convert tabs to spaces
   showstringspaces=false, % lets spaces in strings appear as real spaces
   breaklines=true, % wrap lines if they don't fit
-  frame=trbl, % draw a frame at the top, right, left and bottom of the listing
-    frameround=tttt, % make the frame round at all four corners
-  framesep=4pt, % quarter circle size of the round corners
+  % frame=trbl, % draw a frame at the top, right, left and bottom of the listing
+    % frameround=tttt, % make the frame round at all four corners
+  % framesep=4pt, % quarter circle size of the round corners
   numbers=none, % show line numbers at the left
   % numberstyle=\tiny\ttfamily, % style of the line numbers
   escapeinside={(*@}{@*)} % escape sequence to insert latex
@@ -190,10 +190,10 @@
   escapeinside={(*@}{@*)}, % escape sequence to insert latex
   numbers=none, % for the camera-ready version: numbers overlap with margins
   % Avoid overlap with margins
-  framexleftmargin = -2pt,
-  framexrightmargin = -2pt,
-  framextopmargin = -2pt,
-  framexbottommargin = -2pt
+  % framexleftmargin = -2pt,
+  % framexrightmargin = -2pt,
+  % framextopmargin = -2pt,
+  % framexbottommargin = -2pt
 }
 
 \newcommand{\nickel}[1]{\lstinline[language=nickel]{#1}}
@@ -538,7 +538,7 @@ Our contributions are as follows
   (Section~\ref{sec:issues-literature})
 \end{itemize}
 
-\section{A Typology Of Language Features}
+\section{A Typology of Language Features}
 \label{sec:feat-lang}
 
 Union contracts are not only difficult to implement, their
@@ -1139,7 +1139,7 @@ language. Side-effects have well-known pitfalls:
 % side effects to your code.
 
 
-\subsection{Intersection With User-Defined Contracts}
+\subsection{Intersection with User-Defined Contracts}
 \label{sec:flat-and-inter}
 
 A natural --- but naive --- implementation of intersection contracts could be the
